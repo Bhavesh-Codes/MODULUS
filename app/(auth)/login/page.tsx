@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Loader2, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -22,6 +22,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -29,6 +30,10 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   })
+
+  const watchedEmail = form.watch("email")
+  const watchedPassword = form.watch("password")
+  const signupUrl = `/signup?email=${encodeURIComponent(watchedEmail || "")}&password=${encodeURIComponent(watchedPassword || "")}`
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
@@ -116,13 +121,22 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
-            <Input 
-              id="password" 
-              type="password" 
-              placeholder="••••••••" 
-              {...form.register("password")}
-              className={form.formState.errors.password ? "border-[#FF3B30]" : ""}
-            />
+            <div className="relative">
+              <Input 
+                id="password" 
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••" 
+                {...form.register("password")}
+                className={form.formState.errors.password ? "border-[#FF3B30] pr-10" : "pr-10"}
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555550] hover:text-[#0A0A0A]"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
             {form.formState.errors.password && (
               <p className="font-sans text-[14px] text-[#FF3B30]">{form.formState.errors.password.message}</p>
             )}
@@ -143,7 +157,7 @@ export default function LoginPage() {
 
       <div className="mt-8 text-center font-sans text-[14px] text-[#555550]">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-[#0A0A0A] font-bold hover:underline">
+        <Link href={signupUrl} className="text-[#0A0A0A] font-bold hover:underline">
           Sign up
         </Link>
       </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Loader2, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -23,7 +23,7 @@ type SignupFormValues = z.infer<typeof signupSchema>
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -31,6 +31,14 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
     defaultValues: { name: "", email: "", password: "" },
   })
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const email = params.get('email')
+    const password = params.get('password')
+    if (email) form.setValue("email", email)
+    if (password) form.setValue("password", password)
+  }, [form])
 
   async function onSubmit(data: SignupFormValues) {
     setIsLoading(true)
@@ -51,8 +59,8 @@ export default function SignupPage() {
       setErrorText(signUpError.message)
       setIsLoading(false)
     } else {
-      setSuccess(true)
-      setIsLoading(false)
+      router.push("/setup")
+      router.refresh()
     }
   }
 
@@ -63,20 +71,6 @@ export default function SignupPage() {
         redirectTo: `${window.location.origin}/api/auth/callback`,
       },
     })
-  }
-
-  if (success) {
-    return (
-      <div className="bg-[#FFFFFF] p-8 rounded-[24px] border-[2px] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] text-center">
-        <h2 className="font-heading font-bold text-[28px] text-[#0A0A0A] mb-4">Check your email</h2>
-        <p className="font-sans text-[16px] text-[#555550] mb-6">
-          We sent a verification link to your email address. Please verify your account to continue.
-        </p>
-        <Button variant="secondary" className="w-full" onClick={() => router.push("/login")}>
-          Back to Login
-        </Button>
-      </div>
-    )
   }
 
   return (
@@ -134,13 +128,22 @@ export default function SignupPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input 
-            id="password" 
-            type="password" 
-            placeholder="Min. 8 characters" 
-            {...form.register("password")}
-            className={form.formState.errors.password ? "border-[#FF3B30]" : ""}
-          />
+          <div className="relative">
+            <Input 
+              id="password" 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Min. 8 characters" 
+              {...form.register("password")}
+              className={form.formState.errors.password ? "border-[#FF3B30] pr-10" : "pr-10"}
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555550] hover:text-[#0A0A0A]"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
           {form.formState.errors.password && (
             <p className="font-sans text-[14px] text-[#FF3B30]">{form.formState.errors.password.message}</p>
           )}
