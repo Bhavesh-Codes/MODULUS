@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, GetObjectCommandInput } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // We wrap the client creation in a function so it evaluates AT RUNTIME, 
@@ -64,5 +64,34 @@ export async function getSignedUrlForR2(fileName: string) {
     Key: fileName,
   });
 
+  return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+}
+
+export async function getSignedUrlForR2Download(
+  objectKey: string,
+  originalFilename: string,
+  mimeType?: string
+) {
+  const s3Client = getS3Client();
+
+  // RFC 6266 / RFC 5987 compliant Content-Disposition:
+  // - filename="..."  : fallback for old browsers, must be ASCII-safe (encode spaces)
+  // - filename*=UTF-8''...  : full RFC 5987 encoding for modern browsers
+  const asciiFallback = originalFilename.replace(/[^\x20-\x7E]/g, "_").replace(/["\\]/g, "_");
+  const rfc5987Encoded = encodeURIComponent(originalFilename)
+    .replace(/'/g, "%27")
+    .replace(/\(/g, "%28")
+    .replace(/\)/g, "%29");
+
+  const disposition = `attachment; filename="${asciiFallback}"; filename*=UTF-8''${rfc5987Encoded}`;
+
+  const commandInput: GetObjectCommandInput = {
+    Bucket: process.env.R2_BUCKET_NAME!,
+    Key: objectKey,
+    ResponseContentDisposition: disposition,
+    ...(mimeType ? { ResponseContentType: mimeType } : {}),
+  };
+
+  const command = new GetObjectCommand(commandInput);
   return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 }

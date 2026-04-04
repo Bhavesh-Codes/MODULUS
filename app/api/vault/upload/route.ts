@@ -13,6 +13,15 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const customFilename = (formData.get("filename") as string | null)?.trim() || null;
+    // Parse tags JSON array sent by the client (e.g. '["lecture","notes"]')
+    let initialTags: string[] = [];
+    const tagsRaw = formData.get("tags") as string | null;
+    if (tagsRaw) {
+      try { initialTags = JSON.parse(tagsRaw); } catch { /* ignore bad JSON */ }
+    }
+    // Optional folder_id — null means root
+    const folderId = (formData.get("folder_id") as string | null) || null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -55,7 +64,7 @@ export async function POST(request: Request) {
       .insert({
         owner_id: user.id,
         r2_object_key: uniqueFileName,
-        filename: file.name,
+        filename: customFilename || file.name,
         mime_type: file.type,
         size_bytes: file.size,
       })
@@ -67,7 +76,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Database metadata sync failed." }, { status: 500 })
     }
 
-    // Insert into vault_items
+    // Insert into vault_items — include initial tags and folder if provided
     const { error: vaultInsertError } = await supabase
       .from('vault_items')
       .insert({
@@ -75,6 +84,8 @@ export async function POST(request: Request) {
         owner_id: user.id,
         item_type: 'file',
         is_private: true,
+        ...(initialTags.length > 0 ? { tags: initialTags } : {}),
+        ...(folderId ? { folder_id: folderId } : {}),
       })
 
     if (vaultInsertError) {
