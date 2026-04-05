@@ -172,8 +172,9 @@ export default function SetupPage() {
           <button
             onClick={handleSkip}
             type="button"
-            className="font-mono text-[14px] font-bold text-[#555550] hover:text-[#0A0A0A] underline transition-colors"
+            className="px-4 py-2 flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
           >
+            <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
         </div>
@@ -330,10 +331,14 @@ export default function SetupPage() {
 
         <div className="mt-12 flex justify-between items-center pt-6 border-t-[2px] border-[#E8E8E0]">
           {step > 1 ? (
-            <Button variant="secondary" onClick={handleBack} type="button">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+            <button 
+              onClick={handleBack} 
+              type="button"
+              className="px-5 py-2.5 flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+            >
+              <ArrowLeft className="h-4 w-4" />
               Back
-            </Button>
+            </button>
           ) : (
             <div /> // Spacer
           )}

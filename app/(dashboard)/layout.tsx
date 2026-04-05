@@ -13,15 +13,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Link href="/vault" className="font-heading font-extrabold text-[24px] text-[#0A0A0A] tracking-tight hover:opacity-80 transition-opacity">
             MODULUS
           </Link>
-          <div className="hidden md:flex relative w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555550]" />
-            <input 
-              type="text" 
-              placeholder="Search anything..." 
-              className="w-full bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[8px] py-1.5 pl-10 pr-4 font-mono text-[14px] focus:outline-none focus:bg-[#E8E8E0] transition-colors"
-              suppressHydrationWarning
-            />
-          </div>
         </div>
 
         <nav className="flex items-center gap-6">

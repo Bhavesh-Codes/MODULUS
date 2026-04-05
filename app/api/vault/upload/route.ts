@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     }
 
     // Insert into vault_items — include initial tags and folder if provided
-    const { error: vaultInsertError } = await supabase
+    const { data: vaultItemData, error: vaultInsertError } = await supabase
       .from('vault_items')
       .insert({
         file_id: fileData.id,
@@ -87,6 +87,8 @@ export async function POST(request: Request) {
         ...(initialTags.length > 0 ? { tags: initialTags } : {}),
         ...(folderId ? { folder_id: folderId } : {}),
       })
+      .select()
+      .single()
 
     if (vaultInsertError) {
       console.error("Vault DB Insert Error:", vaultInsertError)
@@ -105,7 +107,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      data: fileData
+      data: fileData,
+      vaultItem: vaultItemData
     });
   } catch (error: any) {
     console.error("Upload route error:", error);

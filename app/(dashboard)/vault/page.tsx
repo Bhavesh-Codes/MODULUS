@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -613,12 +613,14 @@ function FolderCard({
   onRename,
   onMove,
   onDelete,
+  isDropTarget = false,
 }: {
   folder: VaultFolder
   onClick: () => void
   onRename: (folder: VaultFolder) => void
   onMove: (folder: VaultFolder) => void
   onDelete: (folder: VaultFolder) => void
+  isDropTarget?: boolean
 }) {
   const color = getFolderColor(folder.id)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -642,12 +644,22 @@ function FolderCard({
   return (
     <motion.div
       layout
+      data-drop-target={folder.id}
       initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: isDropTarget ? 1.03 : 1,
+        borderColor: isDropTarget ? "#FFD600" : "#0A0A0A",
+      }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
       onClick={onClick}
-      className="group relative cursor-pointer bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 select-none overflow-hidden"
+      className={`group relative cursor-pointer bg-[#FFFFFF] border-[3px] rounded-[1.5rem] p-5 transition-all duration-150 select-none overflow-hidden ${
+        isDropTarget
+          ? "border-[#FFD600] bg-[#FFFBDE] shadow-[0px_0px_0px_4px_#FFD60066]"
+          : "border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+      }`}
     >
       <div className="flex items-center justify-between gap-3 mb-3 relative z-10">
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -707,13 +719,18 @@ function FileCard({
   onDelete,
   onEdit,
   onMove,
+  onDropFile,
+  onDragOver,
 }: {
   item: VaultItem
   folders: VaultFolder[]
   onDelete: () => void
   onEdit: (item: VaultItem) => void
   onMove: (item: VaultItem) => void
+  onDropFile: (fileItemId: string, targetFolderId: string | null) => void
+  onDragOver: (folderId: string | null) => void
 }) {
+  const [isDragging, setIsDragging] = useState(false)
   const [isViewing, setIsViewing] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -779,14 +796,49 @@ function FileCard({
     ? folderTrail.map(f => f.name).join(" / ")
     : "Vault Root"
 
+  // ── Drag handling ──────────────────────────────────────────────────────────
+  const getDropTarget = (x: number, y: number): string | null => {
+    const els = document.elementsFromPoint(x, y)
+    for (const el of els) {
+      const target = (el as HTMLElement).closest("[data-drop-target]")
+      if (target) return (target as HTMLElement).dataset.dropTarget ?? null
+    }
+    return null
+  }
+
+  const handleDrag = (_: any, info: { point: { x: number; y: number } }) => {
+    const target = getDropTarget(info.point.x, info.point.y)
+    onDragOver(target)
+  }
+
+  const handleDragEnd = (_: any, info: { point: { x: number; y: number } }) => {
+    setIsDragging(false)
+    const target = getDropTarget(info.point.x, info.point.y)
+    onDragOver(null)
+    if (target === null) return // dropped on empty space, snap back
+    const folderId = target === "root" ? null : target
+    onDropFile(item.id, folderId)
+  }
+
   return (
     <motion.div
       layout
+      drag
+      dragSnapToOrigin
+      dragElastic={0.12}
+      dragTransition={{ bounceStiffness: 350, bounceDamping: 30 }}
+      onDragStart={() => setIsDragging(true)}
+      onDrag={handleDrag}
+      onDragEnd={handleDragEnd}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
-      className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150"
+      whileDrag={{ scale: 1.06, boxShadow: "8px 8px 0px #0A0A0A", zIndex: 100, cursor: "grabbing" }}
+      className={`group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 select-none ${
+        isDragging ? "cursor-grabbing" : "cursor-grab hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+      }`}
+      style={{ position: "relative", zIndex: isDragging ? 100 : "auto" }}
     >
       <div className="flex justify-between items-start mb-4">
         <div className="w-14 h-14 bg-[#FFFFFF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
@@ -905,12 +957,14 @@ function SidebarFolderTree({
   folders,
   currentFolderId,
   onNavigate,
+  activeDropZone,
   parentId = null,
   depth = 0,
 }: {
   folders: VaultFolder[]
   currentFolderId: string | null
   onNavigate: (id: string | null) => void
+  activeDropZone: string | null
   parentId?: string | null
   depth?: number
 }) {
@@ -921,13 +975,17 @@ function SidebarFolderTree({
     <ul className="space-y-0.5">
       {children.map((folder) => {
         const isActive = currentFolderId === folder.id
+        const isDropTarget = activeDropZone === folder.id
         const hasChildren = folders.some((f) => f.parent_id === folder.id)
         return (
           <li key={folder.id}>
             <button
+              data-drop-target={folder.id}
               onClick={() => onNavigate(folder.id)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${
-                isActive
+                isDropTarget
+                  ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
+                  : isActive
                   ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A]"
                   : "hover:bg-[#E8E8E0] text-[#0A0A0A]"
               }`}
@@ -946,6 +1004,7 @@ function SidebarFolderTree({
                 folders={folders}
                 currentFolderId={currentFolderId}
                 onNavigate={onNavigate}
+                activeDropZone={activeDropZone}
                 parentId={folder.id}
                 depth={depth + 1}
               />
@@ -965,6 +1024,9 @@ export default function VaultPage() {
   const [newFolderModalOpen, setNewFolderModalOpen] = useState(false)
   const [editItem, setEditItem] = useState<VaultItem | null>(null)
   
+  // Drag and drop state
+  const [activeDropZone, setActiveDropZone] = useState<string | null>(null) // folder id or "root"
+
   // New states for Folder rename and Move operations
   const [renameFolderItem, setRenameFolderItem] = useState<VaultFolder | null>(null)
   const [moveItem, setMoveItem] = useState<{ type: "file" | "folder"; id: string } | null>(null)
@@ -1043,6 +1105,24 @@ export default function VaultPage() {
     setSearchQuery("")
   }
 
+  // ── Drag-and-drop handlers ────────────────────────────────────────────────
+  const handleFileDrop = useCallback(async (fileItemId: string, targetFolderId: string | null) => {
+    setActiveDropZone(null)
+    const toastId = toast.loading("Moving file…")
+    try {
+      const res = await fetch(`/api/vault/items/${fileItemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder_id: targetFolderId }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error || "Move failed")
+      toast.success("File moved!", { id: toastId })
+      queryClient.invalidateQueries({ queryKey: ["vaultItems"] })
+    } catch (e: any) {
+      toast.error(e.message || "Failed to move file", { id: toastId })
+    }
+  }, [queryClient])
+
   const isLoading = foldersLoading || itemsLoading
   const isEmpty = filteredFolders.length === 0 && filteredItems.length === 0 && !isLoading
 
@@ -1095,9 +1175,12 @@ export default function VaultPage() {
           <div className="flex-1 overflow-y-auto p-3 space-y-1">
             {/* Root button */}
             <button
+              data-drop-target="root"
               onClick={() => navigate(null)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${
-                currentFolderId === null
+                activeDropZone === "root"
+                  ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
+                  : currentFolderId === null
                   ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A]"
                   : "hover:bg-[#E8E8E0] text-[#0A0A0A]"
               }`}
@@ -1123,6 +1206,7 @@ export default function VaultPage() {
                   folders={allFolders}
                   currentFolderId={currentFolderId}
                   onNavigate={navigate}
+                  activeDropZone={activeDropZone}
                 />
               </>
             )}
@@ -1272,6 +1356,7 @@ export default function VaultPage() {
                     <FolderCard
                       key={`folder-${folder.id}`}
                       folder={folder}
+                      isDropTarget={activeDropZone === folder.id}
                       onClick={() => navigate(folder.id)}
                       onRename={(f) => {
                         // We can quickly implement a native prompt or use NewFolderModal
@@ -1314,6 +1399,8 @@ export default function VaultPage() {
                       onDelete={invalidateItems}
                       onEdit={(i) => setEditItem(i)}
                       onMove={(i) => setMoveItem({ type: "file", id: i.id })}
+                      onDropFile={handleFileDrop}
+                      onDragOver={(id) => setActiveDropZone(id)}
                     />
                   ))}
                 </AnimatePresence>

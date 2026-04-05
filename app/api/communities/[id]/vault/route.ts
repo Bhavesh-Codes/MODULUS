@@ -13,8 +13,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const resolvedParams = await context.params
     const communityId = resolvedParams.id
 
-    // Check if user is a member (if community is private? or generally, just fetch it)
-    // For now we'll just fetch the items. Row Level Security on DB can protect it, or we just fetch.
+    // Fetch all items for the community to allow frontend global searching
     const { data, error } = await supabase
       .from('community_vault_items')
       .select('*, users(*), vault_items(*, files(*))')
@@ -51,12 +50,23 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       return NextResponse.json({ error: "Missing vault_item_id" }, { status: 400 })
     }
 
+    // Capture personal tags to port them to community scope
+    const { data: personalVaultItem } = await supabase
+       .from('vault_items')
+       .select('tags')
+       .eq('id', vault_item_id)
+       .single()
+
+    const initialTags = personalVaultItem?.tags || []
+
     const { data, error } = await supabase
       .from('community_vault_items')
       .insert({
         community_id: communityId,
         vault_item_id,
-        shared_by_user_id: user.id
+        shared_by_user_id: user.id,
+        tags: initialTags,
+        folder_id: null
       })
       .select()
       .single()

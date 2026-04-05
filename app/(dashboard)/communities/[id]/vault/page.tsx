@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
-import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye } from "lucide-react"
+import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2 } from "lucide-react"
 import { toast } from "sonner"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 const getFileIcon = (mimeType: string = "") => {
   if (mimeType.startsWith("image/")) return <ImageIcon className="w-8 h-8 text-[#0057FF]" />
@@ -32,8 +34,19 @@ export default function CommunityVaultPage() {
   const params = useParams()
   const id = params.id as string
   const queryClient = useQueryClient()
+  
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
+  
+  // Folders & Search State
+  const [searchQuery, setSearchQuery] = useState("")
+  const [folderStack, setFolderStack] = useState<{id: string, name: string}[]>([])
+  const currentFolderId = folderStack.length > 0 ? folderStack[folderStack.length - 1].id : null
+
+  // Modals state
+  const [isCreateFolderModal, setIsCreateFolderModal] = useState(false)
+  const [organizeItem, setOrganizeItem] = useState<any>(null)
 
   const { data: community } = useQuery({
     queryKey: ["community", id],
@@ -44,6 +57,18 @@ export default function CommunityVaultPage() {
     },
   })
 
+  // Folders
+  const { data: folders = [] } = useQuery({
+    queryKey: ["communityVaultFolders", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/communities/${id}/vault/folders`)
+      if (!res.ok) throw new Error("Failed to fetch folders")
+      const json = await res.json()
+      return json.data
+    }
+  })
+
+  // Items fetch (all community items)
   const { data: vaultItems = [], isLoading } = useQuery({
     queryKey: ["communityVault", id],
     queryFn: async () => {
@@ -96,16 +121,39 @@ export default function CommunityVaultPage() {
     }
   }
 
-  if (isLoading) {
+  const role = community?.membership?.role
+  const canPublish = role === 'owner' || role === 'curator' || role === 'peer'
+  const canOrganize = role === 'owner' || role === 'curator'
+
+  // Filter Local Data
+  const q = searchQuery.toLowerCase()
+  const filteredItems = vaultItems.filter((m: any) => {
+     // If actively searching, search globally across all folder structures
+     if (q) {
+        const vi = Array.isArray(m.vault_items) ? m.vault_items[0] : m.vault_items
+        const file = Array.isArray(vi?.files) ? vi.files[0] : vi?.files
+        const checksName = file?.filename?.toLowerCase().includes(q)
+        const checksTags = m.tags?.some((t: string) => t.toLowerCase().includes(q))
+        return checksName || checksTags
+     }
+     
+     // Otherwise strictly show items inside the current folder layer
+     return (m.folder_id || null) === (currentFolderId || null)
+  })
+
+  // Target folders exclusively tied to the current breadcrumb ID unless searching
+  const filteredFolders = folders.filter((f: any) => {
+     if (q) return f.name.toLowerCase().includes(q)
+     return (f.parent_id || null) === (currentFolderId || null)
+  })
+
+  if (isLoading && folderStack.length === 0) {
     return (
       <div className="w-full flex justify-center py-20">
          <Loader2 className="w-8 h-8 animate-spin text-[#0A0A0A]" />
       </div>
     )
   }
-
-  const role = community?.membership?.role
-  const canPublish = role === 'owner' || role === 'curator' || role === 'peer'
 
   return (
     <div className="space-y-6">
@@ -121,27 +169,96 @@ export default function CommunityVaultPage() {
          </div>
 
          {canPublish && (
-            <button
-              onClick={() => setIsPublishModalOpen(true)}
-              className="px-5 py-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[14px] text-[#0A0A0A] flex items-center gap-2 shrink-0 justify-center"
-            >
-              <Plus className="w-5 h-5" />
-              Publish from Vault
-            </button>
+            <div className="flex items-center gap-3 shrink-0 flex-wrap">
+              {canOrganize && (
+                 <button
+                   onClick={() => setIsCreateFolderModal(true)}
+                   className="p-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#F5F5F0] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all hidden sm:flex items-center justify-center"
+                   title="New Folder"
+                 >
+                   <FolderPlus className="w-5 h-5" />
+                 </button>
+              )}
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-5 py-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[14px] text-[#0A0A0A] flex items-center gap-2 justify-center"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Upload</span>
+              </button>
+              <button
+                onClick={() => setIsPublishModalOpen(true)}
+                className="px-5 py-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[14px] text-[#0A0A0A] flex items-center gap-2 justify-center"
+              >
+                <FolderSync className="w-4 h-4" />
+                <span className="hidden sm:inline">Publish from Vault</span>
+              </button>
+            </div>
          )}
        </div>
 
-       {vaultItems.length === 0 ? (
+       {/* Toolbar: Breadcrumbs + Search */}
+       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-[#E8E8E0] p-3 rounded-[1rem] border-[2px] border-[#0A0A0A]">
+          <div className="flex items-center gap-2 overflow-x-auto w-full no-scrollbar px-1">
+            <button
+               onClick={() => setFolderStack([])}
+               className={`font-heading font-bold text-[14px] whitespace-nowrap hover:underline ${folderStack.length === 0 ? 'text-[#0057FF]' : 'text-[#0A0A0A]'}`}
+            >
+               Root
+            </button>
+            {folderStack.map((f, i) => (
+              <div key={f.id} className="flex items-center gap-2 shrink-0">
+                <ChevronRight className="w-4 h-4 text-[#555550]" />
+                <button
+                   onClick={() => setFolderStack(folderStack.slice(0, i + 1))}
+                   className={`font-heading font-bold text-[14px] whitespace-nowrap hover:underline ${i === folderStack.length - 1 ? 'text-[#0057FF]' : 'text-[#0A0A0A]'}`}
+                >
+                   {f.name}
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="relative w-full sm:w-64 shrink-0">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#555550]" />
+            <Input
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               placeholder="Search metadata or tags..."
+               className="pl-9 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[0.75rem] shadow-[2px_2px_0px_#0A0A0A] h-10 font-sans text-[14px]"
+            />
+          </div>
+       </div>
+
+       {/* Empty State */}
+       {filteredFolders.length === 0 && filteredItems.length === 0 && !isLoading ? (
           <div className="bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[1.5rem] border-dashed p-12 text-center flex flex-col items-center justify-center">
              <div className="w-16 h-16 rounded-[16px] bg-[#FFFFFF] border-[2px] border-[#0A0A0A] flex items-center justify-center mb-4 shadow-[4px_4px_0px_#0A0A0A]">
                 <FolderSync className="w-8 h-8 text-[#0A0A0A] opacity-50" />
              </div>
-             <h3 className="font-heading font-bold text-[20px] text-[#0A0A0A] mb-2">Vault is Empty</h3>
-             <p className="font-sans text-[15px] text-[#555550] max-w-md mx-auto">No files have been published to the community vault yet. Publish files from your personal vault to share them with other members.</p>
+             <h3 className="font-heading font-bold text-[20px] text-[#0A0A0A] mb-2">{searchQuery ? 'No results found' : 'Folder is Empty'}</h3>
+             <p className="font-sans text-[15px] text-[#555550] max-w-md mx-auto">{searchQuery ? 'Try matching against different tags or filenames.' : 'Upload natively, publish from personal vaults, or create sub-folders here.'}</p>
           </div>
        ) : (
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-             {vaultItems.map((item: any) => {
+             {/* Render Folders First */}
+             {filteredFolders.map((f: any) => (
+                <div
+                   key={f.id}
+                   onClick={() => {
+                     setSearchQuery("")
+                     setFolderStack([...folderStack, { id: f.id, name: f.name }])
+                   }}
+                   className="bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex items-center gap-4 cursor-pointer group"
+                >
+                   <div className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] group-hover:bg-[#FFFFFF] transition-colors shrink-0">
+                     <Folder className="w-6 h-6 text-[#0A0A0A] fill-current" />
+                   </div>
+                   <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate flex-1">{f.name}</h3>
+                </div>
+             ))}
+
+             {/* Render Items */}
+             {filteredItems.map((item: any) => {
                // Handle Supabase returning vault_items as object or array, and files as object or array
                const vi = Array.isArray(item.vault_items) ? item.vault_items[0] : item.vault_items;
                const file = Array.isArray(vi?.files) ? vi.files[0] : vi?.files;
@@ -154,13 +271,13 @@ export default function CommunityVaultPage() {
                const canDelete = isMe || isOwner
 
                return (
-                 <div key={item.id} className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex flex-col h-[200px]">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-14 h-14 bg-[#FFFFFF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
+                 <div key={item.id} className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex flex-col h-[230px]">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="w-14 h-14 bg-[#FFFFFF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] shrink-0">
                         {getFileIcon(file.mime_type)}
                       </div>
                       
-                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-wrap justify-end pl-2">
                          <button
                            onClick={() => handleDownload(item.id, file.filename, 'view')}
                            disabled={activeItemId === item.id}
@@ -177,6 +294,15 @@ export default function CommunityVaultPage() {
                          >
                            {activeItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <Download className="w-4 h-4" />}
                          </button>
+                         {canOrganize && (
+                            <button
+                               onClick={() => setOrganizeItem(item)}
+                               title="Organize Tags & Folders"
+                               className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FFD600] text-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                            >
+                               <Settings2 className="w-4 h-4" />
+                            </button>
+                         )}
                          {canDelete && (
                             <button
                                onClick={() => deleteMutation.mutate(item.id)}
@@ -199,9 +325,20 @@ export default function CommunityVaultPage() {
                         <span>•</span>
                         <span>{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>
+                      
+                      {/* Tags Bar */}
+                      {item.tags && item.tags.length > 0 && (
+                        <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-2 pb-1">
+                           {item.tags.map((t: string) => (
+                             <span key={t} className="px-2 py-0.5 rounded-[100px] border-[1.2px] border-[#0A0A0A] bg-[#F5F5F0] font-mono text-[10px] font-bold text-[#0A0A0A] whitespace-nowrap">
+                               #{t}
+                             </span>
+                           ))}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="mt-4 flex items-center gap-2 pt-3 border-t-[2px] border-[#0A0A0A] border-dashed">
+                    <div className="mt-3 flex items-center gap-2 pt-3 border-t-[2px] border-[#0A0A0A] border-dashed shrink-0">
                       <div className="w-6 h-6 rounded-[6px] border-[1.5px] border-[#0A0A0A] overflow-hidden bg-[#E8E8E0] shrink-0">
                         {u?.profile_pic ? (
                            <img src={u.profile_pic} alt="avatar" className="w-full h-full object-cover" />
@@ -224,7 +361,329 @@ export default function CommunityVaultPage() {
            onClose={() => setIsPublishModalOpen(false)} 
            communityId={id} 
        />
+
+       <CommunityUploadModal
+           isOpen={isUploadModalOpen}
+           onClose={() => setIsUploadModalOpen(false)}
+           communityId={id}
+       />
+
+       <CreateFolderModal
+           isOpen={isCreateFolderModal}
+           onClose={() => setIsCreateFolderModal(false)}
+           communityId={id}
+           currentFolderId={currentFolderId}
+       />
+       
+       {organizeItem && (
+          <CommunityOrganizeModal
+             isOpen={!!organizeItem}
+             onClose={() => setOrganizeItem(null)}
+             communityId={id}
+             item={organizeItem}
+             folders={folders}
+          />
+       )}
     </div>
+  )
+}
+
+function TagEditor({ tags, onChange }: { tags: string[]; onChange: (t: string[]) => void }) {
+  const [tagInput, setTagInput] = useState("")
+
+  const addTag = () => {
+    const t = tagInput.trim().replace(/^#+/, "")
+    if (t && !tags.includes(t)) onChange([...tags, t])
+    setTagInput("")
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider flex items-center gap-1">
+        <Tag className="w-3.5 h-3.5" /> Tags
+      </Label>
+      <div className="flex gap-2">
+        <Input
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag() } }}
+          placeholder="Type a tag and press Enter…"
+          className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px] flex-1"
+        />
+        <button
+          type="button"
+          onClick={addTag}
+          className="px-3 py-2 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#F5F5F0] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+        >
+          <Plus className="w-4 h-4 text-[#0A0A0A]" />
+        </button>
+      </div>
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {tags.map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[12px] font-medium text-[#0A0A0A]"
+            >
+              #{t}
+              <button
+                type="button"
+                onClick={() => onChange(tags.filter((x) => x !== t))}
+                className="ml-1 hover:opacity-60"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CreateFolderModal({ isOpen, onClose, communityId, currentFolderId }: { isOpen: boolean, onClose: () => void, communityId: string, currentFolderId: string | null }) {
+   const [name, setName] = useState("")
+   const queryClient = useQueryClient()
+   const mutation = useMutation({
+      mutationFn: async () => {
+         const res = await fetch(`/api/communities/${communityId}/vault/folders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, parent_id: currentFolderId })
+         })
+         if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || "Failed to create folder")
+         }
+         return res.json()
+      },
+      onSuccess: () => {
+         toast.success("Folder Created")
+         queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", communityId] })
+         handleClose()
+      },
+      onError: (err: any) => toast.error(err.message)
+   })
+   
+   const handleClose = () => { setName(""); onClose() }
+
+   return (
+      <Dialog open={isOpen} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-6">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[20px] text-[#0A0A0A]">New Folder</DialogTitle>
+        </DialogHeader>
+        <div className="py-4 space-y-4">
+           <div className="space-y-2">
+              <Label className="font-mono text-[12px] text-[#555550] uppercase">Folder Name</Label>
+              <Input
+                 value={name}
+                 onChange={(e) => setName(e.target.value)}
+                 autoFocus
+                 className="border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[2px_2px_0_#0A0A0A]"
+                 placeholder="e.g. Past Papers"
+              />
+           </div>
+        </div>
+        <DialogFooter>
+           <button onClick={handleClose} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all">Cancel</button>
+           <button onClick={() => mutation.mutate()} disabled={!name.trim() || mutation.isPending} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#0057FF] text-white shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all disabled:opacity-50">
+              {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
+           </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+   )
+}
+
+function CommunityOrganizeModal({ isOpen, onClose, communityId, item, folders }: { isOpen: boolean, onClose: () => void, communityId: string, item: any, folders: any[] }) {
+   const [tags, setTags] = useState<string[]>(item?.tags || [])
+   const [folderId, setFolderId] = useState<string>(item?.folder_id || "null")
+   const queryClient = useQueryClient()
+
+   const mutation = useMutation({
+      mutationFn: async () => {
+         const res = await fetch(`/api/communities/${communityId}/vault/${item.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tags, folder_id: folderId })
+         })
+         if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || "Failed to update item")
+         }
+         return res.json()
+      },
+      onSuccess: () => {
+         toast.success("Changes Saved")
+         queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
+         onClose()
+      },
+      onError: (err: any) => toast.error(err.message)
+   })
+   
+   return (
+      <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-6 overflow-visible">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[20px] text-[#0A0A0A] flex items-center gap-2">
+             <Settings2 className="w-5 h-5 text-[#0057FF]" /> Organize
+          </DialogTitle>
+        </DialogHeader>
+        <div className="py-4 space-y-6">
+           <div className="space-y-2">
+              <Label className="font-mono text-[12px] text-[#555550] uppercase">Destination Folder</Label>
+              <select
+                value={folderId}
+                onChange={(e) => setFolderId(e.target.value)}
+                className="w-full border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[2px_2px_0_#0A0A0A] h-10 px-3 bg-[#FFFFFF] font-sans text-[14px]"
+              >
+                 <option value="null">Root (No Folder)</option>
+                 {folders.map(f => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                 ))}
+              </select>
+           </div>
+           <TagEditor tags={tags} onChange={setTags} />
+        </div>
+        <DialogFooter className="mt-2 text-right">
+           <button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] text-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2 w-full">
+              {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+           </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+   )
+}
+
+function CommunityUploadModal({ isOpen, onClose, communityId }: { isOpen: boolean, onClose: () => void, communityId: string }) {
+  const [isUploading, setIsUploading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [customFilename, setCustomFilename] = useState("")
+  const [uploadTags, setUploadTags] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient()
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0] ?? null
+    setSelectedFile(f)
+    if (f) setCustomFilename(f.name)
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedFile) return
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append("file", selectedFile)
+    const finalName = customFilename.trim() || selectedFile.name
+    if (finalName !== selectedFile.name) formData.append("filename", finalName)
+    if (uploadTags.length > 0) formData.append("tags", JSON.stringify(uploadTags))
+
+    const toastId = toast.loading("Uploading and securing in Vault...")
+    try {
+      const res = await fetch("/api/vault/upload", { method: "POST", body: formData })
+      const result = await res.json()
+      if (!res.ok) {
+        throw new Error(result.error || "Upload failed")
+      }
+
+      // Automatically copy tags into community_vault_items upon POSTing using the API
+      const postRes = await fetch(`/api/communities/${communityId}/vault`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vault_item_id: result.vaultItem.id })
+      })
+
+      if (!postRes.ok) {
+         const d = await postRes.json()
+         throw new Error(d.error || "Failed to publish into community scope")
+      }
+
+      toast.success("File uploaded and shared!", { id: toastId })
+      
+      // Real-time grid invalidate & auto-closure
+      queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
+      handleClose()
+    } catch (err: any) {
+      toast.error(err.message || "Network error during upload.", { id: toastId })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleClose = () => {
+    setSelectedFile(null)
+    setCustomFilename("")
+    setUploadTags([])
+    if (fileInputRef.current) fileInputRef.current.value = ""
+    onClose()
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">
+            Upload & Share
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-5 mt-2">
+          <div
+            className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-[#E8E8E0] transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="w-12 h-12 bg-[#0057FF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
+              <Upload className="w-6 h-6 text-[#FFFFFF]" />
+            </div>
+            {selectedFile ? (
+              <div className="text-center">
+                <p className="font-heading font-bold text-[14px] text-[#0A0A0A]">{selectedFile.name}</p>
+                <p className="font-mono text-[12px] text-[#555550]">{formatBytes(selectedFile.size)}</p>
+              </div>
+            ) : (
+              <div className="text-center">
+                <p className="font-heading font-bold text-[14px] text-[#0A0A0A]">Click to choose a file</p>
+                <p className="font-mono text-[12px] text-[#999990]">PDF, PNG, JPG, DOC — max 20 MB</p>
+              </div>
+            )}
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+              Save as (optional rename)
+            </Label>
+            <Input
+              value={customFilename}
+              onChange={(e) => setCustomFilename(e.target.value)}
+              placeholder="Enter a custom filename…"
+              disabled={!selectedFile}
+              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+            />
+          </div>
+
+          <TagEditor tags={uploadTags} onChange={setUploadTags} />
+        </div>
+
+        <DialogFooter className="mt-6 gap-3">
+          <button
+            onClick={handleClose}
+            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedFile || isUploading}
+            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#00C853] text-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {isUploading ? "Uploading…" : "Upload & Share"}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -242,7 +701,6 @@ function PublishFromVaultModal({ isOpen, onClose, communityId }: { isOpen: boole
     enabled: isOpen
   })
 
-  // We only want actual files, not generic folders if they exist in myVaultItems
   const filesOnly = myVaultItems?.filter((m: any) => m.files) || []
 
   const publishMutation = useMutation({
