@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -41,6 +41,7 @@ export default function SetupPage() {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
   const [currentTag, setCurrentTag] = useState("")
   const router = useRouter()
   const supabase = createClient()
@@ -56,10 +57,40 @@ export default function SetupPage() {
     },
   })
 
+  // Pre-fill form with existing profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/login")
+        return
+      }
+
+      const { data } = await supabase
+        .from("users")
+        .select("college, stream, course, year, tags")
+        .eq("id", user.id)
+        .single()
+
+      if (data) {
+        form.reset({
+          college: data.college ?? "",
+          stream: data.stream ?? "",
+          course: data.course ?? "",
+          year: data.year ?? "",
+          tags: data.tags ?? [],
+        })
+      }
+      setIsFetching(false)
+    }
+
+    loadProfile()
+  }, [])
+
   const formTags = form.watch("tags")
 
   const handleSkip = () => {
-    router.push("/dashboard")
+    router.push("/vault")
   }
 
   const handleNext = async () => {
@@ -126,7 +157,7 @@ export default function SetupPage() {
       }
     }
 
-    router.push("/dashboard")
+    router.push("/vault")
   }
 
   return (
@@ -143,7 +174,7 @@ export default function SetupPage() {
             type="button"
             className="font-mono text-[14px] font-bold text-[#555550] hover:text-[#0A0A0A] underline transition-colors"
           >
-            Skip for now
+            Back to Dashboard
           </button>
         </div>
 

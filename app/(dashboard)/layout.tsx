@@ -2,6 +2,7 @@ import { ReactNode } from "react"
 import Link from "next/link"
 import { Search } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
+import UserMenu from "@/components/user-menu"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               type="text" 
               placeholder="Search anything..." 
               className="w-full bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[8px] py-1.5 pl-10 pr-4 font-mono text-[14px] focus:outline-none focus:bg-[#E8E8E0] transition-colors"
+              suppressHydrationWarning
             />
           </div>
         </div>
@@ -29,11 +31,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Link href="/vault" className="font-sans font-bold text-[14px] text-[#555550] hover:text-[#0A0A0A] transition-colors">
             Vault
           </Link>
-          <Link href="/setup">
-            <button className="w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center font-mono font-bold text-[12px] hover:translate-y-px hover:shadow-[1px_1px_0px_#0A0A0A] transition-all">
-              ME
-            </button>
-          </Link>
+          <UserMenu />
         </nav>
       </header>
 
