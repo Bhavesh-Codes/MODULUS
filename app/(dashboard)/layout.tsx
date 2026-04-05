@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Main App Content Pane */}
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-y-auto relative">
         {children}
       </main>
 
