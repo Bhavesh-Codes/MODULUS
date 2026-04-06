@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { uploadFileToR2 } from "@/utils/r2";
-import { createClient } from "@/utils/supabase/server";
+import { uploadFileToR2 } from "@/lib/r2";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {

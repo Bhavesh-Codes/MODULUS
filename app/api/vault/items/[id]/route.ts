@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { deleteFileFromR2 } from "@/utils/r2";
+import { createClient } from "@/lib/supabase/server";
+import { deleteFileFromR2 } from "@/lib/r2";
 
 export async function DELETE(
   request: Request,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { getSignedUrlForR2, getSignedUrlForR2Download } from "@/utils/r2";
+import { createClient } from "@/lib/supabase/server";
+import { getSignedUrlForR2, getSignedUrlForR2Download } from "@/lib/r2";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string, itemId: string }> }) {
   try {
