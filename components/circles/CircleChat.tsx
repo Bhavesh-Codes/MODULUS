@@ -28,7 +28,7 @@ export default function CircleChat() {
         <h2 className="font-heading font-extrabold text-[20px] text-[#0A0A0A]">Circle Chat</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-[#FFFFFF] relative">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-5 bg-[#FFFFFF] relative">
         {chatMessages.map((msg) => {
           const isSelf = msg.from?.identity === localParticipant.identity
           

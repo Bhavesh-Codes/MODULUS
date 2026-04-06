@@ -19,7 +19,8 @@ export default function CircleRoomPage(props: { params: Params }) {
   const containerRef = useRef<HTMLDivElement>(null)
   
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  // On mobile, default sidebar closed so video takes full width
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'chat' | 'whiteboard'>('chat')
 
   useEffect(() => {
@@ -113,7 +114,7 @@ export default function CircleRoomPage(props: { params: Params }) {
   return (
     <div 
       ref={containerRef} 
-      className={`flex flex-col w-full bg-white relative transition-all ${isFullscreen ? 'h-screen' : 'h-[calc(100vh-4rem)]'}`}
+      className={`flex flex-col w-full bg-white relative transition-all ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'}`}
     >
       <LiveKitRoom
         video={true}
@@ -123,9 +124,14 @@ export default function CircleRoomPage(props: { params: Params }) {
         connect={true}
         className="flex h-full w-full flex-col relative z-10"
       >
-        <div className="flex h-full w-full overflow-hidden">
-          <div className="flex-1 overflow-hidden relative bg-white flex flex-col items-center">
-            <CircleVideoGrid />
+        <div className="flex flex-col md:flex-row h-full w-full overflow-hidden">
+          {/* Video area: flex-1 min-h-0 so control bar (flow on mobile, absolute on desktop) fits cleanly */}
+          <div className="flex-1 min-h-[40vh] md:min-h-0 overflow-hidden relative bg-white flex flex-col">
+            {/* Video grid takes all remaining space in this inner column */}
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              <CircleVideoGrid />
+            </div>
+            {/* Control bar: full-width in flow on mobile, absolute overlay on desktop */}
             <CircleControlBar 
               isFullscreen={isFullscreen} 
               toggleFullscreen={toggleFullscreen} 
@@ -136,7 +142,7 @@ export default function CircleRoomPage(props: { params: Params }) {
             />
           </div>
           {isSidebarOpen && (
-            <div className="w-[360px] lg:w-[400px] shrink-0 flex flex-col z-20 transition-all border-l-[3px] border-[#0A0A0A]">
+            <div className="w-full h-[45vh] md:h-auto md:w-[360px] lg:w-[400px] shrink-0 flex flex-col z-20 transition-all border-t-[3px] md:border-t-0 md:border-l-[3px] border-[#0A0A0A]">
               {activeTab === 'chat' && <CircleChat />}
               {activeTab === 'whiteboard' && <CircleWhiteboard />}
             </div>

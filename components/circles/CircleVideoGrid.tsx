@@ -30,7 +30,7 @@ export default function CircleVideoGrid() {
 
   if (hasFocus) {
     return (
-      <div className="flex h-full w-full flex-col p-6 pb-[100px] gap-6 bg-white overflow-hidden">
+      <div className="flex h-full w-full flex-col p-2 md:p-6 md:pb-[100px] gap-4 md:gap-6 bg-white overflow-hidden">
         {/* Focused Hero Section */}
         <div className="flex-1 w-full min-h-0 bg-[#F5F5F0] border-[3px] border-[#0A0A0A] rounded-[32px] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden relative">
            {screenTracks.length > 0 && <VideoTrack trackRef={screenTracks[0]} className="h-full w-full object-contain bg-[#0A0A0A]" />}
@@ -51,7 +51,7 @@ export default function CircleVideoGrid() {
 
   // Pure Grid Section
   return (
-    <div className="flex h-full w-full flex-col p-6 pb-[100px] overflow-y-auto bg-white">
+    <div className="flex h-full w-full flex-col p-2 md:p-6 md:pb-[100px] overflow-y-auto bg-white">
       <div 
         className={`grid gap-6 w-full h-full ${
           cameraTracks.length === 1 ? 'grid-cols-1' :

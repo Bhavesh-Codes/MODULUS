@@ -108,7 +108,8 @@ function CommunitySidebar({
         width,
         height: `calc(100vh - ${TOPNAV_HEIGHT}px)`,
         transition: "width 0.25s ease",
-        display: "flex",
+        // NOTE: no 'display' here — let className="hidden md:flex" control it
+        // so that inline style doesn't override the hidden class on mobile.
         flexDirection: "column",
         background: "#F5F5F0",
         borderLeft: "2px solid #0A0A0A",
@@ -167,13 +168,13 @@ function CommunitySidebar({
           height: `calc(100vh - ${TOPNAV_HEIGHT}px)`,
           transform: communitySidebarMobileOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.25s ease",
-          display: "flex",
+          // NOTE: no 'display' here — 'flex' is in className so md:hidden can override
           flexDirection: "column",
           background: "#F5F5F0",
           borderLeft: "2px solid #0A0A0A",
           zIndex: 50,
         }}
-        className="md:hidden shadow-[-4px_0_10px_rgba(0,0,0,0.05)]"
+        className="flex flex-col md:hidden shadow-[-4px_0_10px_rgba(0,0,0,0.05)]"
       >
         <div
           className="shrink-0 flex items-center justify-between border-b-[2px] border-b-[#0A0A0A] bg-[#FFFFFF] px-4 mb-4"
@@ -574,6 +575,9 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
   const communityRoot = `/communities/${id}`
   const isSubPage = pathname !== communityRoot && !pathname.endsWith(`/communities/${id}`)
 
+  // Detect if we're inside a live circle room (needs full-screen breakout layout)
+  const isCircleRoom = /\/communities\/[^\/]+\/circles\/.+/.test(pathname)
+
   // Sidebar width for content area right-padding (desktop only)
   const sidebarWidth = isMember
     ? communitySidebarOpen
@@ -587,30 +591,57 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
       <CommunitySidebar id={id} isMember={isMember} />
 
       {/* Page content — shifts left to not go under sidebar on desktop */}
-      {/* Sidebar is display:none on mobile (overlay instead), so padding-right only applies on md+ */}
       <div
         className="[padding-right:0] md:[padding-right:var(--sidebar-w)] transition-[padding-right] duration-[250ms] ease-in-out"
         style={{ "--sidebar-w": `${sidebarWidth}px` } as React.CSSProperties}
       >
-        <div className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-4 pb-32 space-y-6">
-          {/* Community header */}
-          <CommunityHeader
-            community={community}
-            id={id}
-            isSubPage={isSubPage}
-            isMember={isMember}
-            isOwner={isOwner}
-            isPending={isPending}
-            role={role}
-            onManageMembers={() => setIsMembersModalOpen(true)}
-            onMobileMenuOpen={() => setCommunitySidebarMobileOpen(true)}
-          />
-
-          {/* Page content */}
-          <div className="w-full">
-            {children}
+        {isCircleRoom ? (
+          // ── Live circle room: breakout layout, no content padding, header + room fills rest ──
+          <div
+            className="flex flex-col"
+            style={{ height: `calc(100dvh - ${TOPNAV_HEIGHT}px)` }}
+          >
+            {/* Compact community header — always sub-page style */}
+            <div className="px-3 md:px-6 pt-3 pb-2 shrink-0">
+              <CommunityHeader
+                community={community}
+                id={id}
+                isSubPage={true}
+                isMember={isMember}
+                isOwner={isOwner}
+                isPending={isPending}
+                role={role}
+                onManageMembers={() => setIsMembersModalOpen(true)}
+                onMobileMenuOpen={() => setCommunitySidebarMobileOpen(true)}
+              />
+            </div>
+            {/* Circle room fills remaining height */}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              {children}
+            </div>
           </div>
-        </div>
+        ) : (
+          // ── Regular community pages: normal padded layout ──
+          <div className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-4 pb-32 space-y-6">
+            {/* Community header */}
+            <CommunityHeader
+              community={community}
+              id={id}
+              isSubPage={isSubPage}
+              isMember={isMember}
+              isOwner={isOwner}
+              isPending={isPending}
+              role={role}
+              onManageMembers={() => setIsMembersModalOpen(true)}
+              onMobileMenuOpen={() => setCommunitySidebarMobileOpen(true)}
+            />
+
+            {/* Page content */}
+            <div className="w-full">
+              {children}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Manage members modal */}

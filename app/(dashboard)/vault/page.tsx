@@ -685,7 +685,7 @@ function FolderCard({
             <button
               disabled={isDeleting}
               onClick={(e) => e.stopPropagation()}
-              className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
+              className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
             >
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
             </button>
@@ -844,7 +844,7 @@ function FileCard({
         <div className="w-14 h-14 bg-[#FFFFFF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
           {getFileIcon(item.files?.mime_type ?? "")}
         </div>
-        <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-1.5">
+        <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity flex items-center gap-1.5">
           <button
             onClick={handleView}
             disabled={isBusy}
