@@ -86,7 +86,7 @@ export default function CircleWhiteboard() {
   }
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.target.setPointerCapture(e.pointerId)
+    e.currentTarget.setPointerCapture(e.pointerId)
     setIsDrawing(true)
     const pos = getPos(e)
     lastPos.current = pos
@@ -107,7 +107,7 @@ export default function CircleWhiteboard() {
   }
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.target.releasePointerCapture(e.pointerId)
+    e.currentTarget.releasePointerCapture(e.pointerId)
     setIsDrawing(false)
     lastPos.current = null
   }
