@@ -90,7 +90,7 @@ export default function SetupPage() {
   const formTags = form.watch("tags")
 
   const handleSkip = () => {
-    router.push("/vault")
+    router.push("/profile")
   }
 
   const handleNext = async () => {
@@ -157,7 +157,7 @@ export default function SetupPage() {
       }
     }
 
-    router.push("/vault")
+    router.push("/profile")
   }
 
   return (

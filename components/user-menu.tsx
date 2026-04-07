@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { LogOut, Settings } from "lucide-react"
+import { LogOut, Settings, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface UserProfile {
@@ -63,6 +63,11 @@ export default function UserMenu() {
     router.refresh()
   }
 
+  const handleViewProfile = () => {
+    setOpen(false)
+    router.push("/profile")
+  }
+
   const handleEditProfile = () => {
     setOpen(false)
     router.push("/setup")
@@ -117,6 +122,14 @@ export default function UserMenu() {
 
             {/* Menu Items */}
             <div className="py-1">
+              <button
+                onClick={handleViewProfile}
+                className="w-full flex items-center gap-3 px-4 py-2.5 font-sans font-medium text-[14px] text-[#0A0A0A] hover:bg-[#FFD600] transition-colors text-left"
+              >
+                <User className="w-4 h-4 shrink-0" />
+                View Profile
+              </button>
+
               <button
                 onClick={handleEditProfile}
                 className="w-full flex items-center gap-3 px-4 py-2.5 font-sans font-medium text-[14px] text-[#0A0A0A] hover:bg-[#FFD600] transition-colors text-left"

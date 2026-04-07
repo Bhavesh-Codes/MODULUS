@@ -37,6 +37,9 @@ import {
   FolderInput,
   Home,
   MoreVertical,
+  Link2,
+  ExternalLink,
+  PlayCircle,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -66,6 +69,9 @@ interface VaultFile {
 interface VaultItem {
   id: string
   created_at: string
+  item_type?: string | null
+  title?: string | null
+  url?: string | null
   tags: string[] | null
   folder_id: string | null
   files: VaultFile | null
@@ -406,6 +412,144 @@ function UploadModal({
   )
 }
 
+// ─── Add Link Modal ───────────────────────────────────────────────────────────
+function AddLinkModal({
+  isOpen,
+  onClose,
+  onAdded,
+  currentFolderId,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onAdded: () => void
+  currentFolderId: string | null
+}) {
+  const [isSaving, setIsSaving] = useState(false)
+  const [title, setTitle] = useState("")
+  const [url, setUrl] = useState("")
+  const [linkTags, setLinkTags] = useState<string[]>([])
+  const [errors, setErrors] = useState<{ title?: string; url?: string }>({})
+
+  const validate = () => {
+    const e: { title?: string; url?: string } = {}
+    if (!title.trim()) e.title = "Title is required"
+    if (!url.trim()) {
+      e.url = "URL is required"
+    } else {
+      try { new URL(url.trim()) } catch { e.url = "Enter a valid URL (include https://)" }
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validate()) return
+    setIsSaving(true)
+    try {
+      const res = await fetch("/api/vault/links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          url: url.trim(),
+          tags: linkTags,
+          folder_id: currentFolderId,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to save link")
+      toast.success("Link saved to Vault!")
+      onAdded()
+      handleClose()
+    } catch (err: any) {
+      toast.error(err.message || "Could not save link")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleClose = () => {
+    setTitle("")
+    setUrl("")
+    setLinkTags([])
+    setErrors({})
+    onClose()
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#0057FF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+              <Link2 className="w-4 h-4 text-white" />
+            </div>
+            Add External Link
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-5 mt-3">
+          {/* Title */}
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+              Title
+            </Label>
+            <Input
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); setErrors(prev => ({ ...prev, title: undefined })) }}
+              placeholder="e.g. React Docs, Lecture Recording…"
+              autoFocus
+              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+            />
+            {errors.title && (
+              <p className="font-sans text-[12px] text-[#FF3B30]">{errors.title}</p>
+            )}
+          </div>
+
+          {/* URL */}
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+              URL
+            </Label>
+            <Input
+              type="url"
+              value={url}
+              onChange={(e) => { setUrl(e.target.value); setErrors(prev => ({ ...prev, url: undefined })) }}
+              placeholder="https://example.com"
+              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+            />
+            {errors.url && (
+              <p className="font-sans text-[12px] text-[#FF3B30]">{errors.url}</p>
+            )}
+          </div>
+
+          {/* Tags */}
+          <TagEditor tags={linkTags} onChange={setLinkTags} />
+
+          <DialogFooter className="gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#0057FF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+              {isSaving ? "Saving…" : "Save Link"}
+            </button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 // key={item.id} on the wrapper in VaultPage guarantees fresh mount per file
 function EditModal({
@@ -712,6 +856,51 @@ function FolderCard({
   )
 }
 
+// ─── Link helpers ────────────────────────────────────────────────────────────
+function getUrlDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
+
+function getYouTubeVideoId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split("?")[0]
+    if (u.hostname.includes("youtube.com")) return u.searchParams.get("v")
+  } catch { /* ignore */ }
+  return null
+}
+
+function getLinkIcon(url: string) {
+  if (!url) return <Link2 className="w-8 h-8 text-[#0057FF]" />
+  const lower = url.toLowerCase()
+  if (lower.includes("youtube.com") || lower.includes("youtu.be"))
+    return <PlayCircle className="w-8 h-8 text-[#FF3B30]" />
+  if (lower.includes("drive.google.com"))
+    return (
+      <svg viewBox="0 0 87.3 78" className="w-8 h-8" aria-label="Google Drive">
+        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 52H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+        <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 47.5C.4 48.9 0 50.45 0 52h27.5z" fill="#00ac47"/>
+        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H60l5.85 11.5z" fill="#ea4335"/>
+        <path d="M43.65 25L57.4 0c-1.55 0-3.1.4-4.5 1.2L29.9 0 16.15 25z" fill="#00832d"/>
+        <path d="M60 52H27.5L13.75 76.8c1.4.8 2.95 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2z" fill="#2684fc"/>
+        <path d="M73.4 26.5L59.65 2.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 60 52h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+      </svg>
+    )
+  return <Link2 className="w-8 h-8 text-[#0057FF]" />
+}
+
+function getLinkBgColor(url: string): string {
+  if (!url) return "bg-[#EEF3FF]"
+  const lower = url.toLowerCase()
+  if (lower.includes("youtube.com") || lower.includes("youtu.be")) return "bg-[#FFF0F0]"
+  if (lower.includes("drive.google.com")) return "bg-[#F0F7FF]"
+  return "bg-[#EEF3FF]"
+}
+
 // ─── File Card ────────────────────────────────────────────────────────────────
 function FileCard({
   item,
@@ -771,7 +960,8 @@ function FileCard({
   }
 
   const handleDelete = async () => {
-    if (!window.confirm("Permanently delete this file from your Vault?")) return
+    const label = item.item_type === "link" ? "this link" : "this file"
+    if (!window.confirm(`Permanently delete ${label} from your Vault?`)) return
     setIsDeleting(true)
     const toastId = toast.loading("Deleting file…")
     try {
@@ -780,7 +970,7 @@ function FileCard({
         const data = await res.json()
         throw new Error(data.error || "Delete failed")
       }
-      toast.success("File deleted", { id: toastId })
+      toast.success(item.item_type === "link" ? "Link deleted" : "File deleted", { id: toastId })
       onDelete()
     } catch (e: any) {
       toast.error(e.message || "Delete failed", { id: toastId })
@@ -789,12 +979,17 @@ function FileCard({
     }
   }
 
+  const [ytOpen, setYtOpen] = useState(false)
+
+  const isLink = item.item_type === "link"
   const isBusy = isViewing || isDownloading || isDeleting
   const tags = item.tags ?? []
   const folderTrail = buildBreadcrumb(folders, item.folder_id)
   const pathString = folderTrail.length > 0
     ? folderTrail.map(f => f.name).join(" / ")
     : "Vault Root"
+  const linkDomain = isLink && item.url ? getUrlDomain(item.url) : ""
+  const ytVideoId = isLink && item.url ? getYouTubeVideoId(item.url) : null
 
   // ── Drag handling ──────────────────────────────────────────────────────────
   const getDropTarget = (x: number, y: number): string | null => {
@@ -820,7 +1015,38 @@ function FileCard({
     onDropFile(item.id, folderId)
   }
 
+  const handleLinkOpen = () => {
+    if (ytVideoId) {
+      setYtOpen(true)
+    } else {
+      window.open(item.url ?? "", "_blank", "noopener,noreferrer")
+    }
+  }
+
   return (
+    <>
+    {/* YouTube embed dialog */}
+    {ytVideoId && (
+      <Dialog open={ytOpen} onOpenChange={setYtOpen}>
+        <DialogContent className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[8px_8px_0px_#FFD600] max-w-2xl p-0 overflow-hidden">
+          <DialogHeader className="px-5 pt-4 pb-3">
+            <DialogTitle className="font-heading font-extrabold text-[16px] text-white flex items-center gap-2">
+              <PlayCircle className="w-5 h-5 text-[#FF3B30]" />
+              {item.title || "YouTube Video"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+            <iframe
+              src={`https://www.youtube.com/embed/${ytVideoId}?autoplay=1`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full"
+              title={item.title ?? "YouTube Video"}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
     <motion.div
       layout
       drag
@@ -835,28 +1061,38 @@ function FileCard({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       whileDrag={{ scale: 1.06, boxShadow: "8px 8px 0px #0A0A0A", zIndex: 100, cursor: "grabbing" }}
+      onClick={isLink && !isDragging ? handleLinkOpen : undefined}
       className={`group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 select-none ${
-        isDragging ? "cursor-grabbing" : "cursor-grab hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+        isLink
+          ? "cursor-pointer hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+          : isDragging ? "cursor-grabbing" : "cursor-grab hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
       }`}
       style={{ position: "relative", zIndex: isDragging ? 100 : "auto" }}
     >
       <div className="flex justify-between items-start mb-4">
-        <div className="w-14 h-14 bg-[#FFFFFF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
-          {getFileIcon(item.files?.mime_type ?? "")}
+        <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] ${
+          isLink ? getLinkBgColor(item.url ?? "") : "bg-[#FFFFFF]"
+        }`}>
+          {isLink
+            ? getLinkIcon(item.url ?? "")
+            : getFileIcon(item.files?.mime_type ?? "")}
         </div>
         <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity flex items-center gap-1.5">
           <button
-            onClick={handleView}
-            disabled={isBusy}
-            title="View in browser"
+            onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleView() }}
+            disabled={!isLink && isBusy}
+            title={isLink ? (ytVideoId ? "Watch on YouTube" : "Open link") : "View in browser"}
             className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-white flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-[#0A0A0A] disabled:opacity-40"
           >
-            {isViewing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-4 h-4" />}
+            {isLink
+              ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />)
+              : isViewing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-4 h-4" />}
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 disabled={isBusy}
+                onClick={(e) => e.stopPropagation()}
                 className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none disabled:opacity-40"
               >
                 {isBusy && !isViewing ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
@@ -866,30 +1102,39 @@ function FileCard({
               align="end"
               className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
             >
-              <DropdownMenuItem onClick={handleDownload} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
-              <Download className="w-4 h-4 text-[#FFD600]" /> Download
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(item)} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+              {item.item_type !== "link" && (
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                <Download className="w-4 h-4 text-[#FFD600]" /> Download
+              </DropdownMenuItem>
+              )}
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
               <Pencil className="w-4 h-4 text-[#00C853]" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onMove(item)} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
               <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
-            <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
               <Trash2 className="w-4 h-4" /> Delete
             </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate mb-1" title={item.files?.filename}>
-        {item.files?.filename || "Unknown File"}
+      <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate mb-1" title={isLink ? (item.title ?? "") : item.files?.filename}>
+        {isLink ? (item.title || "Untitled Link") : (item.files?.filename || "Unknown File")}
       </h3>
       <div className="flex items-center justify-between mt-1">
-        <span className="font-mono text-[12px] font-medium text-[#555550]">
-          {formatBytes(item.files?.size_bytes ?? 0)}
-        </span>
+        {isLink ? (
+          <span className="font-mono text-[12px] font-medium text-[#555550] truncate max-w-[60%] flex items-center gap-1">
+            <ExternalLink className="w-3 h-3 text-[#999990] shrink-0" />
+            {linkDomain}
+          </span>
+        ) : (
+          <span className="font-mono text-[12px] font-medium text-[#555550]">
+            {formatBytes(item.files?.size_bytes ?? 0)}
+          </span>
+        )}
         <span className="font-mono text-[11px] text-[#999990]">{formatDate(item.created_at)}</span>
       </div>
       <div className="flex items-center mt-2.5 gap-1.5 overflow-hidden">
@@ -913,6 +1158,7 @@ function FileCard({
         </div>
       )}
     </motion.div>
+    </>
   )
 }
 
@@ -1021,6 +1267,7 @@ export default function VaultPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [addLinkModalOpen, setAddLinkModalOpen] = useState(false)
   const [newFolderModalOpen, setNewFolderModalOpen] = useState(false)
   const [editItem, setEditItem] = useState<VaultItem | null>(null)
   
@@ -1067,6 +1314,8 @@ export default function VaultPage() {
     const q = searchQuery.toLowerCase()
     return (
       (item.files?.filename?.toLowerCase().includes(q) ?? false) ||
+      (item.title?.toLowerCase().includes(q) ?? false) ||
+      (item.url?.toLowerCase().includes(q) ?? false) ||
       (item.tags ?? []).some((t) => t.toLowerCase().includes(q))
     )
   })
@@ -1133,6 +1382,13 @@ export default function VaultPage() {
         isOpen={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUploadComplete={invalidateItems}
+        currentFolderId={currentFolderId}
+      />
+
+      <AddLinkModal
+        isOpen={addLinkModalOpen}
+        onClose={() => setAddLinkModalOpen(false)}
+        onAdded={invalidateItems}
         currentFolderId={currentFolderId}
       />
 
@@ -1266,6 +1522,15 @@ export default function VaultPage() {
               >
                 <FolderPlus className="w-4 h-4" />
                 New Folder
+              </button>
+
+              {/* Add Link */}
+              <button
+                onClick={() => setAddLinkModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#0057FF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[13px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all shrink-0"
+              >
+                <Link2 className="w-4 h-4" />
+                Add Link
               </button>
 
               {/* Upload */}

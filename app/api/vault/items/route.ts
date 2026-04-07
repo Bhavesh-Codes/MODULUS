@@ -17,9 +17,8 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('vault_items')
-      .select('*, files(id, filename, mime_type, size_bytes)')
+      .select('id, created_at, item_type, title, url, tags, folder_id, files(id, filename, mime_type, size_bytes)')
       .eq('owner_id', user.id)
-      .eq('item_type', 'file')
       .order('created_at', { ascending: false })
 
     if (folderIdParam) {
