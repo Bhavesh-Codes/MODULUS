@@ -59,7 +59,7 @@ export function PersonalAnalytics({ communityId }: { communityId: string }) {
                   <XAxis dataKey="name" tick={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }} axisLine={{ stroke: '#0A0A0A', strokeWidth: 2 }} tickLine={false} dy={10} />
                   <YAxis tick={{ fontFamily: "'Space Grotesk', sans-serif" }} axisLine={false} tickLine={false} />
                   <Tooltip 
-                    formatter={(value: number) => [formatDuration(value * 3600), "Time Focused"]}
+                    formatter={(value: any) => [formatDuration(value * 3600), "Time Focused"]}
                     cursor={{ fill: 'rgba(255, 214, 0, 0.2)' }} 
                     contentStyle={{ borderRadius: '12px', border: '2px solid #0A0A0A', borderBottomWidth: '4px', borderRightWidth: '4px', fontWeight: 'bold' }} 
                   />
@@ -81,7 +81,7 @@ export function PersonalAnalytics({ communityId }: { communityId: string }) {
                   <XAxis dataKey="date" tick={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12 }} axisLine={{ stroke: '#0A0A0A', strokeWidth: 2 }} tickLine={false} dy={10} minTickGap={30} />
                   <YAxis tick={{ fontFamily: "'Space Grotesk', sans-serif" }} axisLine={false} tickLine={false} />
                   <Tooltip 
-                    formatter={(value: number) => [formatDuration(value * 3600), "Time Focused"]}
+                    formatter={(value: any) => [formatDuration(value * 3600), "Time Focused"]}
                     contentStyle={{ borderRadius: '12px', border: '2px solid #0A0A0A', borderBottomWidth: '4px', borderRightWidth: '4px', fontWeight: 'bold' }} 
                   />
                   <Line type="monotone" dataKey="hours" stroke="#FF6B00" strokeWidth={4} activeDot={{ r: 8, fill: "#FFD600", stroke: "#0A0A0A", strokeWidth: 2 }} />
