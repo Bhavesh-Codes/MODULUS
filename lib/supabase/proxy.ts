@@ -22,11 +22,11 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          
+
           supabaseResponse = NextResponse.next({
             request,
           })
-          
+
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -48,7 +48,7 @@ export async function updateSession(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/reset' ||
-    pathname.startsWith('/api/auth/')
+    pathname.startsWith('/api/')
 
   if (!user && !isPublicRoute) {
     // Unauthenticated users attempting to access the root / or any other 
