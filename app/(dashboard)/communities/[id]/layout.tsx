@@ -32,7 +32,7 @@ function getNavLinks(id: string) {
     { label: "Vault", href: `/communities/${id}/vault`, icon: FolderSync },
     { label: "Threads", href: `/communities/${id}/threads`, icon: MessageSquareDashed },
     { label: "Tasks", href: `/communities/${id}/tasks`, icon: CheckSquare },
-    { label: "Focus", href: `/communities/${id}/timer`, icon: Timer },
+    { label: "Focus", href: `/communities/${id}/focus`, icon: Timer },
     { label: "Circles", href: `/communities/${id}/circles`, icon: Radio },
   ]
 }
