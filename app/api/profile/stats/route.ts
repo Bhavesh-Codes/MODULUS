@@ -18,15 +18,15 @@ export async function GET() {
     const { count: vaultFileCount, error: fileError } = await supabase
       .from("vault_items")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("type", "file")
+      .eq("owner_id", user.id)
+      .eq("item_type", "file")
 
     // Vault Links Count
     const { count: vaultLinkCount, error: linkError } = await supabase
       .from("vault_items")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("type", "link")
+      .eq("owner_id", user.id)
+      .eq("item_type", "link")
 
     // Communities Joined
     const { count: communitiesJoined, error: joinedError } = await supabase
@@ -43,8 +43,8 @@ export async function GET() {
     // Recent items
     const { data: recentItems, error: recentError } = await supabase
       .from("vault_items")
-      .select("id, name, type, created_at")
-      .eq("user_id", user.id)
+      .select("id, title, item_type, url, created_at, files(filename)")
+      .eq("owner_id", user.id)
       .order("created_at", { ascending: false })
       .limit(5)
 

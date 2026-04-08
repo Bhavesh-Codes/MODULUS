@@ -12,7 +12,7 @@ interface ProfileStats {
   vaultLinkCount: number
   communitiesJoined: number
   communitiesOwned: number
-  recentItems: { id: string; name: string; type: string; created_at: string }[]
+  recentItems: { id: string; title: string; item_type: string; created_at: string; url?: string; files?: { filename: string } }[]
 }
 
 interface UserProfile {
@@ -357,23 +357,41 @@ export default function ProfilePage() {
               </div>
             ) : stats?.recentItems && stats.recentItems.length > 0 ? (
               <div className="space-y-3">
-                {stats.recentItems.map((item) => (
+                {stats.recentItems.map((item) => {
+                  const displayName = item.item_type === "link" ? (item.title || "Untitled Link") : (item.files?.filename || item.title || "Unknown File")
+                  const handleClick = async () => {
+                    if (item.item_type === "link" && item.url) {
+                      window.open(item.url, "_blank", "noopener,noreferrer")
+                    } else if (item.item_type === "file") {
+                      try {
+                        const res = await fetch(`/api/vault/items/${item.id}/download?action=view`)
+                        if (!res.ok) throw new Error("Failed to open file")
+                        const { url } = await res.json()
+                        window.open(url, "_blank")
+                      } catch (err) {
+                        console.error(err)
+                      }
+                    }
+                  }
+
+                  return (
                   <div
                     key={item.id}
-                    className="flex justify-between items-center p-4 border-[2px] border-[#0A0A0A] rounded-[12px] bg-[#F5F5F0] hover:bg-[#FFFFFF] transition-colors"
+                    onClick={handleClick}
+                    className="flex justify-between items-center p-4 border-[2px] border-[#0A0A0A] rounded-[12px] bg-[#F5F5F0] hover:bg-[#FFFFFF] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[3px_3px_0px_#0A0A0A] transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
-                      {item.type === "file" ? 
+                      {item.item_type === "file" ? 
                         <FileText className="w-5 h-5 shrink-0 text-[#0057FF]" /> : 
                         <LinkIcon className="w-5 h-5 shrink-0 text-[#FF3CAC]" />
                       }
-                      <p className="font-sans font-bold text-[15px] truncate">{item.name}</p>
+                      <p className="font-sans font-bold text-[15px] truncate">{displayName}</p>
                     </div>
                     <span className="font-mono text-[12px] text-[#555550]">
                       {new Date(item.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                ))}
+                )})}
               </div>
             ) : (
               <div className="text-center py-12 border-[2px] border-dashed border-[#E8E8E0] rounded-[16px]">
