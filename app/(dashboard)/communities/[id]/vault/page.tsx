@@ -3,11 +3,55 @@
 import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
-import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2 } from "lucide-react"
+import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+
+function getUrlDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
+
+function getYouTubeVideoId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split("?")[0]
+    if (u.hostname.includes("youtube.com")) return u.searchParams.get("v")
+  } catch { /* ignore */ }
+  return null
+}
+
+function getLinkIcon(url: string) {
+  if (!url) return <Link2 className="w-8 h-8 text-[#0057FF]" />
+  const lower = url.toLowerCase()
+  if (lower.includes("youtube.com") || lower.includes("youtu.be"))
+    return <PlayCircle className="w-8 h-8 text-[#FF3B30]" />
+  if (lower.includes("drive.google.com"))
+    return (
+      <svg viewBox="0 0 87.3 78" className="w-8 h-8" aria-label="Google Drive">
+        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 52H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+        <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 47.5C.4 48.9 0 50.45 0 52h27.5z" fill="#00ac47"/>
+        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H60l5.85 11.5z" fill="#ea4335"/>
+        <path d="M43.65 25L57.4 0c-1.55 0-3.1.4-4.5 1.2L29.9 0 16.15 25z" fill="#00832d"/>
+        <path d="M60 52H27.5L13.75 76.8c1.4.8 2.95 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2z" fill="#2684fc"/>
+        <path d="M73.4 26.5L59.65 2.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 60 52h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+      </svg>
+    )
+  return <Link2 className="w-8 h-8 text-[#0057FF]" />
+}
+
+function getLinkBgColor(url: string): string {
+  if (!url) return "bg-[#EEF3FF]"
+  const lower = url.toLowerCase()
+  if (lower.includes("youtube.com") || lower.includes("youtu.be")) return "bg-[#FFF0F0]"
+  if (lower.includes("drive.google.com")) return "bg-[#F0F7FF]"
+  return "bg-[#EEF3FF]"
+}
 
 const getFileIcon = (mimeType: string = "") => {
   if (mimeType.startsWith("image/")) return <ImageIcon className="w-8 h-8 text-[#0057FF]" />
@@ -37,6 +81,7 @@ export default function CommunityVaultPage() {
   
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
   
   // Folders & Search State
@@ -147,6 +192,111 @@ export default function CommunityVaultPage() {
      return (f.parent_id || null) === (currentFolderId || null)
   })
 
+  // Add renderItemCard dynamically
+  const renderItemCard = (item: any) => {
+    const vi = Array.isArray(item.vault_items) ? item.vault_items[0] : item.vault_items;
+    const file = Array.isArray(vi?.files) ? vi.files[0] : vi?.files;
+    const isLink = vi?.item_type === "link";
+    if (!file && !isLink) return null;
+
+    const u = Array.isArray(item.users) ? item.users[0] : item.users;
+
+    const isMe = community?.membership?.user_id === u?.id
+    const isOwner = role === 'owner' || role === 'curator'
+    const canDelete = isMe || isOwner
+    const linkDomain = isLink && vi.url ? getUrlDomain(vi.url) : ""
+    const ytVideoId = isLink && vi.url ? getYouTubeVideoId(vi.url) : null
+
+    const handleLinkOpen = () => {
+      window.open(vi.url ?? "", "_blank", "noopener,noreferrer")
+    }
+
+    return (
+      <div key={item.id} className={`group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex flex-col h-[230px] ${isLink ? 'cursor-pointer' : ''}`} onClick={isLink ? handleLinkOpen : undefined}>
+        <div className="flex justify-between items-start mb-3">
+          <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] shrink-0 ${isLink ? getLinkBgColor(vi.url ?? "") : "bg-[#FFFFFF]"}`}>
+            {isLink ? getLinkIcon(vi.url ?? "") : getFileIcon(file?.mime_type)}
+          </div>
+          
+          <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-wrap justify-end pl-2">
+             <button
+               onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleDownload(item.id, file?.filename, 'view') }}
+               disabled={activeItemId === item.id}
+               title={isLink ? "Open link" : "View file"}
+               className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
+             >
+               {isLink ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />) : <Eye className="w-4 h-4" />}
+             </button>
+             {!isLink && (
+               <button
+                 onClick={(e) => { e.stopPropagation(); handleDownload(item.id, file?.filename, 'download') }}
+                 disabled={activeItemId === item.id}
+                 title="Download"
+                 className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#00C853] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
+               >
+                 {activeItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <Download className="w-4 h-4" />}
+               </button>
+             )}
+             {canOrganize && (
+                <button
+                   onClick={(e) => { e.stopPropagation(); setOrganizeItem(item); }}
+                   title="Organize Tags & Folders"
+                   className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FFD600] text-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                >
+                   <Settings2 className="w-4 h-4" />
+                </button>
+             )}
+             {canDelete && (
+                <button
+                   onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(item.id); }}
+                   disabled={deleteMutation.isPending}
+                   title="Remove from Community"
+                   className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FF3B30] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 text-[#FF3B30]"
+                >
+                  {deleteMutation.isPending && deleteMutation.variables === item.id ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <Trash2 className="w-4 h-4 border-current" />}
+                </button>
+             )}
+          </div>
+        </div>
+
+        <div className="flex-1 min-h-0">
+          <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate" title={isLink ? vi.title : file?.filename}>
+            {isLink ? vi.title : file?.filename}
+          </h3>
+          <div className="font-mono text-[11px] text-[#555550] mt-1 flex items-center flex-wrap gap-2">
+            {!isLink ? <span>{formatBytes(file?.size_bytes)}</span> : <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3 text-[#555550] shrink-0" />{linkDomain}</span>}
+            <span>•</span>
+            <span>{new Date(item.created_at).toLocaleDateString()}</span>
+          </div>
+          
+          {/* Tags Bar */}
+          {item.tags && item.tags.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-2 pb-1">
+               {item.tags.map((t: string) => (
+                 <span key={t} className="px-2 py-0.5 rounded-[100px] border-[1.2px] border-[#0A0A0A] bg-[#F5F5F0] font-mono text-[10px] font-bold text-[#0A0A0A] whitespace-nowrap">
+                   #{t}
+                 </span>
+               ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 pt-3 border-t-[2px] border-[#0A0A0A] border-dashed shrink-0">
+          <div className="w-6 h-6 rounded-[6px] border-[1.5px] border-[#0A0A0A] overflow-hidden bg-[#E8E8E0] shrink-0">
+            {u?.profile_pic ? (
+               <img src={u.profile_pic} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+               <div className="w-full h-full flex items-center justify-center font-bold text-[10px] text-[#0A0A0A]">{u?.name?.[0]?.toUpperCase()}</div>
+            )}
+          </div>
+          <span className="font-sans text-[12px] font-medium text-[#555550] truncate">
+             {u?.name}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading && folderStack.length === 0) {
     return (
       <div className="w-full flex justify-center py-20">
@@ -173,15 +323,22 @@ export default function CommunityVaultPage() {
               {canOrganize && (
                  <button
                    onClick={() => setIsCreateFolderModal(true)}
-                   className="p-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#F5F5F0] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all hidden sm:flex items-center justify-center"
+                   className="p-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#F5F5F0] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all hidden sm:flex items-center justify-center cursor-pointer"
                    title="New Folder"
                  >
                    <FolderPlus className="w-5 h-5" />
                  </button>
               )}
               <button
+                onClick={() => setIsAddLinkModalOpen(true)}
+                className="px-5 py-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#0057FF] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[14px] text-white flex items-center gap-2 justify-center cursor-pointer"
+              >
+                <Link2 className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Add Link</span>
+              </button>
+              <button
                 onClick={() => setIsUploadModalOpen(true)}
-                className="px-5 py-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[14px] text-[#0A0A0A] flex items-center gap-2 justify-center"
+                className="px-5 py-2.5 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[14px] text-[#0A0A0A] flex items-center gap-2 justify-center cursor-pointer"
               >
                 <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Upload</span>
@@ -258,101 +415,22 @@ export default function CommunityVaultPage() {
              ))}
 
              {/* Render Items */}
-             {filteredItems.map((item: any) => {
-               // Handle Supabase returning vault_items as object or array, and files as object or array
-               const vi = Array.isArray(item.vault_items) ? item.vault_items[0] : item.vault_items;
-               const file = Array.isArray(vi?.files) ? vi.files[0] : vi?.files;
-               if (!file) return null;
+             {filteredItems.map(renderItemCard)}
+          </div>
+       )}
 
-               const u = Array.isArray(item.users) ? item.users[0] : item.users;
-
-               const isMe = community?.membership?.user_id === u?.id
-               const isOwner = role === 'owner' || role === 'curator'
-               const canDelete = isMe || isOwner
-
-               return (
-                 <div key={item.id} className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex flex-col h-[230px]">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="w-14 h-14 bg-[#FFFFFF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] shrink-0">
-                        {getFileIcon(file.mime_type)}
-                      </div>
-                      
-                      <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-wrap justify-end pl-2">
-                         <button
-                           onClick={() => handleDownload(item.id, file.filename, 'view')}
-                           disabled={activeItemId === item.id}
-                           title="View file"
-                           className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
-                         >
-                           <Eye className="w-4 h-4" />
-                         </button>
-                         <button
-                           onClick={() => handleDownload(item.id, file.filename, 'download')}
-                           disabled={activeItemId === item.id}
-                           title="Download"
-                           className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#00C853] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
-                         >
-                           {activeItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <Download className="w-4 h-4" />}
-                         </button>
-                         {canOrganize && (
-                            <button
-                               onClick={() => setOrganizeItem(item)}
-                               title="Organize Tags & Folders"
-                               className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FFD600] text-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-                            >
-                               <Settings2 className="w-4 h-4" />
-                            </button>
-                         )}
-                         {canDelete && (
-                            <button
-                               onClick={() => deleteMutation.mutate(item.id)}
-                               disabled={deleteMutation.isPending}
-                               title="Remove from Community"
-                               className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FF3B30] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 text-[#FF3B30]"
-                            >
-                              {deleteMutation.isPending && deleteMutation.variables === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 border-current" />}
-                            </button>
-                         )}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 min-h-0">
-                      <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate" title={file.filename}>
-                        {file.filename}
-                      </h3>
-                      <div className="font-mono text-[11px] text-[#555550] mt-1 space-x-2">
-                        <span>{formatBytes(file.size_bytes)}</span>
-                        <span>•</span>
-                        <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                      </div>
-                      
-                      {/* Tags Bar */}
-                      {item.tags && item.tags.length > 0 && (
-                        <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-2 pb-1">
-                           {item.tags.map((t: string) => (
-                             <span key={t} className="px-2 py-0.5 rounded-[100px] border-[1.2px] border-[#0A0A0A] bg-[#F5F5F0] font-mono text-[10px] font-bold text-[#0A0A0A] whitespace-nowrap">
-                               #{t}
-                             </span>
-                           ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-3 flex items-center gap-2 pt-3 border-t-[2px] border-[#0A0A0A] border-dashed shrink-0">
-                      <div className="w-6 h-6 rounded-[6px] border-[1.5px] border-[#0A0A0A] overflow-hidden bg-[#E8E8E0] shrink-0">
-                        {u?.profile_pic ? (
-                           <img src={u.profile_pic} alt="avatar" className="w-full h-full object-cover" />
-                        ) : (
-                           <div className="w-full h-full flex items-center justify-center font-bold text-[10px] text-[#0A0A0A]">{u?.name?.[0]?.toUpperCase()}</div>
-                        )}
-                      </div>
-                      <span className="font-sans text-[12px] font-medium text-[#555550] truncate">
-                         {u?.name}
-                      </span>
-                    </div>
-                 </div>
-               )
-             })}
+       {/* All Files View */}
+       {!searchQuery && vaultItems.length > 0 && (
+          <div className="mt-12 pt-8 border-t-[2px] border-[#0A0A0A] border-dashed">
+            <h3 className="font-heading font-bold text-[20px] text-[#0A0A0A] mb-6 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#00C853] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                <File className="w-4 h-4 text-white" />
+              </div>
+              All Files
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {vaultItems.map(renderItemCard)}
+            </div>
           </div>
        )}
 
@@ -365,6 +443,12 @@ export default function CommunityVaultPage() {
        <CommunityUploadModal
            isOpen={isUploadModalOpen}
            onClose={() => setIsUploadModalOpen(false)}
+           communityId={id}
+       />
+
+       <CommunityAddLinkModal
+           isOpen={isAddLinkModalOpen}
+           onClose={() => setIsAddLinkModalOpen(false)}
            communityId={id}
        />
 
@@ -777,6 +861,134 @@ function PublishFromVaultModal({ isOpen, onClose, communityId }: { isOpen: boole
             )}
           </div>
        </DialogContent>
+    </Dialog>
+  )
+}
+
+function CommunityAddLinkModal({ isOpen, onClose, communityId }: { isOpen: boolean, onClose: () => void, communityId: string }) {
+  const [isSaving, setIsSaving] = useState(false)
+  const [title, setTitle] = useState("")
+  const [url, setUrl] = useState("")
+  const [linkTags, setLinkTags] = useState<string[]>([])
+  const [errors, setErrors] = useState<{ title?: string; url?: string }>({})
+  const queryClient = useQueryClient()
+
+  const validate = () => {
+    const e: { title?: string; url?: string } = {}
+    if (!title.trim()) e.title = "Title is required"
+    if (!url.trim()) {
+      e.url = "URL is required"
+    } else {
+      try { new URL(url.trim()) } catch { e.url = "Enter a valid URL (include https://)" }
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validate()) return
+    setIsSaving(true)
+    const toastId = toast.loading("Saving link to Vault...")
+    try {
+      const res = await fetch("/api/vault/links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          url: url.trim(),
+          tags: linkTags,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to save link")
+
+      const postRes = await fetch(`/api/communities/${communityId}/vault`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vault_item_id: data.data.id })
+      })
+      if (!postRes.ok) {
+         const d = await postRes.json()
+         throw new Error(d.error || "Failed to publish into community scope")
+      }
+
+      toast.success("Link saved and shared!", { id: toastId })
+      queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
+      handleClose()
+    } catch (err: any) {
+      toast.error(err.message || "Could not save link", { id: toastId })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleClose = () => {
+    setTitle("")
+    setUrl("")
+    setLinkTags([])
+    setErrors({})
+    onClose()
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#0057FF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+              <Link2 className="w-4 h-4 text-white" />
+            </div>
+            Add External Link
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-5 mt-3">
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">Title</Label>
+            <Input
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); setErrors(prev => ({ ...prev, title: undefined })) }}
+              placeholder="e.g. React Docs, Lecture Recording…"
+              autoFocus
+              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+            />
+            {errors.title && <p className="font-sans text-[12px] text-[#FF3B30]">{errors.title}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">URL</Label>
+            <Input
+              type="url"
+              value={url}
+              onChange={(e) => { setUrl(e.target.value); setErrors(prev => ({ ...prev, url: undefined })) }}
+              placeholder="https://example.com"
+              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+            />
+            {errors.url && <p className="font-sans text-[12px] text-[#FF3B30]">{errors.url}</p>}
+          </div>
+
+          <TagEditor tags={linkTags} onChange={setLinkTags} />
+
+          <DialogFooter className="gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#0057FF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+              {isSaving ? "Saving…" : "Save Link"}
+            </button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   )
 }

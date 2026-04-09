@@ -10,6 +10,7 @@ interface UserProfile {
   name: string | null
   email: string | null
   college: string | null
+  profile_pic?: string | null
 }
 
 export default function UserMenu() {
@@ -30,7 +31,7 @@ export default function UserMenu() {
       if (user) {
         const { data } = await supabase
           .from("users")
-          .select("name, college")
+          .select("name, college, profile_pic")
           .eq("id", user.id)
           .single()
 
@@ -38,6 +39,7 @@ export default function UserMenu() {
           name: data?.name ?? user.user_metadata?.full_name ?? null,
           email: user.email ?? null,
           college: data?.college ?? null,
+          profile_pic: data?.profile_pic ?? null,
         })
       }
     }
@@ -88,12 +90,16 @@ export default function UserMenu() {
       {/* Avatar Button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] font-mono font-bold text-[12px] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+        className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] font-mono font-bold text-[12px] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all overflow-hidden p-0"
         suppressHydrationWarning
         aria-label="User menu"
         aria-expanded={open}
       >
-        <span className="leading-none">{initials}</span>
+        {profile?.profile_pic ? (
+          <img src={profile.profile_pic} alt="Avatar" className="w-full h-full object-cover" />
+        ) : (
+          <span className="leading-none">{initials}</span>
+        )}
       </button>
 
       <AnimatePresence>

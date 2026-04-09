@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { FileText, Link as LinkIcon, Users, Building, Edit2, Check, X, Plus, Clock } from "lucide-react"
+import { FileText, Link as LinkIcon, Users, Building, Edit2, Check, X, Plus, Clock, Camera, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 // Types
 interface ProfileStats {
@@ -24,6 +25,7 @@ interface UserProfile {
   course: string
   year: string
   tags: string[]
+  profile_pic: string | null
 }
 
 export default function ProfilePage() {
@@ -31,8 +33,36 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState<Partial<UserProfile>>({})
   const [currentTag, setCurrentTag] = useState("")
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const supabase = createClient()
   const queryClient = useQueryClient()
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingAvatar(true)
+    const toastId = toast.loading("Uploading profile picture...")
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      
+      const res = await fetch("/api/profile/avatar", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to upload avatar")
+
+      setProfile(prev => prev ? { ...prev, profile_pic: data.profile_pic } : null)
+      toast.success("Profile picture updated successfully!", { id: toastId })
+    } catch (err: any) {
+      toast.error(err.message, { id: toastId })
+    } finally {
+      setIsUploadingAvatar(false)
+    }
+  }
 
   // Fetch Profile Stats
   const { data: stats, isLoading: statsLoading } = useQuery<ProfileStats>({
@@ -66,6 +96,7 @@ export default function ProfilePage() {
           course: data.course || "",
           year: data.year || "",
           tags: data.tags || [],
+          profile_pic: data.profile_pic || null,
         }
         setProfile(fullProfile)
         setEditForm(fullProfile)
@@ -169,8 +200,25 @@ export default function ProfilePage() {
             <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full border-[2px] border-[#0A0A0A] bg-[#FFD600]/20 pointer-events-none" />
             
             <div className="flex justify-between items-start mb-8 relative z-10">
-              <div className="w-24 h-24 rounded-full border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] flex items-center justify-center text-[36px] font-mono font-bold">
-                {initials}
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] overflow-hidden flex items-center justify-center text-[36px] font-mono font-bold relative">
+                  {profile.profile_pic ? (
+                    <img src={profile.profile_pic} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    initials
+                  )}
+                  {isEditing && (
+                    <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity text-white text-[10px] font-bold">
+                      {isUploadingAvatar ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                          <Camera className="w-5 h-5 mb-1" />
+                          Change
+                        </>
+                      )}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
+                    </label>
+                  )}
+                </div>
               </div>
               
               {!isEditing ? (
