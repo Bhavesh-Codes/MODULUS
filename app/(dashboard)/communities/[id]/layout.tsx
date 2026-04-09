@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useUiStore } from "@/lib/stores/uiStore"
+import { CommunitySettingsModal } from "@/components/communities/CommunitySettingsModal"
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -371,6 +372,16 @@ function CommunityHeader({
             {community.name[0]?.toUpperCase()}
           </h1>
         )}
+
+        {/* Back to Explore button — overlaid top-left */}
+        <Link
+          href="/explore"
+          className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[13px] text-[#0A0A0A] hover:bg-[#FFD600] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+          title="Back to Explore"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">Explore</span>
+        </Link>
       </div>
 
       {/* Info area */}
@@ -495,12 +506,7 @@ function CommunityHeader({
 
           <div className="flex gap-2 self-end md:self-auto mt-2">
             {isOwner && (
-              <button
-                title="Community Settings"
-                className="w-12 h-12 rounded-[12px] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all flex items-center justify-center"
-              >
-                <Settings className="w-5 h-5 text-[#0A0A0A]" />
-              </button>
+              <CommunitySettingsModal community={community} currentUserRole={role} />
             )}
 
             {/* Mobile menu toggle on expanded header */}

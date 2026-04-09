@@ -3,11 +3,12 @@
 import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
-import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle } from "lucide-react"
+import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 function getUrlDomain(url: string): string {
   try {
@@ -399,19 +400,15 @@ export default function CommunityVaultPage() {
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
              {/* Render Folders First */}
              {filteredFolders.map((f: any) => (
-                <div
+                <CommunityFolderCard
                    key={f.id}
-                   onClick={() => {
-                     setSearchQuery("")
-                     setFolderStack([...folderStack, { id: f.id, name: f.name }])
-                   }}
-                   className="bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex items-center gap-4 cursor-pointer group"
-                >
-                   <div className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] group-hover:bg-[#FFFFFF] transition-colors shrink-0">
-                     <Folder className="w-6 h-6 text-[#0A0A0A] fill-current" />
-                   </div>
-                   <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate flex-1">{f.name}</h3>
-                </div>
+                   folder={f}
+                   communityId={id}
+                   canOrganize={canOrganize}
+                   folderStack={folderStack}
+                   setFolderStack={setFolderStack}
+                   setSearchQuery={setSearchQuery}
+                />
              ))}
 
              {/* Render Items */}
@@ -468,6 +465,92 @@ export default function CommunityVaultPage() {
              folders={folders}
           />
        )}
+    </div>
+  )
+}
+
+// ─── Community Folder Card ────────────────────────────────────────────────────
+function CommunityFolderCard({
+  folder,
+  communityId,
+  canOrganize,
+  folderStack,
+  setFolderStack,
+  setSearchQuery,
+}: {
+  folder: any
+  communityId: string
+  canOrganize: boolean
+  folderStack: { id: string; name: string }[]
+  setFolderStack: (s: { id: string; name: string }[]) => void
+  setSearchQuery: (q: string) => void
+}) {
+  const queryClient = useQueryClient()
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!window.confirm(`Delete folder "${folder.name}"? Its contents will be moved to the parent folder.`)) return
+    setIsDeleting(true)
+    const toastId = toast.loading("Deleting folder...")
+    try {
+      const res = await fetch(`/api/communities/${communityId}/vault/folders?folderId=${folder.id}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || "Failed to delete folder")
+      }
+      toast.success("Folder deleted", { id: toastId })
+      queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", communityId] })
+      queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete folder", { id: toastId })
+      setIsDeleting(false)
+    }
+  }
+
+  return (
+    <div
+      onClick={() => {
+        setSearchQuery("")
+        setFolderStack([...folderStack, { id: folder.id, name: folder.name }])
+      }}
+      className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex items-center gap-4 cursor-pointer"
+    >
+      <div className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] group-hover:bg-[#FFFFFF] transition-colors shrink-0">
+        <Folder className="w-6 h-6 text-[#0A0A0A] fill-current" />
+      </div>
+      <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate flex-1">{folder.name}</h3>
+
+      {canOrganize && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              disabled={isDeleting}
+              onClick={(e) => e.stopPropagation()}
+              className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none shrink-0"
+            >
+              {isDeleting
+                ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" />
+                : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />
+              }
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-40 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+          >
+            <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors"
+            >
+              <Trash2 className="w-4 h-4" /> Delete Folder
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   )
 }
