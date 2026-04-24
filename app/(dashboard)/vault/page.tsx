@@ -854,6 +854,7 @@ function FolderCard({
   isDropTarget = false,
   isSelected = false,
   onToggle,
+  selectionMode = false,
 }: {
   folder: VaultFolder
   onClick: () => void
@@ -863,6 +864,7 @@ function FolderCard({
   isDropTarget?: boolean
   isSelected?: boolean
   onToggle?: (id: string) => void
+  selectionMode?: boolean
 }) {
   const color = getFolderColor(folder.id)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -896,16 +898,18 @@ function FolderCard({
       }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
-      onClick={onClick}
+      onClick={selectionMode ? () => onToggle?.(folder.id) : onClick}
       className={`group relative cursor-pointer bg-[#FFFFFF] border-[3px] rounded-[1.5rem] p-5 transition-all duration-150 select-none overflow-hidden ${
         isDropTarget
           ? "border-[#FFD600] bg-[#FFFBDE] shadow-[0px_0px_0px_4px_#FFD60066]"
+          : isSelected
+          ? "border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
           : "border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
       }`}
     >
       <div 
         onClick={(e) => { e.stopPropagation(); onToggle?.(folder.id) }} 
-        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
       >
         {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
       </div>
@@ -1016,6 +1020,7 @@ function FileCard({
   onDragOver,
   isSelected = false,
   onToggle,
+  selectionMode = false,
 }: {
   item: VaultItem
   folders: VaultFolder[]
@@ -1026,6 +1031,7 @@ function FileCard({
   onDragOver: (folderId: string | null) => void
   isSelected?: boolean
   onToggle?: (id: string) => void
+  selectionMode?: boolean
 }) {
   const [isDragging, setIsDragging] = useState(false)
   const [isViewing, setIsViewing] = useState(false)
@@ -1169,8 +1175,12 @@ function FileCard({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       whileDrag={{ scale: 1.06, boxShadow: "8px 8px 0px #0A0A0A", zIndex: 100, cursor: "grabbing" }}
-      onClick={isLink && !isDragging ? handleLinkOpen : undefined}
-      className={`group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 select-none ${
+      onClick={selectionMode && !isDragging ? () => onToggle?.(item.id) : (isLink && !isDragging ? handleLinkOpen : undefined)}
+      className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 select-none ${
+        isSelected
+          ? "bg-[#FFFBDE] border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
+          : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]"
+      } ${
         isLink
           ? "cursor-pointer hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
           : isDragging ? "cursor-grabbing" : "cursor-grab hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
@@ -1179,7 +1189,7 @@ function FileCard({
     >
       <div 
         onClick={(e) => { e.stopPropagation(); onToggle?.(item.id) }} 
-        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
       >
         {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
       </div>
@@ -1782,6 +1792,7 @@ export default function VaultPage() {
                       onDelete={invalidateFolders}
                       isSelected={selectedFolderIds.includes(folder.id)}
                       onToggle={toggleFolder}
+                      selectionMode={selectedItemIds.length > 0 || selectedFolderIds.length > 0}
                     />
                   ))}
 
@@ -1814,6 +1825,7 @@ export default function VaultPage() {
                       onDragOver={(id) => setActiveDropZone(id)}
                       isSelected={selectedItemIds.includes(item.id)}
                       onToggle={toggleItem}
+                      selectionMode={selectedItemIds.length > 0 || selectedFolderIds.length > 0}
                     />
                   ))}
                 </AnimatePresence>
