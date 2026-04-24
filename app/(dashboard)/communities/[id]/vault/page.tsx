@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
-import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle, MoreVertical } from "lucide-react"
+import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle, MoreVertical, Check } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -143,6 +143,34 @@ export default function CommunityVaultPage() {
     }
   })
 
+  // Bulk actions state
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
+  const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([])
+
+  const toggleItem = (id: string) => setSelectedItemIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  const toggleFolder = (id: string) => setSelectedFolderIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  const clearSelection = () => { setSelectedItemIds([]); setSelectedFolderIds([]) }
+
+  const handleBulkDelete = async () => {
+    if (selectedItemIds.length === 0 && selectedFolderIds.length === 0) return
+    const confirm = window.confirm(`Delete ${selectedItemIds.length} file(s) and ${selectedFolderIds.length} folder(s)?`)
+    if (!confirm) return
+
+    const toastId = toast.loading("Deleting selected items...")
+    try {
+      await Promise.all([
+        ...selectedItemIds.map(itemId => fetch(`/api/communities/${id}/vault/${itemId}`, { method: 'DELETE' })),
+        ...selectedFolderIds.map(folderId => fetch(`/api/communities/${id}/vault/folders?folderId=${folderId}`, { method: 'DELETE' }))
+      ])
+      toast.success("Deleted successfully", { id: toastId })
+      queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", id] })
+      queryClient.invalidateQueries({ queryKey: ["communityVault", id] })
+      clearSelection()
+    } catch (e: any) {
+      toast.error("Failed to delete some items", { id: toastId })
+    }
+  }
+
   const handleDownload = async (itemId: string, filename: string, action: 'view' | 'download' = 'download') => {
     setActiveItemId(itemId)
     try {
@@ -214,7 +242,13 @@ export default function CommunityVaultPage() {
 
     return (
       <div key={item.id} className={`group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex flex-col h-[230px] ${isLink ? 'cursor-pointer' : ''}`} onClick={isLink ? handleLinkOpen : undefined}>
-        <div className="flex justify-between items-start mb-3">
+        <div 
+          onClick={(e) => { e.stopPropagation(); toggleItem(item.id) }} 
+          className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-10 ${selectedItemIds.includes(item.id) ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+        >
+          {selectedItemIds.includes(item.id) && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+        </div>
+        <div className="flex justify-between items-start mb-3 pl-8">
           <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] shrink-0 ${isLink ? getLinkBgColor(vi.url ?? "") : "bg-[#FFFFFF]"}`}>
             {isLink ? getLinkIcon(vi.url ?? "") : getFileIcon(file?.mime_type)}
           </div>
@@ -408,6 +442,8 @@ export default function CommunityVaultPage() {
                    folderStack={folderStack}
                    setFolderStack={setFolderStack}
                    setSearchQuery={setSearchQuery}
+                   isSelected={selectedFolderIds.includes(f.id)}
+                   onToggle={toggleFolder}
                 />
              ))}
 
@@ -465,6 +501,30 @@ export default function CommunityVaultPage() {
              folders={folders}
           />
        )}
+
+      {/* Bulk Action Bar */}
+      {(selectedItemIds.length > 0 || selectedFolderIds.length > 0) && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] p-4 px-6 flex items-center gap-6 animate-in slide-in-from-bottom-10 fade-in duration-200">
+          <div className="font-heading font-extrabold text-[16px] text-[#0A0A0A]">
+            {selectedItemIds.length + selectedFolderIds.length} Selected
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={clearSelection}
+              className="font-heading font-bold text-[14px] text-[#555550] hover:text-[#0A0A0A] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-4 py-2 bg-[#FF3B30] text-[#FFFFFF] rounded-[1rem] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[14px]"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -484,6 +544,8 @@ function CommunityFolderCard({
   folderStack: { id: string; name: string }[]
   setFolderStack: (s: { id: string; name: string }[]) => void
   setSearchQuery: (q: string) => void
+  isSelected: boolean
+  onToggle: (id: string) => void
 }) {
   const queryClient = useQueryClient()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -518,6 +580,12 @@ function CommunityFolderCard({
       }}
       className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex items-center gap-4 cursor-pointer"
     >
+      <div 
+        onClick={(e) => { e.stopPropagation(); onToggle(folder.id) }} 
+        className={`w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all shrink-0 ${isSelected ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+      >
+        {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+      </div>
       <div className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] group-hover:bg-[#FFFFFF] transition-colors shrink-0">
         <Folder className="w-6 h-6 text-[#0A0A0A] fill-current" />
       </div>
@@ -723,52 +791,120 @@ function CommunityOrganizeModal({ isOpen, onClose, communityId, item, folders }:
    )
 }
 
-function CommunityUploadModal({ isOpen, onClose, communityId }: { isOpen: boolean, onClose: () => void, communityId: string }) {
+type UploadItem = {
+  id: string;
+  file: File;
+  customName: string;
+  tags: string[];
+  relativePath: string;
+}
+
+function CommunityUploadModal({ isOpen, onClose, communityId, currentFolderId }: { isOpen: boolean, onClose: () => void, communityId: string, currentFolderId: string | null }) {
   const [isUploading, setIsUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [customFilename, setCustomFilename] = useState("")
-  const [uploadTags, setUploadTags] = useState<string[]>([])
+  const [items, setItems] = useState<UploadItem[]>([])
+  const [globalTags, setGlobalTags] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const folderInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] ?? null
-    setSelectedFile(f)
-    if (f) setCustomFilename(f.name)
+    if (e.target.files) {
+      const newItems = Array.from(e.target.files).map(f => ({
+        id: Math.random().toString(36).substring(7),
+        file: f,
+        customName: f.name,
+        tags: [],
+        relativePath: f.webkitRelativePath || ""
+      }))
+      setItems(prev => [...prev, ...newItems])
+    }
+    // reset input so the same files can be selected again if needed
+    e.target.value = ""
+  }
+
+  const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id))
+  const updateItem = (id: string, updates: Partial<UploadItem>) => {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))
   }
 
   const handleSubmit = async () => {
-    if (!selectedFile) return
+    if (items.length === 0) return
     setIsUploading(true)
-    const formData = new FormData()
-    formData.append("file", selectedFile)
-    const finalName = customFilename.trim() || selectedFile.name
-    if (finalName !== selectedFile.name) formData.append("filename", finalName)
-    if (uploadTags.length > 0) formData.append("tags", JSON.stringify(uploadTags))
+    const toastId = toast.loading(`Uploading and securing ${items.length} file(s)...`)
 
-    const toastId = toast.loading("Uploading and securing in Vault...")
     try {
-      const res = await fetch("/api/vault/upload", { method: "POST", body: formData })
-      const result = await res.json()
-      if (!res.ok) {
-        throw new Error(result.error || "Upload failed")
+      const folderMap = new Map<string, string>()
+
+      const getFolderId = async (pathParts: string[], baseFolderId: string | null) => {
+        let currentParent = baseFolderId
+        let currentPath = ""
+        
+        for (const part of pathParts) {
+          currentPath = currentPath ? `${currentPath}/${part}` : part
+          if (folderMap.has(currentPath)) {
+            currentParent = folderMap.get(currentPath)!
+          } else {
+            const res = await fetch(`/api/communities/${communityId}/vault/folders`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: part, parent_id: currentParent })
+            })
+            const json = await res.json()
+            if (!res.ok) throw new Error(json.error || `Failed to create folder ${part}`)
+            const newFolderId = json.data.id
+            folderMap.set(currentPath, newFolderId)
+            currentParent = newFolderId
+          }
+        }
+        return currentParent
       }
 
-      // Automatically copy tags into community_vault_items upon POSTing using the API
-      const postRes = await fetch(`/api/communities/${communityId}/vault`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vault_item_id: result.vaultItem.id })
-      })
+      // Sequential upload to prevent overwhelming the server
+      for (const item of items) {
+        let targetFolderId = currentFolderId
+        
+        if (item.relativePath) {
+          const parts = item.relativePath.split('/')
+          const folderParts = parts.slice(0, -1)
+          if (folderParts.length > 0) {
+            targetFolderId = await getFolderId(folderParts, currentFolderId)
+          }
+        }
 
-      if (!postRes.ok) {
-         const d = await postRes.json()
-         throw new Error(d.error || "Failed to publish into community scope")
+        const formData = new FormData()
+        // Provide the basename as the 3rd argument to prevent FormData parsing errors with webkitRelativePath
+        const finalName = item.customName.trim() || item.file.name
+        formData.append("file", item.file, finalName)
+        
+        const combinedTags = Array.from(new Set([...globalTags, ...item.tags]))
+        if (combinedTags.length > 0) formData.append("tags", JSON.stringify(combinedTags))
+        
+        const res = await fetch("/api/vault/upload", { method: "POST", body: formData })
+        const result = await res.json()
+        if (!res.ok) {
+          throw new Error(result.error || "Upload failed")
+        }
+
+        // Share to community
+        const postRes = await fetch(`/api/communities/${communityId}/vault`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            vault_item_id: result.vaultItem.id,
+            folder_id: targetFolderId
+          })
+        })
+
+        if (!postRes.ok) {
+          const d = await postRes.json()
+          throw new Error(d.error || "Failed to publish into community scope")
+        }
       }
 
-      toast.success("File uploaded and shared!", { id: toastId })
+      toast.success("Files uploaded and shared!", { id: toastId })
       
       // Real-time grid invalidate & auto-closure
+      queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", communityId] })
       queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
       handleClose()
     } catch (err: any) {
@@ -779,61 +915,93 @@ function CommunityUploadModal({ isOpen, onClose, communityId }: { isOpen: boolea
   }
 
   const handleClose = () => {
-    setSelectedFile(null)
-    setCustomFilename("")
-    setUploadTags([])
+    setItems([])
+    setGlobalTags([])
     if (fileInputRef.current) fileInputRef.current.value = ""
+    if (folderInputRef.current) folderInputRef.current.value = ""
     onClose()
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
-        <DialogHeader>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-lg p-8 max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">
             Upload & Share
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 mt-2">
-          <div
-            className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-[#E8E8E0] transition-colors"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div className="w-12 h-12 bg-[#0057FF] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
-              <Upload className="w-6 h-6 text-[#FFFFFF]" />
+        <div className="mt-2 flex-1 overflow-hidden flex flex-col">
+          {/* Drop zones */}
+          <div className="grid grid-cols-2 gap-3 shrink-0">
+            <div
+              className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#E8E8E0] transition-colors text-center"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="w-8 h-8 bg-[#0057FF] rounded-[8px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                <Upload className="w-4 h-4 text-[#FFFFFF]" />
+              </div>
+              <p className="font-heading font-bold text-[13px] text-[#0A0A0A]">Upload Files</p>
+              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
             </div>
-            {selectedFile ? (
-              <div className="text-center">
-                <p className="font-heading font-bold text-[14px] text-[#0A0A0A]">{selectedFile.name}</p>
-                <p className="font-mono text-[12px] text-[#555550]">{formatBytes(selectedFile.size)}</p>
+
+            <div
+              className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#E8E8E0] transition-colors text-center"
+              onClick={() => folderInputRef.current?.click()}
+            >
+              <div className="w-8 h-8 bg-[#0057FF] rounded-[8px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                <FolderPlus className="w-4 h-4 text-[#FFFFFF]" />
               </div>
-            ) : (
-              <div className="text-center">
-                <p className="font-heading font-bold text-[14px] text-[#0A0A0A]">Click to choose a file</p>
-                <p className="font-mono text-[12px] text-[#999990]">PDF, PNG, JPG, DOC — max 20 MB</p>
-              </div>
-            )}
-            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+              <p className="font-heading font-bold text-[13px] text-[#0A0A0A]">Upload Folder</p>
+              {/* @ts-expect-error - webkitdirectory is a non-standard attribute but widely supported */}
+              <input ref={folderInputRef} type="file" webkitdirectory="" directory="" multiple className="hidden" onChange={handleFileSelect} />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
-              Save as (optional rename)
+          <div className="mt-4 shrink-0">
+            <Label className="font-mono text-[11px] text-[#555550] uppercase tracking-wider mb-2 block">
+              Global Tags (Applies to all)
             </Label>
-            <Input
-              value={customFilename}
-              onChange={(e) => setCustomFilename(e.target.value)}
-              placeholder="Enter a custom filename…"
-              disabled={!selectedFile}
-              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
-            />
+            <TagEditor tags={globalTags} onChange={setGlobalTags} />
           </div>
 
-          <TagEditor tags={uploadTags} onChange={setUploadTags} />
+          {items.length > 0 && (
+            <div className="mt-4 flex-1 overflow-y-auto pr-2 border-t-[2px] border-[#E8E8E0] pt-4 min-h-[150px]">
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-heading font-bold text-[14px]">Selected ({items.length})</span>
+                <button onClick={() => setItems([])} className="text-[12px] font-bold text-[#FF3B30] hover:underline">Clear All</button>
+              </div>
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <div key={item.id} className="bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[1rem] p-3 flex flex-col gap-2 relative group">
+                    <button onClick={() => removeItem(item.id)} className="absolute top-3 right-3 text-[#555550] hover:text-[#FF3B30] opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-[#F5F5F0] rounded-full">
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] flex items-center justify-center shrink-0">
+                         <File className="w-4 h-4 text-[#0A0A0A]" />
+                      </div>
+                      <div className="flex-1 min-w-0 pr-6">
+                        <input 
+                           value={item.customName}
+                           onChange={(e) => updateItem(item.id, { customName: e.target.value })}
+                           className="font-heading font-bold text-[13px] text-[#0A0A0A] bg-transparent border-b border-transparent hover:border-[#0A0A0A] focus:border-[#0A0A0A] outline-none w-full truncate pb-0.5"
+                           placeholder="Filename..."
+                        />
+                        <p className="font-mono text-[10px] text-[#555550] mt-0.5">{formatBytes(item.file.size)}</p>
+                      </div>
+                    </div>
+                    <div className="pt-1">
+                       <TagEditor tags={item.tags} onChange={(tags) => updateItem(item.id, { tags })} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="mt-6 gap-3">
+        <DialogFooter className="mt-6 gap-3 shrink-0">
           <button
             onClick={handleClose}
             className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
@@ -842,7 +1010,7 @@ function CommunityUploadModal({ isOpen, onClose, communityId }: { isOpen: boolea
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile || isUploading}
+            disabled={items.length === 0 || isUploading}
             className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#00C853] text-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -948,7 +1116,7 @@ function PublishFromVaultModal({ isOpen, onClose, communityId }: { isOpen: boole
   )
 }
 
-function CommunityAddLinkModal({ isOpen, onClose, communityId }: { isOpen: boolean, onClose: () => void, communityId: string }) {
+function CommunityAddLinkModal({ isOpen, onClose, communityId, currentFolderId }: { isOpen: boolean, onClose: () => void, communityId: string, currentFolderId: string | null }) {
   const [isSaving, setIsSaving] = useState(false)
   const [title, setTitle] = useState("")
   const [url, setUrl] = useState("")
@@ -989,7 +1157,10 @@ function CommunityAddLinkModal({ isOpen, onClose, communityId }: { isOpen: boole
       const postRes = await fetch(`/api/communities/${communityId}/vault`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vault_item_id: data.data.id })
+        body: JSON.stringify({ 
+          vault_item_id: data.data.id,
+          folder_id: currentFolderId
+        })
       })
       if (!postRes.ok) {
          const d = await postRes.json()

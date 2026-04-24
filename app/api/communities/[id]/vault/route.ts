@@ -44,7 +44,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const resolvedParams = await context.params
     const communityId = resolvedParams.id
     const body = await request.json()
-    const { vault_item_id } = body
+    const { vault_item_id, folder_id } = body
 
     if (!vault_item_id) {
       return NextResponse.json({ error: "Missing vault_item_id" }, { status: 400 })
@@ -66,7 +66,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         vault_item_id,
         shared_by_user_id: user.id,
         tags: initialTags,
-        folder_id: null
+        folder_id: folder_id || null
       })
       .select()
       .single()

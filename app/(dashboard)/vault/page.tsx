@@ -40,6 +40,7 @@ import {
   Link2,
   ExternalLink,
   PlayCircle,
+  Check,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -281,7 +282,14 @@ function NewFolderModal({
   )
 }
 
-// ─── Upload Modal ─────────────────────────────────────────────────────────────
+type UploadItem = {
+  id: string;
+  file: File;
+  customName: string;
+  tags: string[];
+  relativePath: string;
+}
+
 function UploadModal({
   isOpen,
   onClose,
@@ -294,104 +302,190 @@ function UploadModal({
   currentFolderId: string | null
 }) {
   const [isUploading, setIsUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [customFilename, setCustomFilename] = useState("")
-  const [uploadTags, setUploadTags] = useState<string[]>([])
+  const [items, setItems] = useState<UploadItem[]>([])
+  const [globalTags, setGlobalTags] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const folderInputRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient()
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] ?? null
-    setSelectedFile(f)
-    if (f) setCustomFilename(f.name)
+    if (e.target.files) {
+      const newItems = Array.from(e.target.files).map(f => ({
+        id: Math.random().toString(36).substring(7),
+        file: f,
+        customName: f.name,
+        tags: [],
+        relativePath: f.webkitRelativePath || ""
+      }))
+      setItems(prev => [...prev, ...newItems])
+    }
+    // reset input so the same files can be selected again if needed
+    e.target.value = ""
+  }
+
+  const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id))
+  const updateItem = (id: string, updates: Partial<UploadItem>) => {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))
   }
 
   const handleSubmit = async () => {
-    if (!selectedFile) return
+    if (items.length === 0) return
     setIsUploading(true)
-    const formData = new FormData()
-    formData.append("file", selectedFile)
-    const finalName = customFilename.trim() || selectedFile.name
-    if (finalName !== selectedFile.name) formData.append("filename", finalName)
-    if (uploadTags.length > 0) formData.append("tags", JSON.stringify(uploadTags))
-    if (currentFolderId) formData.append("folder_id", currentFolderId)
+    const toastId = toast.loading(`Uploading ${items.length} file(s)…`)
 
-    const toastId = toast.loading("Uploading to your vault…")
     try {
-      const res = await fetch("/api/vault/upload", { method: "POST", body: formData })
-      const result = await res.json()
-      if (!res.ok) {
-        toast.error(result.error || "Upload failed", { id: toastId })
-      } else {
-        toast.success("File secured in Vault!", { id: toastId })
-        onUploadComplete()
-        handleClose()
+      const folderMap = new Map<string, string>()
+
+      const getFolderId = async (pathParts: string[], baseFolderId: string | null) => {
+        let currentParent = baseFolderId
+        let currentPath = ""
+        
+        for (const part of pathParts) {
+          currentPath = currentPath ? `${currentPath}/${part}` : part
+          if (folderMap.has(currentPath)) {
+            currentParent = folderMap.get(currentPath)!
+          } else {
+            const res = await fetch("/api/vault/folders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: part, parent_id: currentParent })
+            })
+            const json = await res.json()
+            if (!res.ok) throw new Error(json.error || `Failed to create folder ${part}`)
+            const newFolderId = json.data.id
+            folderMap.set(currentPath, newFolderId)
+            currentParent = newFolderId
+          }
+        }
+        return currentParent
       }
-    } catch {
-      toast.error("Network error during upload.", { id: toastId })
+
+      // Sequential upload to prevent overwhelming the Next.js body parser with massive folder uploads
+      for (const item of items) {
+        let targetFolderId = currentFolderId
+        
+        if (item.relativePath) {
+          const parts = item.relativePath.split('/')
+          const folderParts = parts.slice(0, -1)
+          if (folderParts.length > 0) {
+            targetFolderId = await getFolderId(folderParts, currentFolderId)
+          }
+        }
+
+        const formData = new FormData()
+        // Provide the basename as the 3rd argument to prevent FormData parsing errors with webkitRelativePath
+        const finalName = item.customName.trim() || item.file.name
+        formData.append("file", item.file, finalName)
+        
+        const combinedTags = Array.from(new Set([...globalTags, ...item.tags]))
+        if (combinedTags.length > 0) formData.append("tags", JSON.stringify(combinedTags))
+        if (targetFolderId) formData.append("folder_id", targetFolderId)
+        
+        const res = await fetch("/api/vault/upload", { method: "POST", body: formData })
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || "Upload failed")
+        }
+      }
+      toast.success("Files secured in Vault!", { id: toastId })
+      onUploadComplete()
+      queryClient.invalidateQueries({ queryKey: ["vaultFolders"] })
+      handleClose()
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed.", { id: toastId })
     } finally {
       setIsUploading(false)
     }
   }
 
   const handleClose = () => {
-    setSelectedFile(null)
-    setCustomFilename("")
-    setUploadTags([])
+    setItems([])
+    setGlobalTags([])
     if (fileInputRef.current) fileInputRef.current.value = ""
+    if (folderInputRef.current) folderInputRef.current.value = ""
     onClose()
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
-        <DialogHeader>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-lg p-8 max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">
             Upload to Vault
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 mt-2">
-          {/* Drop zone */}
-          <div
-            className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-[#E8E8E0] transition-colors"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div className="w-12 h-12 bg-[#FFD600] rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A]">
-              <Upload className="w-6 h-6 text-[#0A0A0A]" />
+        <div className="mt-2 flex-1 overflow-hidden flex flex-col">
+          {/* Drop zones */}
+          <div className="grid grid-cols-2 gap-3 shrink-0">
+            <div
+              className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#E8E8E0] transition-colors text-center"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="w-8 h-8 bg-[#FFD600] rounded-[8px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                <Upload className="w-4 h-4 text-[#0A0A0A]" />
+              </div>
+              <p className="font-heading font-bold text-[13px] text-[#0A0A0A]">Upload Files</p>
+              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
             </div>
-            {selectedFile ? (
-              <div className="text-center">
-                <p className="font-heading font-bold text-[14px] text-[#0A0A0A]">{selectedFile.name}</p>
-                <p className="font-mono text-[12px] text-[#555550]">{formatBytes(selectedFile.size)}</p>
+
+            <div
+              className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#E8E8E0] transition-colors text-center"
+              onClick={() => folderInputRef.current?.click()}
+            >
+              <div className="w-8 h-8 bg-[#FFD600] rounded-[8px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                <FolderPlus className="w-4 h-4 text-[#0A0A0A]" />
               </div>
-            ) : (
-              <div className="text-center">
-                <p className="font-heading font-bold text-[14px] text-[#0A0A0A]">Click to choose a file</p>
-                <p className="font-mono text-[12px] text-[#999990]">PDF, PNG, JPG, DOC — max 20 MB</p>
-              </div>
-            )}
-            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+              <p className="font-heading font-bold text-[13px] text-[#0A0A0A]">Upload Folder</p>
+              {/* @ts-expect-error - webkitdirectory is a non-standard attribute but widely supported */}
+              <input ref={folderInputRef} type="file" webkitdirectory="" directory="" multiple className="hidden" onChange={handleFileSelect} />
+            </div>
           </div>
 
-          {/* Optional rename */}
-          <div className="space-y-2">
-            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
-              Save as (optional rename)
+          <div className="mt-4 shrink-0">
+            <Label className="font-mono text-[11px] text-[#555550] uppercase tracking-wider mb-2 block">
+              Global Tags (Applies to all)
             </Label>
-            <Input
-              value={customFilename}
-              onChange={(e) => setCustomFilename(e.target.value)}
-              placeholder="Enter a custom filename…"
-              disabled={!selectedFile}
-              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
-            />
+            <TagEditor tags={globalTags} onChange={setGlobalTags} />
           </div>
 
-          {/* Tags */}
-          <TagEditor tags={uploadTags} onChange={setUploadTags} />
+          {items.length > 0 && (
+            <div className="mt-4 flex-1 overflow-y-auto pr-2 border-t-[2px] border-[#E8E8E0] pt-4 min-h-[150px]">
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-heading font-bold text-[14px]">Selected ({items.length})</span>
+                <button onClick={() => setItems([])} className="text-[12px] font-bold text-[#FF3B30] hover:underline">Clear All</button>
+              </div>
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <div key={item.id} className="bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[1rem] p-3 flex flex-col gap-2 relative group">
+                    <button onClick={() => removeItem(item.id)} className="absolute top-3 right-3 text-[#555550] hover:text-[#FF3B30] opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-[#F5F5F0] rounded-full">
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] flex items-center justify-center shrink-0">
+                         <File className="w-4 h-4 text-[#0A0A0A]" />
+                      </div>
+                      <div className="flex-1 min-w-0 pr-6">
+                        <input 
+                           value={item.customName}
+                           onChange={(e) => updateItem(item.id, { customName: e.target.value })}
+                           className="font-heading font-bold text-[13px] text-[#0A0A0A] bg-transparent border-b border-transparent hover:border-[#0A0A0A] focus:border-[#0A0A0A] outline-none w-full truncate pb-0.5"
+                           placeholder="Filename..."
+                        />
+                        <p className="font-mono text-[10px] text-[#555550] mt-0.5">{formatBytes(item.file.size)}</p>
+                      </div>
+                    </div>
+                    <div className="pt-1">
+                       <TagEditor tags={item.tags} onChange={(tags) => updateItem(item.id, { tags })} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="mt-6 gap-3">
+        <DialogFooter className="mt-6 gap-3 shrink-0">
           <button
             onClick={handleClose}
             className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
@@ -400,7 +494,7 @@ function UploadModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile || isUploading}
+            disabled={items.length === 0 || isUploading}
             className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -758,6 +852,8 @@ function FolderCard({
   onMove,
   onDelete,
   isDropTarget = false,
+  isSelected = false,
+  onToggle,
 }: {
   folder: VaultFolder
   onClick: () => void
@@ -765,6 +861,8 @@ function FolderCard({
   onMove: (folder: VaultFolder) => void
   onDelete: (folder: VaultFolder) => void
   isDropTarget?: boolean
+  isSelected?: boolean
+  onToggle?: (id: string) => void
 }) {
   const color = getFolderColor(folder.id)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -805,7 +903,13 @@ function FolderCard({
           : "border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
       }`}
     >
-      <div className="flex items-center justify-between gap-3 mb-3 relative z-10">
+      <div 
+        onClick={(e) => { e.stopPropagation(); onToggle?.(folder.id) }} 
+        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+      >
+        {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+      </div>
+      <div className="flex items-center justify-between gap-3 mb-3 relative z-10 pl-8">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div
             className="w-12 h-12 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] transition-all group-hover:shadow-none group-hover:translate-x-[3px] group-hover:translate-y-[3px] shrink-0"
@@ -910,6 +1014,8 @@ function FileCard({
   onMove,
   onDropFile,
   onDragOver,
+  isSelected = false,
+  onToggle,
 }: {
   item: VaultItem
   folders: VaultFolder[]
@@ -918,6 +1024,8 @@ function FileCard({
   onMove: (item: VaultItem) => void
   onDropFile: (fileItemId: string, targetFolderId: string | null) => void
   onDragOver: (folderId: string | null) => void
+  isSelected?: boolean
+  onToggle?: (id: string) => void
 }) {
   const [isDragging, setIsDragging] = useState(false)
   const [isViewing, setIsViewing] = useState(false)
@@ -1069,7 +1177,13 @@ function FileCard({
       }`}
       style={{ position: "relative", zIndex: isDragging ? 100 : "auto" }}
     >
-      <div className="flex justify-between items-start mb-4">
+      <div 
+        onClick={(e) => { e.stopPropagation(); onToggle?.(item.id) }} 
+        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+      >
+        {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+      </div>
+      <div className="flex justify-between items-start mb-4 pl-8 relative z-10">
         <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] ${
           isLink ? getLinkBgColor(item.url ?? "") : "bg-[#FFFFFF]"
         }`}>
@@ -1278,6 +1392,34 @@ export default function VaultPage() {
   const [renameFolderItem, setRenameFolderItem] = useState<VaultFolder | null>(null)
   const [moveItem, setMoveItem] = useState<{ type: "file" | "folder"; id: string } | null>(null)
 
+  // Bulk actions state
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
+  const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([])
+
+  const toggleItem = (id: string) => setSelectedItemIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  const toggleFolder = (id: string) => setSelectedFolderIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  const clearSelection = () => { setSelectedItemIds([]); setSelectedFolderIds([]) }
+
+  const handleBulkDelete = async () => {
+    if (selectedItemIds.length === 0 && selectedFolderIds.length === 0) return
+    const confirm = window.confirm(`Delete ${selectedItemIds.length} file(s) and ${selectedFolderIds.length} folder(s)?`)
+    if (!confirm) return
+
+    const toastId = toast.loading("Deleting selected items...")
+    try {
+      await Promise.all([
+        ...selectedItemIds.map(id => fetch(`/api/vault/items/${id}`, { method: 'DELETE' })),
+        ...selectedFolderIds.map(id => fetch(`/api/vault/folders/${id}`, { method: 'DELETE' }))
+      ])
+      toast.success("Deleted successfully", { id: toastId })
+      queryClient.invalidateQueries({ queryKey: ["vaultItems"] })
+      queryClient.invalidateQueries({ queryKey: ["vaultFolders"] })
+      clearSelection()
+    } catch (e: any) {
+      toast.error("Failed to delete some items", { id: toastId })
+    }
+  }
+
   const queryClient = useQueryClient()
 
   // ── Queries ──────────────────────────────────────────────────────────────────
@@ -1310,7 +1452,9 @@ export default function VaultPage() {
 
   // Client-side search filter on items + folders
   const filteredItems = vaultItems.filter((item) => {
-    if (!searchQuery.trim()) return true
+    if (!searchQuery.trim()) {
+      return (item.folder_id || null) === (currentFolderId || null)
+    }
     const q = searchQuery.toLowerCase()
     return (
       (item.files?.filename?.toLowerCase().includes(q) ?? false) ||
@@ -1636,6 +1780,8 @@ export default function VaultPage() {
                       }}
                       onMove={(f) => setMoveItem({ type: "folder", id: f.id })}
                       onDelete={invalidateFolders}
+                      isSelected={selectedFolderIds.includes(folder.id)}
+                      onToggle={toggleFolder}
                     />
                   ))}
 
@@ -1666,6 +1812,8 @@ export default function VaultPage() {
                       onMove={(i) => setMoveItem({ type: "file", id: i.id })}
                       onDropFile={handleFileDrop}
                       onDragOver={(id) => setActiveDropZone(id)}
+                      isSelected={selectedItemIds.includes(item.id)}
+                      onToggle={toggleItem}
                     />
                   ))}
                 </AnimatePresence>
@@ -1682,6 +1830,37 @@ export default function VaultPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Bulk Action Bar ──────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {(selectedItemIds.length > 0 || selectedFolderIds.length > 0) && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] px-6 py-3"
+          >
+            <span className="font-heading font-extrabold text-[15px] text-[#0A0A0A]">
+              {selectedItemIds.length + selectedFolderIds.length} selected
+            </span>
+            <div className="w-[2px] h-5 bg-[#E8E8E0]" />
+            <button
+              onClick={clearSelection}
+              className="font-heading font-bold text-[13px] text-[#555550] hover:text-[#0A0A0A] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-4 py-2 bg-[#FF3B30] text-[#FFFFFF] rounded-[1rem] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[13px]"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete {selectedItemIds.length + selectedFolderIds.length} item{selectedItemIds.length + selectedFolderIds.length !== 1 ? "s" : ""}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
