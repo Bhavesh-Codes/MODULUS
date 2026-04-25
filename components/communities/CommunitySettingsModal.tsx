@@ -301,7 +301,7 @@ export function CommunitySettingsModal({ community, currentUserRole }: Community
                            <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-[8px] bg-[#E8E8E0] border-[1.5px] border-[#0A0A0A] overflow-hidden">
                                 {member.profile_pic ? (
-                                    <img src={member.profile_pic} className="w-full h-full object-cover" alt="" />
+                                    <img src={member.profile_pic} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center font-bold text-[16px]">
                                         {member.name?.[0]?.toUpperCase() || '?'}

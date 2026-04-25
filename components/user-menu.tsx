@@ -96,7 +96,7 @@ export default function UserMenu() {
         aria-expanded={open}
       >
         {profile?.profile_pic ? (
-          <img src={profile.profile_pic} alt="Avatar" className="w-full h-full object-cover" />
+          <img src={profile.profile_pic} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         ) : (
           <span className="leading-none">{initials}</span>
         )}

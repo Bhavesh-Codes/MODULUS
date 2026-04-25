@@ -203,7 +203,7 @@ export default function ProfilePage() {
               <div className="relative group">
                 <div className="w-24 h-24 rounded-full border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] overflow-hidden flex items-center justify-center text-[36px] font-mono font-bold relative">
                   {profile.profile_pic ? (
-                    <img src={profile.profile_pic} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={profile.profile_pic} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     initials
                   )}

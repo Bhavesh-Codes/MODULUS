@@ -72,8 +72,8 @@ function CommunitySidebar({
           title={collapsed ? label : undefined}
           onClick={() => setCommunitySidebarMobileOpen(false)}
           className={`
-            relative flex items-center gap-3 transition-all
-            ${collapsed ? "justify-center p-3 rounded-[1rem] mx-2 mb-3" : "px-4 py-3 rounded-[1rem] mx-4 mb-3"}
+            relative flex items-center md:flex-1 gap-3 transition-all
+            ${collapsed ? "justify-center p-3 rounded-[1rem] mx-2" : "px-4 py-3 rounded-[1rem] mx-4"}
             border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none
             ${isActive
               ? "bg-[#FFD600]"
@@ -142,7 +142,7 @@ function CommunitySidebar({
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col py-2">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col py-8 pb-12 gap-5">
         {renderLinks(!communitySidebarOpen)}
       </nav>
     </aside>
@@ -190,7 +190,7 @@ function CommunitySidebar({
             <X style={{ width: 18, height: 18, color: "#0A0A0A" }} />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto flex flex-col py-2">
+        <nav className="flex-1 overflow-y-auto flex flex-col py-8 pb-12 gap-5">
           {renderLinks(false)}
         </nav>
       </aside>
