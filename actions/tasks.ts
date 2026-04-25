@@ -416,7 +416,7 @@ export async function getTaskDrilldown(
 
   // 3. Merge — respect privacy opt-out for non-moderators
   return (members ?? []).map((member) => {
-    const userInfo = member.users as { name: string; profile_pic: string | null } | null
+    const userInfo = member.users as unknown as { name: string; profile_pic: string | null } | null
     const hasCompleted = member.user_id in completionMap
     const showsInDrilldown = completionMap[member.user_id] ?? false
 
