@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
-import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle, MoreVertical, Check } from "lucide-react"
+import { Loader2, FolderSync, Download, Trash2, Plus, Image as ImageIcon, Video, Music, FileText, Archive, FileCode, File, Eye, Upload, Tag, X, Folder, Search, ChevronRight, FolderPlus, Settings2, Link2, ExternalLink, PlayCircle, MoreVertical, Check, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -75,6 +75,145 @@ const formatBytes = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i]
 }
 
+// ─── Rename Folder Modal ─────────────────────────────────────────────────────
+function RenameFolderModal({
+  isOpen,
+  folder,
+  communityId,
+  onClose,
+  onRenamed,
+}: {
+  isOpen: boolean
+  folder: any
+  communityId: string
+  onClose: () => void
+  onRenamed: () => void
+}) {
+  const [name, setName] = useState(folder.name)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    setIsSaving(true)
+    try {
+      const res = await fetch(
+        `/api/communities/${communityId}/vault/folders?folderId=${folder.id}`,
+        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim() }) }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to rename folder")
+      toast.success(`Folder renamed to "${name.trim()}"`)
+      onRenamed()
+      onClose()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to rename folder")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-8">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FFD600] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+              <Pencil className="w-4 h-4 text-[#0A0A0A]" />
+            </div>
+            Rename Folder
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-3">
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">New Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Folder name…" className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]" />
+          </div>
+          <DialogFooter className="gap-3 pt-2">
+            <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all">Cancel</button>
+            <button type="submit" disabled={isSaving || !name.trim()} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+              {isSaving ? "Saving…" : "Rename"}
+            </button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Rename Item Modal ────────────────────────────────────────────────────────
+function RenameItemModal({
+  isOpen,
+  item,
+  communityId,
+  onClose,
+  onRenamed,
+}: {
+  isOpen: boolean
+  item: any
+  communityId: string
+  onClose: () => void
+  onRenamed: () => void
+}) {
+  const vi = Array.isArray(item?.vault_items) ? item.vault_items[0] : item?.vault_items
+  const file = Array.isArray(vi?.files) ? vi.files[0] : vi?.files
+  const isLink = vi?.item_type === "link"
+  const currentName = isLink ? (vi?.title ?? "") : (file?.filename ?? "")
+  const [name, setName] = useState(currentName)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    setIsSaving(true)
+    try {
+      const res = await fetch(`/api/communities/${communityId}/vault/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: name.trim(), tags: item.tags ?? [], folder_id: item.folder_id ?? null }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to rename")
+      toast.success(`Renamed to "${name.trim()}"`)
+      onRenamed()
+      onClose()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to rename")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-8">
+        <DialogHeader>
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FFD600] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+              <Pencil className="w-4 h-4 text-[#0A0A0A]" />
+            </div>
+            Rename {isLink ? "Link" : "File"}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-3">
+          <div className="space-y-2">
+            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">New Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Name…" className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]" />
+          </div>
+          <DialogFooter className="gap-3 pt-2">
+            <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all">Cancel</button>
+            <button type="submit" disabled={isSaving || !name.trim()} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+              {isSaving ? "Saving…" : "Rename"}
+            </button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function CommunityVaultPage() {
   const params = useParams()
   const id = params.id as string
@@ -93,6 +232,9 @@ export default function CommunityVaultPage() {
   // Modals state
   const [isCreateFolderModal, setIsCreateFolderModal] = useState(false)
   const [organizeItem, setOrganizeItem] = useState<any>(null)
+  const [renamingFolder, setRenamingFolder] = useState<any>(null)
+  const [renamingItem, setRenamingItem] = useState<any>(null)
+  const [organizeFolder, setOrganizeFolder] = useState<any>(null)
 
   const { data: community } = useQuery({
     queryKey: ["community", id],
@@ -235,68 +377,108 @@ export default function CommunityVaultPage() {
     const canDelete = isMe || isOwner
     const linkDomain = isLink && vi.url ? getUrlDomain(vi.url) : ""
     const ytVideoId = isLink && vi.url ? getYouTubeVideoId(vi.url) : null
+    // item.title is the community-level rename override; fall back to the original source name
+    const displayName = item.title ?? (isLink ? (vi?.title ?? "Untitled Link") : (file?.filename ?? "Unknown File"))
 
     const handleLinkOpen = () => {
       window.open(vi.url ?? "", "_blank", "noopener,noreferrer")
     }
 
+    const isItemSelected = selectedItemIds.includes(item.id)
+    const selectionMode = selectedItemIds.length > 0 || selectedFolderIds.length > 0
+
     return (
-      <div key={item.id} className={`group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex flex-col h-[230px] ${isLink ? 'cursor-pointer' : ''}`} onClick={isLink ? handleLinkOpen : undefined}>
+      <div
+        key={item.id}
+        onClick={() => {
+          if (selectionMode) { toggleItem(item.id); return }
+          if (isLink) handleLinkOpen()
+        }}
+        className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 flex flex-col h-[230px] ${
+          isItemSelected
+            ? "bg-[#FFFBDE] border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
+            : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+        } ${isLink || selectionMode ? 'cursor-pointer' : ''}`}
+      >
         <div 
           onClick={(e) => { e.stopPropagation(); toggleItem(item.id) }} 
-          className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-10 ${selectedItemIds.includes(item.id) ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+          className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-10 ${isItemSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
         >
-          {selectedItemIds.includes(item.id) && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+          {isItemSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
         </div>
         <div className="flex justify-between items-start mb-3 pl-8">
           <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] shrink-0 ${isLink ? getLinkBgColor(vi.url ?? "") : "bg-[#FFFFFF]"}`}>
             {isLink ? getLinkIcon(vi.url ?? "") : getFileIcon(file?.mime_type)}
           </div>
           
-          <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-wrap justify-end pl-2">
-             <button
-               onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleDownload(item.id, file?.filename, 'view') }}
-               disabled={activeItemId === item.id}
-               title={isLink ? "Open link" : "View file"}
-               className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
-             >
-               {isLink ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />) : <Eye className="w-4 h-4" />}
-             </button>
-             {!isLink && (
-               <button
-                 onClick={(e) => { e.stopPropagation(); handleDownload(item.id, file?.filename, 'download') }}
-                 disabled={activeItemId === item.id}
-                 title="Download"
-                 className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#00C853] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
-               >
-                 {activeItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <Download className="w-4 h-4" />}
-               </button>
-             )}
-             {canOrganize && (
+          {/* Actions: View exposed, rest in 3-dot menu */}
+          <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            {/* View / Open — always exposed */}
+            <button
+              onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleDownload(item.id, file?.filename, 'view') }}
+              disabled={activeItemId === item.id}
+              title={isLink ? "Open link" : "View file"}
+              className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
+            >
+              {isLink ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />) : <Eye className="w-4 h-4" />}
+            </button>
+
+            {/* 3-dot dropdown for the rest */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button
-                   onClick={(e) => { e.stopPropagation(); setOrganizeItem(item); }}
-                   title="Organize Tags & Folders"
-                   className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FFD600] text-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
                 >
-                   <Settings2 className="w-4 h-4" />
+                  <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />
                 </button>
-             )}
-             {canDelete && (
-                <button
-                   onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(item.id); }}
-                   disabled={deleteMutation.isPending}
-                   title="Remove from Community"
-                   className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FF3B30] hover:text-[#FFFFFF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 text-[#FF3B30]"
-                >
-                  {deleteMutation.isPending && deleteMutation.variables === item.id ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <Trash2 className="w-4 h-4 border-current" />}
-                </button>
-             )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50">
+                {!isLink && (
+                  <DropdownMenuItem
+                    onClick={(e) => { e.stopPropagation(); handleDownload(item.id, file?.filename, 'download') }}
+                    disabled={activeItemId === item.id}
+                    className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none"
+                  >
+                    {activeItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-[#FFD600]" />} Download
+                  </DropdownMenuItem>
+                )}
+                {canOrganize && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={(e) => { e.stopPropagation(); setRenamingItem(item) }}
+                      className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none"
+                    >
+                      <Pencil className="w-4 h-4 text-[#00C853]" /> Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => { e.stopPropagation(); setOrganizeItem(item) }}
+                      className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none"
+                    >
+                      <Settings2 className="w-4 h-4 text-[#0057FF]" /> Organize
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canDelete && (
+                  <>
+                    <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
+                    <DropdownMenuItem
+                      onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(item.id) }}
+                      disabled={deleteMutation.isPending}
+                      className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors"
+                    >
+                      {deleteMutation.isPending && deleteMutation.variables === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Remove
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
         <div className="flex-1 min-h-0">
-          <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate" title={isLink ? vi.title : file?.filename}>
-            {isLink ? vi.title : file?.filename}
+          <h3 className="font-heading font-bold text-[16px] text-[#0A0A0A] truncate" title={displayName}>
+            {displayName}
           </h3>
           <div className="font-mono text-[11px] text-[#555550] mt-1 flex items-center flex-wrap gap-2">
             {!isLink ? <span>{formatBytes(file?.size_bytes)}</span> : <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3 text-[#555550] shrink-0" />{linkDomain}</span>}
@@ -430,30 +612,63 @@ export default function CommunityVaultPage() {
              <h3 className="font-heading font-bold text-[20px] text-[#0A0A0A] mb-2">{searchQuery ? 'No results found' : 'Folder is Empty'}</h3>
              <p className="font-sans text-[15px] text-[#555550] max-w-md mx-auto">{searchQuery ? 'Try matching against different tags or filenames.' : 'Upload natively, publish from personal vaults, or create sub-folders here.'}</p>
           </div>
-       ) : (
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-             {/* Render Folders First */}
-             {filteredFolders.map((f: any) => (
-                <CommunityFolderCard
-                   key={f.id}
-                   folder={f}
-                   communityId={id}
-                   canOrganize={canOrganize}
-                   folderStack={folderStack}
-                   setFolderStack={setFolderStack}
-                   setSearchQuery={setSearchQuery}
-                   isSelected={selectedFolderIds.includes(f.id)}
-                   onToggle={toggleFolder}
-                />
-             ))}
+        ) : (
+          <div className="space-y-12">
+             {/* Folders Section */}
+             {filteredFolders.length > 0 && (
+               <section>
+                 <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 rounded-[8px] bg-[#FFD600] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                       <Folder className="w-4 h-4 text-[#0A0A0A]" />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-[18px] text-[#0A0A0A]">Folders</h3>
+                    <div className="px-2.5 py-0.5 rounded-full bg-[#F5F5F0] border-[2px] border-[#0A0A0A] text-[12px] font-mono font-bold text-[#0A0A0A]">
+                       {filteredFolders.length}
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {filteredFolders.map((f: any) => (
+                       <CommunityFolderCard
+                          key={f.id}
+                          folder={f}
+                          communityId={id}
+                          canOrganize={canOrganize}
+                          folderStack={folderStack}
+                          setFolderStack={setFolderStack}
+                          setSearchQuery={setSearchQuery}
+                          isSelected={selectedFolderIds.includes(f.id)}
+                          onToggle={toggleFolder}
+                          selectionMode={selectedItemIds.length > 0 || selectedFolderIds.length > 0}
+                          onRename={() => setRenamingFolder(f)}
+                          onOrganize={() => setOrganizeFolder(f)}
+                       />
+                    ))}
+                 </div>
+               </section>
+             )}
 
-             {/* Render Items */}
-             {filteredItems.map(renderItemCard)}
+             {/* Files & Links Section */}
+             {filteredItems.length > 0 && (
+               <section>
+                 <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 rounded-[8px] bg-[#0057FF] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                       <FileText className="w-4 h-4 text-white" />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-[18px] text-[#0A0A0A]">Files & Links</h3>
+                    <div className="px-2.5 py-0.5 rounded-full bg-[#F5F5F0] border-[2px] border-[#0A0A0A] text-[12px] font-mono font-bold text-[#0A0A0A]">
+                       {filteredItems.length}
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredItems.map(renderItemCard)}
+                 </div>
+               </section>
+             )}
           </div>
-       )}
+        )}
 
        {/* All Files View */}
-       {!searchQuery && vaultItems.length > 0 && (
+       {!searchQuery && folderStack.length === 0 && vaultItems.length > 0 && (
           <div className="mt-12 pt-8 border-t-[2px] border-[#0A0A0A] border-dashed">
             <h3 className="font-heading font-bold text-[20px] text-[#0A0A0A] mb-6 flex items-center gap-2">
               <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#00C853] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
@@ -471,18 +686,21 @@ export default function CommunityVaultPage() {
            isOpen={isPublishModalOpen} 
            onClose={() => setIsPublishModalOpen(false)} 
            communityId={id} 
+           targetFolderId={currentFolderId}
        />
 
        <CommunityUploadModal
            isOpen={isUploadModalOpen}
            onClose={() => setIsUploadModalOpen(false)}
            communityId={id}
+           currentFolderId={currentFolderId}
        />
 
        <CommunityAddLinkModal
            isOpen={isAddLinkModalOpen}
            onClose={() => setIsAddLinkModalOpen(false)}
            communityId={id}
+           currentFolderId={currentFolderId}
        />
 
        <CreateFolderModal
@@ -498,6 +716,36 @@ export default function CommunityVaultPage() {
              onClose={() => setOrganizeItem(null)}
              communityId={id}
              item={organizeItem}
+             folders={folders}
+          />
+       )}
+
+       {renamingFolder && (
+          <RenameFolderModal
+             isOpen={!!renamingFolder}
+             folder={renamingFolder}
+             communityId={id}
+             onClose={() => setRenamingFolder(null)}
+             onRenamed={() => queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", id] })}
+          />
+       )}
+
+       {renamingItem && (
+          <RenameItemModal
+             isOpen={!!renamingItem}
+             item={renamingItem}
+             communityId={id}
+             onClose={() => setRenamingItem(null)}
+             onRenamed={() => queryClient.invalidateQueries({ queryKey: ["communityVault", id] })}
+          />
+       )}
+
+       {organizeFolder && (
+          <CommunityOrganizeFolderModal
+             isOpen={!!organizeFolder}
+             onClose={() => setOrganizeFolder(null)}
+             communityId={id}
+             folder={organizeFolder}
              folders={folders}
           />
        )}
@@ -537,6 +785,11 @@ function CommunityFolderCard({
   folderStack,
   setFolderStack,
   setSearchQuery,
+  isSelected,
+  onToggle,
+  selectionMode = false,
+  onRename,
+  onOrganize,
 }: {
   folder: any
   communityId: string
@@ -546,13 +799,16 @@ function CommunityFolderCard({
   setSearchQuery: (q: string) => void
   isSelected: boolean
   onToggle: (id: string) => void
+  selectionMode?: boolean
+  onRename: () => void
+  onOrganize: () => void
 }) {
   const queryClient = useQueryClient()
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!window.confirm(`Delete folder "${folder.name}"? Its contents will be moved to the parent folder.`)) return
+    if (!window.confirm(`Delete folder "${folder.name}"? All files and sub-folders inside will be permanently deleted.`)) return
     setIsDeleting(true)
     const toastId = toast.loading("Deleting folder...")
     try {
@@ -575,14 +831,19 @@ function CommunityFolderCard({
   return (
     <div
       onClick={() => {
+        if (selectionMode) { onToggle(folder.id); return }
         setSearchQuery("")
         setFolderStack([...folderStack, { id: folder.id, name: folder.name }])
       }}
-      className="group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 flex items-center gap-4 cursor-pointer"
+      className={`group relative bg-[#FFFFFF] border-[2px] rounded-[1.5rem] p-5 shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 flex items-center gap-4 cursor-pointer ${
+        isSelected
+          ? "border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066] bg-[#FFFBDE]"
+          : "border-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+      }`}
     >
       <div 
         onClick={(e) => { e.stopPropagation(); onToggle(folder.id) }} 
-        className={`w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all shrink-0 ${isSelected ? 'bg-[#FFD600]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+        className={`w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all shrink-0 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
       >
         {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
       </div>
@@ -607,8 +868,20 @@ function CommunityFolderCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-40 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+            className="w-44 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
           >
+            <DropdownMenuItem
+              onClick={(e) => { e.stopPropagation(); onRename() }}
+              className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none"
+            >
+              <Pencil className="w-4 h-4 text-[#00C853]" /> Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => { e.stopPropagation(); onOrganize() }}
+              className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none"
+            >
+              <Settings2 className="w-4 h-4 text-[#0057FF]" /> Organize
+            </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
             <DropdownMenuItem
               onClick={handleDelete}
@@ -1022,10 +1295,26 @@ function CommunityUploadModal({ isOpen, onClose, communityId, currentFolderId }:
   )
 }
 
-function PublishFromVaultModal({ isOpen, onClose, communityId }: { isOpen: boolean, onClose: () => void, communityId: string }) {
+function PublishFromVaultModal({ 
+  isOpen, 
+  onClose, 
+  communityId,
+  targetFolderId
+}: { 
+  isOpen: boolean, 
+  onClose: () => void, 
+  communityId: string,
+  targetFolderId: string | null
+}) {
   const queryClient = useQueryClient()
+  const [personalFolderStack, setPersonalFolderStack] = useState<{id: string, name: string}[]>([])
+  const currentPersonalFolderId = personalFolderStack.length > 0 ? personalFolderStack[personalFolderStack.length - 1].id : null
+
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [selectedFolders, setSelectedFolders] = useState<string[]>([])
+  const [isPublishing, setIsPublishing] = useState(false)
   
-  const { data: myVaultItems = [], isLoading } = useQuery({
+  const { data: myVaultItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ["vaultItems"],
     queryFn: async () => {
       const res = await fetch("/api/vault/items")
@@ -1036,85 +1325,257 @@ function PublishFromVaultModal({ isOpen, onClose, communityId }: { isOpen: boole
     enabled: isOpen
   })
 
-  const filesOnly = myVaultItems?.filter((m: any) => m.files) || []
-
-  const publishMutation = useMutation({
-    mutationFn: async (vaultItemId: string) => {
-      const res = await fetch(`/api/communities/${communityId}/vault`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vault_item_id: vaultItemId })
-      })
-      if (!res.ok) {
-         const d = await res.json()
-         throw new Error(d.error || "Failed to publish")
-      }
-      return res.json()
+  const { data: myFolders = [], isLoading: foldersLoading } = useQuery({
+    queryKey: ["vaultFolders"],
+    queryFn: async () => {
+      const res = await fetch("/api/vault/folders")
+      if (!res.ok) throw new Error("Failed to fetch personal folders")
+      const json = await res.json()
+      return json.data
     },
-    onSuccess: () => {
-      toast.success("File published to Community Vault!")
-      queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
-      onClose()
-    },
-    onError: (err: any) => {
-      toast.error(err.message)
-    }
+    enabled: isOpen
   })
 
+  const isLoading = itemsLoading || foldersLoading
+
+  // Filter items and folders for the current view
+  const currentItems = myVaultItems.filter((item: any) => (item.folder_id || null) === (currentPersonalFolderId || null))
+  const currentFolders = myFolders.filter((f: any) => (f.parent_id || null) === (currentPersonalFolderId || null))
+
+  const toggleItemSelection = (id: string) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  const toggleFolderSelection = (id: string) => {
+    setSelectedFolders(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  const handlePublish = async () => {
+    if (selectedItems.length === 0 && selectedFolders.length === 0) return
+    setIsPublishing(true)
+    const toastId = toast.loading("Publishing items to community...")
+
+    try {
+      // 1. Publish files/links
+      for (const itemId of selectedItems) {
+        const res = await fetch(`/api/communities/${communityId}/vault`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vault_item_id: itemId, folder_id: targetFolderId })
+        })
+        if (!res.ok) throw new Error("Failed to publish some items")
+      }
+
+      // 2. Publish folders (recursive)
+      for (const folderId of selectedFolders) {
+        await publishFolderRecursive(folderId, targetFolderId)
+      }
+
+      toast.success("Successfully published selected items!", { id: toastId })
+      queryClient.invalidateQueries({ queryKey: ["communityVault", communityId] })
+      queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", communityId] })
+      onClose()
+      // Clear selection
+      setSelectedItems([])
+      setSelectedFolders([])
+      setPersonalFolderStack([])
+    } catch (err: any) {
+      toast.error(err.message || "Failed to publish some items", { id: toastId })
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
+  const publishFolderRecursive = async (personalFolderId: string, communityParentId: string | null) => {
+    const personalFolder = myFolders.find((f: any) => f.id === personalFolderId)
+    if (!personalFolder) return
+
+    // Create the folder in the community vault
+    const res = await fetch(`/api/communities/${communityId}/vault/folders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: personalFolder.name, parent_id: communityParentId })
+    })
+    if (!res.ok) throw new Error(`Failed to create folder ${personalFolder.name}`)
+    const { data: newCommunityFolder } = await res.json()
+
+    // Find all items in this personal folder
+    const folderItems = myVaultItems.filter((item: any) => item.folder_id === personalFolderId)
+    for (const item of folderItems) {
+      await fetch(`/api/communities/${communityId}/vault`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vault_item_id: item.id, folder_id: newCommunityFolder.id })
+      })
+    }
+
+    // Find all subfolders and recurse
+    const subFolders = myFolders.filter((f: any) => f.parent_id === personalFolderId)
+    for (const sub of subFolders) {
+      await publishFolderRecursive(sub.id, newCommunityFolder.id)
+    }
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-       <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-2xl p-6 flex flex-col max-h-[85vh]">
+    <Dialog open={isOpen} onOpenChange={(o) => !o && !isPublishing && onClose()}>
+       <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-2xl p-6 flex flex-col h-[85vh]">
           <DialogHeader className="mb-4 shrink-0">
-            <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
-              <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FFD600] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
-                <FolderSync className="w-4 h-4 text-[#0A0A0A]" />
-              </div>
-              Publish from Personal Vault
-            </DialogTitle>
-            <p className="font-sans text-[14px] text-[#555550]">Select a file from your personal vault to share it with this community.</p>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
+                <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FFD600] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+                  <FolderSync className="w-4 h-4 text-[#0A0A0A]" />
+                </div>
+                Publish from Personal Vault
+              </DialogTitle>
+              <button 
+                onClick={onClose}
+                disabled={isPublishing}
+                className="w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] flex items-center justify-center hover:bg-[#F5F5F0] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="font-sans text-[14px] text-[#555550]">Select files and folders to share. Folders maintain their structure.</p>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pr-2 min-h-[300px]">
+          {/* Navigation Breadcrumb */}
+          <div className="flex items-center gap-2 mb-4 bg-[#F5F5F0] p-2 rounded-[0.75rem] border-[2px] border-[#0A0A0A] overflow-x-auto no-scrollbar">
+            <button 
+              onClick={() => setPersonalFolderStack([])}
+              className={`font-mono text-[12px] px-2 py-1 rounded-[4px] hover:bg-[#E8E8E0] ${personalFolderStack.length === 0 ? 'bg-[#0A0A0A] text-white' : 'text-[#0A0A0A]'}`}
+            >
+              ROOT
+            </button>
+            {personalFolderStack.map((f, i) => (
+              <div key={f.id} className="flex items-center gap-2 shrink-0">
+                <ChevronRight className="w-3 h-3" />
+                <button 
+                  onClick={() => setPersonalFolderStack(prev => prev.slice(0, i + 1))}
+                  className={`font-mono text-[12px] px-2 py-1 rounded-[4px] hover:bg-[#E8E8E0] ${i === personalFolderStack.length - 1 ? 'bg-[#0A0A0A] text-white' : 'text-[#0A0A0A]'}`}
+                >
+                  {f.name}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {isLoading ? (
-               <div className="w-full h-full flex items-center justify-center">
+               <div className="w-full h-full flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-[#0A0A0A]" />
                </div>
-            ) : filesOnly.length === 0 ? (
+            ) : currentItems.length === 0 && currentFolders.length === 0 ? (
                <div className="text-center py-10 space-y-3">
                   <div className="w-16 h-16 rounded-[16px] bg-[#F5F5F0] border-[2px] border-[#0A0A0A] mx-auto flex items-center justify-center">
                      <File className="w-8 h-8 text-[#0A0A0A] opacity-30" />
                   </div>
-                  <h3 className="font-heading font-bold text-[18px]">Your vault is empty</h3>
-                  <p className="font-sans text-[14px] text-[#555550]">Upload files to your personal vault first.</p>
+                  <h3 className="font-heading font-bold text-[18px]">This folder is empty</h3>
+                  <p className="font-sans text-[14px] text-[#555550]">Navigate back or upload files to your personal vault.</p>
                </div>
             ) : (
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {filesOnly.map((item: any) => {
-                    const isPublishing = publishMutation.isPending && publishMutation.variables === item.id
-                    return (
-                      <button
-                         key={item.id}
-                         disabled={publishMutation.isPending}
-                         onClick={() => publishMutation.mutate(item.id)}
-                         className="flex items-center gap-3 p-3 rounded-[1rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] hover:-translate-y-1 transition-all text-left shadow-[2px_2px_0px_#0A0A0A] disabled:opacity-50"
+               <div className="grid grid-cols-1 gap-2">
+                  {/* Render Folders */}
+                  {currentFolders.map((f: any) => (
+                    <div 
+                      key={f.id}
+                      className={`group flex items-center gap-3 p-3 rounded-[1rem] border-[2px] transition-all text-left shadow-[2px_2px_0px_#0A0A0A] ${
+                        selectedFolders.includes(f.id) 
+                          ? 'border-[#FFD600] bg-[#FFFBDE] shadow-[2px_2px_0px_#FFD600]' 
+                          : 'border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0]'
+                      }`}
+                    >
+                      <button 
+                        onClick={() => toggleFolderSelection(f.id)}
+                        className={`w-5 h-5 rounded-[4px] border-[2px] border-[#0A0A0A] flex items-center justify-center transition-all ${selectedFolders.includes(f.id) ? 'bg-[#FFD600]' : 'bg-[#FFFFFF]'}`}
                       >
-                         <div className="w-10 h-10 rounded-[8px] bg-[#FFFFFF] border-[1.5px] border-[#0A0A0A] flex items-center justify-center shrink-0">
-                           {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : getFileIcon(item.files.mime_type)}
-                         </div>
-                         <div className="flex-1 min-w-0">
-                            <div className="font-heading font-bold text-[14px] text-[#0A0A0A] truncate">{item.files.filename}</div>
-                            <div className="font-mono text-[11px] text-[#555550]">{formatBytes(item.files.size_bytes)}</div>
-                         </div>
+                        {selectedFolders.includes(f.id) && <Check className="w-3 h-3 text-white" strokeWidth={4} />}
                       </button>
-                    )
-                  })}
+                      <div 
+                        className="flex-1 flex items-center gap-3 cursor-pointer"
+                        onClick={() => setPersonalFolderStack(prev => [...prev, {id: f.id, name: f.name}])}
+                      >
+                        <div className="w-10 h-10 rounded-[8px] bg-[#FFD600] border-[1.5px] border-[#0A0A0A] flex items-center justify-center shadow-[1px_1px_0px_#0A0A0A]">
+                          <Folder className="w-5 h-5 text-white fill-current" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-heading font-bold text-[14px] text-[#0A0A0A] truncate">{f.name}</div>
+                          <div className="font-mono text-[10px] text-[#555550]">Folder</div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#999990] group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Render Files */}
+                  {currentItems.map((item: any) => (
+                    <div 
+                      key={item.id}
+                      className={`group flex items-center gap-3 p-3 rounded-[1rem] border-[2px] transition-all text-left shadow-[2px_2px_0px_#0A0A0A] ${
+                        selectedItems.includes(item.id) 
+                          ? 'border-[#0057FF] bg-[#EEF3FF] shadow-[2px_2px_0px_#0057FF]' 
+                          : 'border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0]'
+                      }`}
+                    >
+                      <button 
+                        onClick={() => toggleItemSelection(item.id)}
+                        className={`w-5 h-5 rounded-[4px] border-[2px] border-[#0A0A0A] flex items-center justify-center transition-all ${selectedItems.includes(item.id) ? 'bg-[#0057FF]' : 'bg-[#FFFFFF]'}`}
+                      >
+                        {selectedItems.includes(item.id) && <Check className="w-3 h-3 text-white" strokeWidth={4} />}
+                      </button>
+                      <div 
+                        className="flex-1 flex items-center gap-3 cursor-pointer"
+                        onClick={() => toggleItemSelection(item.id)}
+                      >
+                        <div className="w-10 h-10 rounded-[8px] bg-[#FFFFFF] border-[1.5px] border-[#0A0A0A] flex items-center justify-center shadow-[1px_1px_0px_#0A0A0A]">
+                          {getFileIcon(item.files?.mime_type || "")}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-heading font-bold text-[14px] text-[#0A0A0A] truncate">
+                            {item.item_type === "link" ? (item.title || item.url) : (item.files?.filename || "Unknown File")}
+                          </div>
+                          <div className="font-mono text-[10px] text-[#555550]">
+                            {item.item_type === "link" ? "Link" : formatBytes(item.files?.size_bytes || 0)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                </div>
             )}
+          </div>
+
+          {/* Footer Action */}
+          <div className="mt-6 pt-4 border-t-[2px] border-[#E8E8E0] flex items-center justify-between bg-[#FFFFFF] shrink-0">
+            <div className="font-heading font-bold text-[14px]">
+              {selectedItems.length + selectedFolders.length > 0 ? (
+                <span className="text-[#0057FF]">{selectedItems.length + selectedFolders.length} items selected</span>
+              ) : (
+                <span className="text-[#999990]">Select items to publish</span>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                disabled={isPublishing}
+                className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing || (selectedItems.length === 0 && selectedFolders.length === 0)}
+                className="px-6 py-2.5 rounded-[0.875rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderSync className="w-4 h-4" />}
+                {isPublishing ? "Publishing..." : "Publish Selected"}
+              </button>
+            </div>
           </div>
        </DialogContent>
     </Dialog>
   )
 }
+
 
 function CommunityAddLinkModal({ isOpen, onClose, communityId, currentFolderId }: { isOpen: boolean, onClose: () => void, communityId: string, currentFolderId: string | null }) {
   const [isSaving, setIsSaving] = useState(false)
@@ -1244,5 +1705,66 @@ function CommunityAddLinkModal({ isOpen, onClose, communityId, currentFolderId }
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function CommunityOrganizeFolderModal({ isOpen, onClose, communityId, folder, folders }: { isOpen: boolean, onClose: () => void, communityId: string, folder: any, folders: any[] }) {
+  const [parentId, setParentId] = useState<string>(folder?.parent_id || "null")
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+     mutationFn: async () => {
+        const res = await fetch(`/api/communities/${communityId}/vault/folders?folderId=${folder.id}`, {
+           method: 'PATCH',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ parent_id: parentId })
+        })
+        if (!res.ok) {
+           const err = await res.json()
+           throw new Error(err.error || "Failed to move folder")
+        }
+        return res.json()
+     },
+     onSuccess: () => {
+        toast.success("Folder Moved")
+        queryClient.invalidateQueries({ queryKey: ["communityVaultFolders", communityId] })
+        onClose()
+     },
+     onError: (err: any) => toast.error(err.message)
+  })
+  
+  // Filter out current folder to prevent moving into itself
+  const validFolders = folders.filter(f => f.id !== folder?.id)
+
+  return (
+     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
+     <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-6 overflow-visible">
+       <DialogHeader>
+         <DialogTitle className="font-heading font-extrabold text-[20px] text-[#0A0A0A] flex items-center gap-2">
+            <Settings2 className="w-5 h-5 text-[#0057FF]" /> Move Folder
+         </DialogTitle>
+       </DialogHeader>
+       <div className="py-4 space-y-6">
+          <div className="space-y-2">
+             <Label className="font-mono text-[12px] text-[#555550] uppercase">Destination Folder</Label>
+             <select
+               value={parentId}
+               onChange={(e) => setParentId(e.target.value)}
+               className="w-full border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[2px_2px_0_#0A0A0A] h-10 px-3 bg-[#FFFFFF] font-sans text-[14px]"
+             >
+                <option value="null">Root (No Folder)</option>
+                {validFolders.map(f => (
+                   <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+             </select>
+          </div>
+       </div>
+       <DialogFooter className="mt-2 text-right">
+          <button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] text-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2 w-full">
+             {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Move Folder"}
+          </button>
+       </DialogFooter>
+     </DialogContent>
+   </Dialog>
   )
 }

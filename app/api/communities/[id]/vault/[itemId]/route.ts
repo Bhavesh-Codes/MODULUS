@@ -73,7 +73,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const communityId = resolvedParams.id
     
     const body = await request.json()
-    const { tags, folder_id } = body
+    const { tags, folder_id, title } = body
 
     // Route authorization: strictly 'owner' or 'curator' check
     const { data: member } = await supabase
@@ -90,10 +90,13 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
     const unassignedFolderId = folder_id === "null" || folder_id === null || folder_id === "" ? null : folder_id
 
+    const updatePayload: Record<string, any> = { tags, folder_id: unassignedFolderId }
+    if (title !== undefined) updatePayload.title = title.trim()
+
     // Use exact keys user mapped
     const { data, error: updateError } = await supabase
        .from('community_vault_items')
-       .update({ tags, folder_id: unassignedFolderId })
+       .update(updatePayload)
        .eq('id', vaultItemId)
        .select()
        .single()
