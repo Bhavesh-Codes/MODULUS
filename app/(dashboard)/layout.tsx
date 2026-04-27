@@ -1,10 +1,14 @@
+"use client"
+
 import { ReactNode } from "react"
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { CheckSquare, Folders, Compass } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import UserMenu from "@/components/user-menu"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   return (
     <div className="h-screen max-h-screen bg-[#F5F5F0] flex flex-col overflow-hidden">
       {/* Global Top Nav adhering to UI System */}
@@ -16,11 +20,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex items-center gap-6">
-          <Link href="/explore" className="font-sans font-bold text-[14px] text-[#555550] hover:text-[#0A0A0A] transition-colors">
-            Explore
+          <Link href="/tasks" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/tasks') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
+            <CheckSquare className="w-4 h-4" />
+            Tasks
           </Link>
-          <Link href="/vault" className="font-sans font-bold text-[14px] text-[#555550] hover:text-[#0A0A0A] transition-colors">
+          <Link href="/vault" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/vault') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
+            <Folders className="w-4 h-4" />
             Vault
+          </Link>
+          <Link href="/explore" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/explore') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
+            <Compass className="w-4 h-4" />
+            Explore
           </Link>
           <UserMenu />
         </nav>
@@ -31,7 +41,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <Toaster 
+      <Toaster
         toastOptions={{
           style: {
             background: '#FFFFFF',

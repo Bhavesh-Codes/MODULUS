@@ -3,30 +3,14 @@
 import { useOptimistic, useTransition, useState } from "react"
 import { Flame, CheckCheck, Loader2, Check, Archive } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getRelativeTimeString } from "@/lib/utils/task-helpers"
 import { CommunityTask, toggleTaskCompletion, updateTaskStatus } from "@/actions/tasks"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import TaskDrilldownDialog from "./TaskDrilldownDialog"
 
-function getRelativeTimeString(dateString: string | null) {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  const now = new Date()
-  
-  // Strip time portion to compare only dates
-  const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  
-  const diffTime = targetDate.getTime() - today.getTime()
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
 
-  if (diffDays === 0) return "Due today"
-  if (diffDays === 1) return "Due tomorrow"
-  if (diffDays === -1) return "Due yesterday"
-  if (diffDays > 1) return `Due in ${diffDays} days`
-  return `Overdue by ${Math.abs(diffDays)} days`
-}
 
 export default function TasksListClient({
   tasks,
