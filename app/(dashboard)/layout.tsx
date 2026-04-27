@@ -20,6 +20,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex items-center gap-6">
+          <Link href="/explore" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/explore') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
+            <Compass className="w-4 h-4" />
+            Communities
+          </Link>
           <Link href="/tasks" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/tasks') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
             <CheckSquare className="w-4 h-4" />
             Tasks
@@ -27,10 +31,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Link href="/vault" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/vault') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
             <Folders className="w-4 h-4" />
             Vault
-          </Link>
-          <Link href="/explore" className={`flex items-center gap-1.5 font-sans font-bold text-[14px] transition-colors ${pathname.startsWith('/explore') ? 'text-[#0A0A0A]' : 'text-[#555550] hover:text-[#0A0A0A]'}`}>
-            <Compass className="w-4 h-4" />
-            Explore
           </Link>
           <UserMenu />
         </nav>

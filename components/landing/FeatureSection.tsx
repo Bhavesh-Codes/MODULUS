@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Users, PlayCircle, Timer, FileText, Image as ImageIcon, Link as LinkIcon, Check, Mic, MicOff, Video, VideoOff, Circle, CheckCircle2 } from "lucide-react";
+import { Copy, Users, PlayCircle, Timer, FileText, Image as ImageIcon, Link as LinkIcon, Check, Mic, MicOff, Video, VideoOff, Circle, CheckCircle2, CheckSquare, List as ListIcon, LayoutDashboard, CalendarDays, MessageSquare } from "lucide-react";
 
 // Individual Mini Mockups
 
@@ -255,6 +255,273 @@ function FocusMockup() {
   );
 }
 
+function TasksMockup() {
+  type Priority = "high" | "medium" | "low";
+  const [tasks, setTasks] = useState([
+    { id: 1, title: "Finish assignment draft", priority: "high" as Priority, category: "Uni",      completed: false },
+    { id: 2, title: "Buy groceries",           priority: "low"  as Priority, category: "Personal", completed: true  },
+    { id: 3, title: "Review PR comments",      priority: "medium" as Priority, category: "Work",  completed: false },
+    { id: 4, title: "Morning run",             priority: "low"  as Priority, category: "Health",  completed: false },
+  ]);
+
+  const toggle = (id: number) =>
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+
+  const doneCount = tasks.filter((t) => t.completed).length;
+
+  const priorityDot: Record<Priority, string> = {
+    high:   "bg-red-500",
+    medium: "bg-amber-400",
+    low:    "bg-green-500",
+  };
+
+  return (
+    <div className="w-full h-full min-h-[300px] bg-white rounded-[1.5rem] border-[3px] border-black shadow-[8px_8px_0px_#0A0A0A] p-4 flex flex-col gap-3">
+      {/* View toggle pills */}
+      <div className="flex items-center gap-1.5">
+        {([
+          { label: "List",     Icon: ListIcon       },
+          { label: "Kanban",   Icon: LayoutDashboard },
+          { label: "Calendar", Icon: CalendarDays    },
+        ] as const).map(({ label, Icon }) => (
+          <div
+            key={label}
+            className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-black ${
+              label === "List"
+                ? "bg-[#7C3AED] text-white"
+                : "bg-[#F5F5F0] text-[#555550]"
+            }`}
+          >
+            <Icon className="w-2.5 h-2.5" />
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* Quick-add bar */}
+      <div className="flex items-center gap-2 bg-[#F5F5F0] border-2 border-black rounded-xl px-3 py-2">
+        <span className="flex-1 text-xs text-[#999] font-sans">Add a task...</span>
+        <div className="w-5 h-5 rounded-md border border-black bg-[#7C3AED] flex items-center justify-center text-white font-bold text-xs leading-none">
+          +
+        </div>
+      </div>
+
+      {/* Task list */}
+      <div className="flex flex-col gap-2 flex-1">
+        {tasks.map((task) => (
+          <div
+            key={task.id}
+            className="flex items-center gap-2.5 bg-[#F5F5F0] border border-black/20 rounded-xl px-3 py-2"
+          >
+            {/* Checkbox */}
+            <motion.button
+              onClick={() => toggle(task.id)}
+              whileTap={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className={`w-4 h-4 rounded border-[1.5px] border-black flex-shrink-0 flex items-center justify-center ${
+                task.completed ? "bg-[#7C3AED]" : "bg-white"
+              }`}
+            >
+              {task.completed && (
+                <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+              )}
+            </motion.button>
+
+            {/* Title */}
+            <span
+              className={`flex-1 text-xs font-sans font-medium truncate transition-all ${
+                task.completed ? "line-through opacity-50" : "text-black"
+              }`}
+            >
+              {task.title}
+            </span>
+
+            {/* Category badge */}
+            <span className="text-[9px] font-mono text-[#888] bg-white border border-black/10 px-1.5 py-0.5 rounded-full">
+              {task.category}
+            </span>
+
+            {/* Priority dot */}
+            <div
+              className={`w-2 h-2 rounded-full flex-shrink-0 border border-black/20 ${priorityDot[task.priority]}`}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Summary */}
+      <div className="text-[10px] font-mono text-[#888] text-right">
+        {doneCount} of {tasks.length} done
+      </div>
+    </div>
+  );
+}
+
+function ThreadsMockup() {
+  const [vote, setVote] = useState<"up" | "down" | null>(null);
+  const [upCount, setUpCount] = useState(14);
+  const [downCount, setDownCount] = useState(3);
+  const [showExtra, setShowExtra] = useState(false);
+
+  const handleVote = (dir: "up" | "down") => {
+    if (vote === dir) {
+      // deselect
+      setVote(null);
+      if (dir === "up") setUpCount((c) => c - 1);
+      else setDownCount((c) => c - 1);
+    } else {
+      // switching sides
+      if (vote === "up") setUpCount((c) => c - 1);
+      if (vote === "down") setDownCount((c) => c - 1);
+      setVote(dir);
+      if (dir === "up") setUpCount((c) => c + 1);
+      else setDownCount((c) => c + 1);
+    }
+  };
+
+  return (
+    <div className="w-full h-full min-h-[300px] bg-white rounded-[1.5rem] border-[3px] border-black shadow-[8px_8px_0px_#0A0A0A] p-4 flex flex-col gap-3">
+      {/* Header bar */}
+      <div className="flex items-center justify-between">
+        <span className="font-display font-bold text-sm">Threads</span>
+        <div className="flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-black bg-[#F5F5F0] text-[#555550] cursor-default">
+          + New Post
+        </div>
+      </div>
+
+      {/* Main post */}
+      <div className="bg-[#F5F5F0] border border-black/20 rounded-xl p-3 flex flex-col gap-2">
+        {/* Author row */}
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-[#7C3AED] border border-black flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+            AK
+          </div>
+          <span className="text-xs font-bold font-mono">akshat_k</span>
+          <span className="text-[10px] text-[#999] font-sans ml-1">2h ago</span>
+          <div className="ml-auto">
+            <ImageIcon className="w-3 h-3 text-[#bbb]" />
+          </div>
+        </div>
+
+        {/* Post title */}
+        <p className="text-xs font-sans font-semibold text-black leading-snug">
+          Anyone else struggling with the DSA assignment? Specifically the graph traversal part
+        </p>
+
+        {/* Category tag */}
+        <span className="self-start text-[9px] font-mono text-[#888] bg-white border border-black/10 px-2 py-0.5 rounded-full">
+          Uni • CSE
+        </span>
+
+        {/* Vote + reply row */}
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            onClick={() => handleVote("up")}
+            className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border transition-all ${
+              vote === "up"
+                ? "bg-[#FFD600] border-black text-black"
+                : "bg-white border-black/20 text-[#555]"
+            }`}
+          >
+            ▲ {upCount}
+          </button>
+          <button
+            onClick={() => handleVote("down")}
+            className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border transition-all ${
+              vote === "down"
+                ? "bg-red-100 border-red-400 text-red-500"
+                : "bg-white border-black/20 text-[#555]"
+            }`}
+          >
+            ▼ {downCount}
+          </button>
+          <button className="flex items-center gap-1 text-[10px] font-mono text-[#888] ml-1">
+            💬 4 replies
+          </button>
+        </div>
+      </div>
+
+      {/* Replies */}
+      <div className="flex flex-col gap-1.5 pl-1">
+        {/* Reply 1 */}
+        <div className="bg-[#F5F5F0] border border-black/10 rounded-xl p-2.5 flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-full bg-[#00C853] border border-black flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">
+              RV
+            </div>
+            <span className="text-[10px] font-bold font-mono">riya_v</span>
+            <span className="text-[9px] text-[#bbb] ml-1">1h ago</span>
+          </div>
+          <p className="text-[10px] font-sans text-[#333] leading-snug">
+            Yes! The BFS part tripped me up. Try visualizing it with a queue diagram first.
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[9px] font-mono text-[#bbb]">▲ 6</span>
+            <button className="text-[9px] font-mono text-[#bbb]">↩ reply</button>
+          </div>
+        </div>
+
+        {/* Reply 2 — sub-reply, indented */}
+        <div className="ml-4 border-l-2 border-[#A78BFA] pl-2">
+          <div className="bg-[#F5F5F0] border border-black/10 rounded-xl p-2.5 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#4285F4] border border-black flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">
+                SM
+              </div>
+              <span className="text-[10px] font-bold font-mono">sam_m</span>
+              <span className="text-[9px] text-[#bbb] ml-1">45m ago</span>
+            </div>
+            <p className="text-[10px] font-sans text-[#333] leading-snug">
+              agreed with riya — also check the lecture notes from week 8
+            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[9px] font-mono text-[#bbb]">▲ 3</span>
+              <button className="text-[9px] font-mono text-[#bbb]">↩ reply</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Collapsed expander */}
+        <AnimatePresence>
+          {showExtra && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="bg-[#F5F5F0] border border-black/10 rounded-xl p-2.5 flex flex-col gap-1"
+            >
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-[#FF6B00] border border-black flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">
+                  PK
+                </div>
+                <span className="text-[10px] font-bold font-mono">priya_k</span>
+                <span className="text-[9px] text-[#bbb] ml-1">30m ago</span>
+              </div>
+              <p className="text-[10px] font-sans text-[#333] leading-snug">
+                Prof uploaded a hint sheet in the Vault btw 👀
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[9px] font-mono text-[#bbb]">▲ 2</span>
+                <button className="text-[9px] font-mono text-[#bbb]">↩ reply</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setShowExtra((v) => !v)}
+          className="text-[10px] font-mono text-[#A78BFA] hover:underline text-left"
+        >
+          {showExtra ? "Hide replies" : "View 2 more replies..."}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const features = [
   {
     id: "vault",
@@ -291,6 +558,24 @@ const features = [
     icon: Timer,
     color: "bg-[#FF3CAC]",
     mockup: FocusMockup
+  },
+  {
+    id: "tasks",
+    title: "Personal Tasks",
+    desc: "Manage your daily grind with a built-in task manager. Switch between Kanban, List, and Calendar views seamlessly.",
+    tags: ["Kanban Board", "Priority Levels", "Subtasks"],
+    icon: CheckSquare,
+    color: "bg-[#7C3AED]",
+    mockup: TasksMockup
+  },
+  {
+    id: "threads",
+    title: "Threads",
+    desc: "Ask questions, share knowledge, and discuss ideas with your community. Upvote answers, reply to replies, and attach images to posts.",
+    tags: ["Q&A Forum", "Upvotes", "Nested Replies"],
+    icon: MessageSquare,
+    color: "bg-[#800000]",
+    mockup: ThreadsMockup
   }
 ];
 
@@ -301,7 +586,7 @@ export default function FeatureSection() {
         
         <div className="text-center mb-24 flex flex-col items-center">
            <h1 className="font-display font-extrabold text-4xl sm:text-6xl text-black">
-             Four tools. One login.
+             Six tools. One login.
            </h1>
         </div>
 

@@ -378,10 +378,10 @@ function CommunityHeader({
         <Link
           href="/explore"
           className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[13px] text-[#0A0A0A] hover:bg-[#FFD600] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
-          title="Back to Explore"
+          title="Back to Communities"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Explore</span>
+          <span className="hidden sm:inline">Communities</span>
         </Link>
       </div>
 
@@ -566,7 +566,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
           href="/explore"
           className="px-5 py-2.5 mt-4 inline-flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
         >
-          <ArrowLeft className="w-4 h-4" /> Go back
+          <ArrowLeft className="w-4 h-4" /> Go back to Communities
         </Link>
       </div>
     )
