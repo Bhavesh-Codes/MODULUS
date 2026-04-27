@@ -16,10 +16,10 @@ function VaultMockup() {
   ];
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-[#F5F5F0] rounded-[1.5rem] p-6 border-2 border-black flex flex-col gap-4 relative">
-      <div className="flex justify-between items-center bg-white border-2 border-black p-3 rounded-xl shadow-[3px_3px_0px_#0A0A0A]">
+    <div className="w-full h-full min-h-[300px] bg-background rounded-[1.5rem] p-6 border-2 border-foreground flex flex-col gap-4 relative">
+      <div className="flex justify-between items-center bg-card border-2 border-foreground p-3 rounded-xl shadow-[3px_3px_0px_black]">
         <div className="text-sm font-display font-bold">My Vault</div>
-        <div className="bg-[#FFD600] text-xs font-bold px-2 py-1 rounded-md border border-black">New</div>
+        <div className="bg-[#FFD600] text-xs font-bold px-2 py-1 rounded-md border border-foreground">New</div>
       </div>
       
       <div className="grid grid-cols-2 gap-3 flex-1 relative">
@@ -28,9 +28,9 @@ function VaultMockup() {
             key={f.id}
             layoutId={`vault-card-${f.id}`}
             onClick={() => setActiveId(f.id)}
-            className="bg-white border-2 border-black rounded-xl p-3 shadow-[3px_3px_0px_#0A0A0A] cursor-pointer hover:bg-neutral-50 flex flex-col gap-2"
+            className="bg-card border-2 border-foreground rounded-xl p-3 shadow-[3px_3px_0px_black] cursor-pointer hover:bg-neutral-50 flex flex-col gap-2"
           >
-            <div className={`w-8 h-8 rounded-md border border-black flex items-center justify-center text-white ${f.color}`}>
+            <div className={`w-8 h-8 rounded-md border border-foreground flex items-center justify-center text-white ${f.color}`}>
               <f.icon className="w-4 h-4" />
             </div>
             <div className="text-xs font-mono font-medium truncate">{f.name}</div>
@@ -41,12 +41,12 @@ function VaultMockup() {
       <AnimatePresence>
         {activeId && (
           <motion.div
-            className="absolute inset-4 bg-white border-2 border-black rounded-[1.5rem] shadow-[6px_6px_0px_#0A0A0A] z-10 p-4 flex flex-col cursor-pointer"
+            className="absolute inset-4 bg-card border-2 border-foreground rounded-[1.5rem] shadow-[6px_6px_0px_black] z-10 p-4 flex flex-col cursor-pointer"
             layoutId={`vault-card-${activeId}`}
             onClick={() => setActiveId(null)}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className={`w-10 h-10 rounded-md border-2 border-black flex items-center justify-center text-white ${files.find((f) => f.id === activeId)?.color}`}>
+              <div className={`w-10 h-10 rounded-md border-2 border-foreground flex items-center justify-center text-white ${files.find((f) => f.id === activeId)?.color}`}>
                 {files.find(f => f.id === activeId)?.icon && (() => {
                   const Icon = files.find(f => f.id === activeId)!.icon;
                   return <Icon className="w-5 h-5" />;
@@ -56,11 +56,11 @@ function VaultMockup() {
                 {files.find((f) => f.id === activeId)?.name}
               </div>
             </div>
-            <div className="flex-1 bg-[#F5F5F0] border-2 border-black rounded-xl flex items-center justify-center relative overflow-hidden">
+            <div className="flex-1 bg-background border-2 border-foreground rounded-xl flex items-center justify-center relative overflow-hidden">
                <div className="w-3/4 space-y-2">
-                 <div className="h-4 w-full bg-black/10 rounded-md" />
-                 <div className="h-4 w-5/6 bg-black/10 rounded-md" />
-                 <div className="h-4 w-4/6 bg-black/10 rounded-md" />
+                 <div className="h-4 w-full bg-foreground/10 rounded-md" />
+                 <div className="h-4 w-5/6 bg-foreground/10 rounded-md" />
+                 <div className="h-4 w-4/6 bg-foreground/10 rounded-md" />
                </div>
             </div>
           </motion.div>
@@ -89,31 +89,31 @@ function CommunityMockup() {
   };
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-white rounded-[1.5rem] border-2 border-black shadow-[6px_6px_0px_#0A0A0A] overflow-hidden flex flex-col relative">
-      <div className="h-24 bg-[#00C853] border-b-2 border-black px-6 pt-6 relative flex items-end">
+    <div className="w-full h-full min-h-[300px] bg-card rounded-[1.5rem] border-2 border-foreground shadow-[6px_6px_0px_black] overflow-hidden flex flex-col relative">
+      <div className="h-24 bg-[#00C853] border-b-2 border-foreground px-6 pt-6 relative flex items-end">
         <div className="absolute top-4 right-4 flex -space-x-2">
-          <div className="w-6 h-6 rounded-full border-2 border-black bg-[#FFD600]" />
-          <div className="w-6 h-6 rounded-full border-2 border-black bg-white" />
-          <div className="w-6 h-6 rounded-full border-2 border-black bg-[#FF3CAC]" />
+          <div className="w-6 h-6 rounded-full border-2 border-foreground bg-[#FFD600]" />
+          <div className="w-6 h-6 rounded-full border-2 border-foreground bg-card" />
+          <div className="w-6 h-6 rounded-full border-2 border-foreground bg-[#FF3CAC]" />
         </div>
       </div>
       <div className="px-6 pb-6 pt-4 flex-1 flex flex-col">
         <div className="font-display font-extrabold text-xl mb-1">Advanced Algorithms</div>
-        <div className="text-sm font-sans text-[#555550]">CS301 • 124 members</div>
+        <div className="text-sm font-sans text-muted-foreground">CS301 • 124 members</div>
         
         <div className="mt-4 flex gap-2">
-           <div className="h-16 w-1/2 bg-[#F5F5F0] border-2 border-black rounded-xl p-2 flex items-start gap-2">
-             <div className="w-6 h-6 rounded border border-black bg-[#FFD600]" />
+           <div className="h-16 w-1/2 bg-background border-2 border-foreground rounded-xl p-2 flex items-start gap-2">
+             <div className="w-6 h-6 rounded border border-foreground bg-[#FFD600]" />
              <div className="flex-1 space-y-1 mt-1">
-               <div className="h-2 bg-black/20 rounded w-full" />
-               <div className="h-2 bg-black/20 rounded w-2/3" />
+               <div className="h-2 bg-foreground/20 rounded w-full" />
+               <div className="h-2 bg-foreground/20 rounded w-2/3" />
              </div>
            </div>
-           <div className="h-16 w-1/2 bg-[#F5F5F0] border-2 border-black rounded-xl p-2 flex items-start gap-2">
-             <div className="w-6 h-6 rounded border border-black bg-[#0057FF]" />
+           <div className="h-16 w-1/2 bg-background border-2 border-foreground rounded-xl p-2 flex items-start gap-2">
+             <div className="w-6 h-6 rounded border border-foreground bg-[#0057FF]" />
              <div className="flex-1 space-y-1 mt-1">
-               <div className="h-2 bg-black/20 rounded w-full" />
-               <div className="h-2 bg-black/20 rounded w-1/2" />
+               <div className="h-2 bg-foreground/20 rounded w-full" />
+               <div className="h-2 bg-foreground/20 rounded w-1/2" />
              </div>
            </div>
         </div>
@@ -121,8 +121,8 @@ function CommunityMockup() {
         <div className="mt-auto pt-4 relative">
           <button 
             onClick={handleJoin}
-            className={`w-full py-2.5 rounded-xl border-2 border-black font-display font-bold transition-all ${
-              joined ? "bg-white text-black shadow-[2px_2px_0px_#0A0A0A] translate-x-[2px] translate-y-[2px]" : "bg-[#FFD600] text-black shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#FFD600]/90"
+            className={`w-full py-2.5 rounded-xl border-2 border-foreground font-display font-bold transition-all ${
+              joined ? "bg-card text-foreground shadow-[2px_2px_0px_black] translate-x-[2px] translate-y-[2px]" : "bg-[#FFD600] text-foreground shadow-[4px_4px_0px_black] hover:bg-[#FFD600]/90"
             } flex items-center justify-center gap-2`}
           >
             {joined ? <><CheckCircle2 className="w-5 h-5 text-[#00C853]" /> Joined</> : "Join Community"}
@@ -134,7 +134,7 @@ function CommunityMockup() {
               initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
               animate={{ x: c.x, y: c.y, scale: 1, opacity: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="absolute left-1/2 bottom-8 w-3 h-3 rounded-full border border-black pointer-events-none"
+              className="absolute left-1/2 bottom-8 w-3 h-3 rounded-full border border-foreground pointer-events-none"
               style={{ backgroundColor: c.color }}
             />
           ))}
@@ -149,29 +149,29 @@ function CircleMockup() {
   const [cam, setCam] = useState(false);
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-[#1E1E1E] text-white rounded-[1.5rem] border-2 border-black shadow-[6px_6px_0px_#0A0A0A] p-2 flex flex-col gap-2 relative">
+    <div className="w-full h-full min-h-[300px] bg-[#1E1E1E] text-white rounded-[1.5rem] border-2 border-foreground shadow-[6px_6px_0px_black] p-2 flex flex-col gap-2 relative">
       <div className="flex gap-2 h-[45%]">
-        <div className="flex-1 bg-[#2D2D2D] border-2 border-black rounded-xl overflow-hidden relative group">
+        <div className="flex-1 bg-[#2D2D2D] border-2 border-foreground rounded-xl overflow-hidden relative group">
           {cam ? (
-             <div className="absolute inset-0 bg-[#FFD600] flex items-center justify-center text-black font-display font-bold text-2xl">YOU</div>
+             <div className="absolute inset-0 bg-[#FFD600] flex items-center justify-center text-foreground font-display font-bold text-2xl">YOU</div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-neutral-500"><Users /></div>
           )}
           <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
-            <span className="text-xs bg-black/50 px-2 py-0.5 rounded font-mono">Me</span>
+            <span className="text-xs bg-foreground/50 px-2 py-0.5 rounded font-mono">Me</span>
             <div className={`w-2 h-2 rounded-full ${mic ? 'bg-[#00C853]' : 'bg-[#FF3B30]'}`} />
           </div>
         </div>
         <div className="w-[30%] flex flex-col gap-2">
-           <div className="flex-1 bg-[#4285F4] border-2 border-black rounded-xl flex items-center justify-center">
+           <div className="flex-1 bg-[#4285F4] border-2 border-foreground rounded-xl flex items-center justify-center">
              <span className="font-display font-bold text-lg">AJ</span>
            </div>
-           <div className="flex-1 bg-[#FF6B00] border-2 border-black rounded-xl flex items-center justify-center">
+           <div className="flex-1 bg-[#FF6B00] border-2 border-foreground rounded-xl flex items-center justify-center">
              <span className="font-display font-bold text-lg">MK</span>
            </div>
         </div>
       </div>
-      <div className="flex-1 bg-white border-2 border-black rounded-xl relative overflow-hidden p-4">
+      <div className="flex-1 bg-card border-2 border-foreground rounded-xl relative overflow-hidden p-4">
         {/* Whiteboard content */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 100">
           <motion.path
@@ -186,18 +186,18 @@ function CircleMockup() {
           />
         </svg>
         <motion.div 
-          className="absolute w-4 h-4 rounded-full bg-black shadow-lg"
+          className="absolute w-4 h-4 rounded-full bg-foreground shadow-lg"
           animate={{ x: [80, 140, 80], y: [50, 50, 50] }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 1, ease: "easeInOut" }}
         />
-        <div className="absolute bottom-2 left-2 text-black font-mono text-[10px] font-bold">Whiteboard Live</div>
+        <div className="absolute bottom-2 left-2 text-foreground font-mono text-[10px] font-bold">Whiteboard Live</div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black border-2 border-white/20 p-2 rounded-2xl">
-        <button onClick={() => setMic(!mic)} className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 border-black ${mic ? 'bg-white text-black' : 'bg-[#FF3B30] text-white'}`}>
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-foreground border-2 border-card/20 p-2 rounded-2xl">
+        <button onClick={() => setMic(!mic)} className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 border-foreground ${mic ? 'bg-card text-foreground' : 'bg-[#FF3B30] text-white'}`}>
           {mic ? <Mic className="w-5 h-5"/> : <MicOff className="w-5 h-5"/>}
         </button>
-        <button onClick={() => setCam(!cam)} className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 border-black ${cam ? 'bg-white text-black' : 'bg-[#FF3B30] text-white'}`}>
+        <button onClick={() => setCam(!cam)} className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 border-foreground ${cam ? 'bg-card text-foreground' : 'bg-[#FF3B30] text-white'}`}>
           {cam ? <Video className="w-5 h-5"/> : <VideoOff className="w-5 h-5"/>}
         </button>
       </div>
@@ -224,8 +224,8 @@ function FocusMockup() {
   const progress = ((25 * 60 - time) / (25 * 60)) * 100;
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-[#FF3CAC] rounded-[1.5rem] border-2 border-black shadow-[6px_6px_0px_#0A0A0A] p-6 flex flex-col items-center justify-center relative overflow-hidden text-white">
-      <div className="font-mono text-xs uppercase tracking-widest font-bold mb-4 bg-black/20 px-3 py-1 rounded-full border border-black/20">Focus Session</div>
+    <div className="w-full h-full min-h-[300px] bg-[#FF3CAC] rounded-[1.5rem] border-2 border-foreground shadow-[6px_6px_0px_black] p-6 flex flex-col items-center justify-center relative overflow-hidden text-white">
+      <div className="font-mono text-xs uppercase tracking-widest font-bold mb-4 bg-foreground/20 px-3 py-1 rounded-full border border-foreground/20">Focus Session</div>
       
       <div className="relative w-40 h-40 flex items-center justify-center">
         {/* Background ring */}
@@ -240,14 +240,14 @@ function FocusMockup() {
             className="transition-all duration-1000 ease-linear"
           />
         </svg>
-        <div className="font-display font-extrabold text-5xl tracking-tighter text-black drop-shadow-md">
+        <div className="font-display font-extrabold text-5xl tracking-tighter text-foreground drop-shadow-md">
           {mins}:{secs}
         </div>
       </div>
 
       <button 
         onClick={() => setRunning(!running)}
-        className="mt-6 bg-white border-2 border-black text-black font-display font-bold px-8 py-3 rounded-xl shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0A0A0A] transition-all"
+        className="mt-6 bg-card border-2 border-foreground text-foreground font-display font-bold px-8 py-3 rounded-xl shadow-[4px_4px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_black] transition-all"
       >
         {running ? "Pause" : "Start"}
       </button>
@@ -581,7 +581,7 @@ const features = [
 
 export default function FeatureSection() {
   return (
-    <section className="py-32 bg-white block w-full">
+    <section className="py-32 bg-card block w-full">
       <div className="max-w-[1280px] mx-auto px-4 md:px-8">
         
         <div className="text-center mb-24 flex flex-col items-center">
@@ -595,18 +595,18 @@ export default function FeatureSection() {
             const isEven = idx % 2 === 0;
             const ContentSide = () => (
               <div className="flex-1 flex flex-col gap-6 items-start justify-center">
-                <div className={`w-16 h-16 rounded-[1rem] border-[3px] border-black shadow-[4px_4px_0px_#0A0A0A] flex items-center justify-center ${feat.color} text-white`}>
+                <div className={`w-16 h-16 rounded-[1rem] border-[3px] border-foreground shadow-[4px_4px_0px_black] flex items-center justify-center ${feat.color} text-white`}>
                   <feat.icon className="w-8 h-8" />
                 </div>
-                <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
+                <h2 className="font-display font-bold text-3xl sm:text-4xl text-foreground">
                   {feat.title}
                 </h2>
-                <p className="font-sans text-lg text-[#555550] max-w-md">
+                <p className="font-sans text-lg text-muted-foreground max-w-md">
                   {feat.desc}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {feat.tags.map(tag => (
-                    <div key={tag} className="font-mono text-xs font-bold text-black bg-[#FFD600] px-3 py-1.5 rounded-full border-2 border-black">
+                    <div key={tag} className="font-mono text-xs font-bold text-foreground bg-[#FFD600] px-3 py-1.5 rounded-full border-2 border-foreground">
                       {tag}
                     </div>
                   ))}
@@ -627,7 +627,7 @@ export default function FeatureSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className={`p-8 md:p-12 lg:p-16 bg-white border-[3px] border-black rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] flex flex-col gap-12 lg:gap-16 relative overflow-hidden ${
+                className={`p-8 md:p-12 lg:p-16 bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] flex flex-col gap-12 lg:gap-16 relative overflow-hidden ${
                   isEven ? "lg:flex-row" : "lg:flex-row-reverse"
                 }`}
               >

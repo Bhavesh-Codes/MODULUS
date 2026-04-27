@@ -39,8 +39,8 @@ export default function CircleControlBar({
   }
 
   // Desktop: large buttons; Mobile: smaller to fit the narrow bar
-  const btnClass = "h-10 w-10 md:h-[48px] md:w-[48px] flex items-center justify-center rounded-[12px] md:rounded-[14px] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] md:shadow-[4px_4px_0px_#0A0A0A] bg-white hover:bg-[#F5F5F0] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_#0A0A0A] md:hover:shadow-[2px_2px_0px_#0A0A0A] transition-all shrink-0"
-  const activeBtnClass = "h-10 w-10 md:h-[48px] md:w-[48px] flex items-center justify-center rounded-[12px] md:rounded-[14px] border-[2px] border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A] md:shadow-[2px_2px_0px_#0A0A0A] bg-[#FFD600] translate-x-[2px] translate-y-[2px] transition-all shrink-0"
+  const btnClass = "h-10 w-10 md:h-[48px] md:w-[48px] flex items-center justify-center rounded-[12px] md:rounded-[14px] border-[2px] border-foreground shadow-[3px_3px_0px_black] md:shadow-[4px_4px_0px_black] bg-card hover:bg-background hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_black] md:hover:shadow-[2px_2px_0px_black] transition-all shrink-0"
+  const activeBtnClass = "h-10 w-10 md:h-[48px] md:w-[48px] flex items-center justify-center rounded-[12px] md:rounded-[14px] border-[2px] border-foreground shadow-[1px_1px_0px_black] md:shadow-[2px_2px_0px_black] bg-[#FFD600] translate-x-[2px] translate-y-[2px] transition-all shrink-0"
 
   return (
     // On mobile: full-width bar at bottom with overflow-x scroll fallback
@@ -49,8 +49,8 @@ export default function CircleControlBar({
       w-full md:w-auto
       md:absolute md:bottom-6 md:left-1/2 md:-translate-x-1/2
       flex items-center justify-center gap-2 md:gap-3
-      bg-white border-t-[3px] md:border-[3px] border-[#0A0A0A]
-      md:shadow-[6px_6px_0px_#0A0A0A]
+      bg-card border-t-[3px] md:border-[3px] border-foreground
+      md:shadow-[6px_6px_0px_black]
       px-3 py-2.5 md:px-4 md:py-3
       md:rounded-[100px]
       z-50
@@ -63,7 +63,7 @@ export default function CircleControlBar({
         className={isMicrophoneEnabled ? btnClass : activeBtnClass}
         title={isMicrophoneEnabled ? "Mute" : "Unmute"}
       >
-        {isMicrophoneEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" />}
+        {isMicrophoneEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5 text-foreground" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5 text-foreground" />}
       </button>
 
       <button
@@ -71,7 +71,7 @@ export default function CircleControlBar({
         className={isCameraEnabled ? btnClass : activeBtnClass}
         title={isCameraEnabled ? "Stop Video" : "Start Video"}
       >
-        {isCameraEnabled ? <Video className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" /> : <VideoOff className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" />}
+        {isCameraEnabled ? <Video className="w-4 h-4 md:w-5 md:h-5 text-foreground" /> : <VideoOff className="w-4 h-4 md:w-5 md:h-5 text-foreground" />}
       </button>
 
       <button
@@ -79,17 +79,17 @@ export default function CircleControlBar({
         className={isScreenShareEnabled ? activeBtnClass : btnClass}
         title={isScreenShareEnabled ? "Stop Sharing" : "Share Screen"}
       >
-        <MonitorUp className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" />
+        <MonitorUp className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
       </button>
 
-      <div className="w-[1px] md:w-[2px] h-[28px] md:h-[32px] bg-[#E8E8E0] mx-0.5 md:mx-1 shrink-0" />
+      <div className="w-[1px] md:w-[2px] h-[28px] md:h-[32px] bg-muted mx-0.5 md:mx-1 shrink-0" />
 
       <button
         onClick={toggleWhiteboard}
         className={isWhiteboardOpen ? activeBtnClass : btnClass}
         title={isWhiteboardOpen ? "Close Whiteboard" : "Open Whiteboard"}
       >
-        <PenTool className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" />
+        <PenTool className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
       </button>
 
       <button
@@ -97,24 +97,24 @@ export default function CircleControlBar({
         className={isChatOpen ? activeBtnClass : btnClass}
         title={isChatOpen ? "Close Chat" : "Open Chat"}
       >
-        <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" />
+        <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
       </button>
 
-      <div className="w-[1px] md:w-[2px] h-[28px] md:h-[32px] bg-[#E8E8E0] mx-0.5 md:mx-1 shrink-0" />
+      <div className="w-[1px] md:w-[2px] h-[28px] md:h-[32px] bg-muted mx-0.5 md:mx-1 shrink-0" />
 
       <button
         onClick={toggleFullscreen}
         className={btnClass}
         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
       >
-        {isFullscreen ? <Minimize className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" /> : <Maximize className="w-4 h-4 md:w-5 md:h-5 text-[#0A0A0A]" />}
+        {isFullscreen ? <Minimize className="w-4 h-4 md:w-5 md:h-5 text-foreground" /> : <Maximize className="w-4 h-4 md:w-5 md:h-5 text-foreground" />}
       </button>
 
-      <div className="w-[1px] md:w-[2px] h-[28px] md:h-[32px] bg-[#E8E8E0] mx-0.5 md:mx-1 shrink-0" />
+      <div className="w-[1px] md:w-[2px] h-[28px] md:h-[32px] bg-muted mx-0.5 md:mx-1 shrink-0" />
 
       <button
         onClick={handleLeave}
-        className="h-10 md:h-[48px] px-3 md:px-6 flex items-center justify-center gap-1.5 rounded-[12px] md:rounded-[14px] border-[2px] md:border-[3px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] md:shadow-[4px_4px_0px_#0A0A0A] bg-[#FF3B30] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_#0A0A0A] md:hover:shadow-[2px_2px_0px_#0A0A0A] transition-all text-white font-heading font-bold ml-0.5 md:ml-1 shrink-0"
+        className="h-10 md:h-[48px] px-3 md:px-6 flex items-center justify-center gap-1.5 rounded-[12px] md:rounded-[14px] border-[2px] md:border-[3px] border-foreground shadow-[3px_3px_0px_black] md:shadow-[4px_4px_0px_black] bg-[#FF3B30] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_black] md:hover:shadow-[2px_2px_0px_black] transition-all text-white font-heading font-bold ml-0.5 md:ml-1 shrink-0"
       >
         <PhoneOff className="w-4 h-4 md:w-5 md:h-5 text-white" />
         {/* Hide label on mobile */}

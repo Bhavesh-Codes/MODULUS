@@ -128,14 +128,14 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
   };
 
   return (
-    <div className="bg-white border-2 border-black rounded-[24px] shadow-[4px_4px_0px_#0A0A0A] p-6 lg:p-8 flex flex-col items-center">
+    <div className="bg-card border-2 border-foreground rounded-[24px] shadow-[4px_4px_0px_black] p-6 lg:p-8 flex flex-col items-center">
       
       {/* Tabs */}
-      <div className="flex px-1 py-1 mb-6 bg-[#F5F5F0] border-2 border-black rounded-full shadow-[3px_3px_0px_#0A0A0A]">
+      <div className="flex px-1 py-1 mb-6 bg-background border-2 border-foreground rounded-full shadow-[3px_3px_0px_black]">
         <button
           onClick={() => { if (!isActive) { setTimerType("pomodoro"); if(mode==='break')switchMode(); } }}
           className={`px-6 py-2 rounded-full font-bold transition-all text-sm ${
-            timerType === "pomodoro" ? "bg-[#FFD600] border-2 border-black shadow-[3px_3px_0px_#0A0A0A]" : "text-black border-2 border-transparent"
+            timerType === "pomodoro" ? "bg-[#FFD600] border-2 border-foreground shadow-[3px_3px_0px_black]" : "text-foreground border-2 border-transparent"
           }`}
           disabled={isActive}
         >
@@ -144,7 +144,7 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
         <button
           onClick={() => { if (!isActive) { setTimerType("stopwatch"); if(mode==='break')switchMode(); } }}
           className={`px-6 py-2 rounded-full font-bold transition-all text-sm ${
-            timerType === "stopwatch" ? "bg-[#FFD600] border-2 border-black shadow-[3px_3px_0px_#0A0A0A]" : "text-black border-2 border-transparent"
+            timerType === "stopwatch" ? "bg-[#FFD600] border-2 border-foreground shadow-[3px_3px_0px_black]" : "text-foreground border-2 border-transparent"
           }`}
           disabled={isActive}
         >
@@ -162,7 +162,7 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
       <motion.div 
         animate={{ scale: isActive ? [1, 1.02, 1] : 1 }}
         transition={{ repeat: isActive ? Infinity : 0, duration: 2 }}
-        className={`text-[4rem] lg:text-[6rem] font-extrabold tracking-tighter mb-8 leading-none ${mode === 'break' ? 'text-[#0057FF]' : 'text-black'}`}
+        className={`text-[4rem] lg:text-[6rem] font-extrabold tracking-tighter mb-8 leading-none ${mode === 'break' ? 'text-[#0057FF]' : 'text-foreground'}`}
         style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
       >
         {timerType === "pomodoro" ? formatPomodoroTime(currentDisplayTime) : formatDuration(currentDisplayTime)}
@@ -172,7 +172,7 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
       {mode === "work" && (
         <div className="w-full max-w-xs mb-8 relative">
           <label className="block text-sm font-medium mb-1 font-mono text-gray-700">Study Label</label>
-          <div className="relative border-2 border-black rounded-xl overflow-hidden shadow-[3px_3px_0px_#0A0A0A]">
+          <div className="relative border-2 border-foreground rounded-xl overflow-hidden shadow-[3px_3px_0px_black]">
             <Input 
                list="focus-labels"
                placeholder="e.g. Math, Coding, Reading"
@@ -195,16 +195,16 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
       <div className="flex space-x-4">
         {!isActive ? (
           <Button 
-            className={`rounded-[14px] border-[3px] border-black font-bold h-14 px-8 text-lg hover:-translate-y-1 transition-transform relative group hover:shadow-none shadow-[6px_6px_0px_#0A0A0A] active:translate-x-[6px] active:translate-y-[6px] ${mode === 'break' ? 'bg-[#0057FF] text-white' : 'bg-[#FFD600] text-black'}`}
+            className={`rounded-[14px] border-[3px] border-foreground font-bold h-14 px-8 text-lg hover:-translate-y-1 transition-transform relative group hover:shadow-none shadow-[6px_6px_0px_black] active:translate-x-[6px] active:translate-y-[6px] ${mode === 'break' ? 'bg-[#0057FF] text-white' : 'bg-[#FFD600] text-foreground'}`}
             onClick={startTimer}
             disabled={mode === 'work' && !subjectLabel}
           >
-            <Play className={`mr-2 h-6 w-6 ${mode === 'break' ? 'fill-white' : 'fill-black'}`} />
+            <Play className={`mr-2 h-6 w-6 ${mode === 'break' ? 'fill-white' : 'fill-foreground'}`} />
             {mode === 'break' ? 'Start Break' : 'Start Focusing'}
           </Button>
         ) : (
           <Button 
-            className="rounded-[14px] bg-[#FF3B30] border-[3px] border-black text-white font-bold h-14 px-8 text-lg hover:-translate-y-1 transition-transform relative group hover:shadow-none shadow-[6px_6px_0px_#0A0A0A] active:translate-x-[6px] active:translate-y-[6px]"
+            className="rounded-[14px] bg-[#FF3B30] border-[3px] border-foreground text-white font-bold h-14 px-8 text-lg hover:-translate-y-1 transition-transform relative group hover:shadow-none shadow-[6px_6px_0px_black] active:translate-x-[6px] active:translate-y-[6px]"
             onClick={handleStop}
           >
             <Pause className="mr-2 h-6 w-6 fill-white" />
@@ -213,7 +213,7 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
         )}
         <Button 
           variant="outline"
-          className="rounded-[14px] bg-white border-[2px] border-black text-black font-bold h-14 px-4 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_#0A0A0A] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
+          className="rounded-[14px] bg-card border-[2px] border-foreground text-foreground font-bold h-14 px-4 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_black] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
           onClick={resetTimer}
           disabled={isActive || (timerType === 'pomodoro' && timeLeft === (mode === 'work' ? 25 * 60 : 5 * 60)) || (timerType === 'stopwatch' && secondsElapsed === 0)}
           title="Reset"
@@ -224,7 +224,7 @@ export function UnifiedTimer({ communityId }: { communityId: string }) {
         {mode === 'break' && !isActive && (
           <Button
             variant="outline"
-            className="rounded-[14px] bg-white border-[2px] border-black text-black font-bold h-14 px-6 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_#0A0A0A] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
+            className="rounded-[14px] bg-card border-[2px] border-foreground text-foreground font-bold h-14 px-6 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_black] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
             onClick={() => switchMode()}
           >
             Skip Break

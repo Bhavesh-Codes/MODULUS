@@ -19,7 +19,7 @@ export function ThreadImage({ fileId, className }: { fileId: string; className?:
         <img
             src={url}
             alt="Thread image"
-            className={className ?? "w-full object-contain bg-[#F5F5F0]"}
+            className={className ?? "w-full object-contain bg-background"}
         />
     )
 }

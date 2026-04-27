@@ -205,18 +205,18 @@ export function ListView({
     <div className="flex flex-col gap-6">
       {/* Toolbar */}
       {showToolbar ? (
-      <div className="flex flex-wrap gap-3 items-center bg-[#F5F5F0] px-4 py-2.5 rounded-[1rem] border-2 border-black shadow-[2px_2px_0_black]">
+      <div className="flex flex-wrap gap-3 items-center bg-background px-4 py-2.5 rounded-[1rem] border-2 border-foreground shadow-[2px_2px_0_black]">
         <div className="flex items-center gap-2">
-          <ListFilter className="w-4 h-4 text-[#555550]" />
+          <ListFilter className="w-4 h-4 text-muted-foreground" />
         </div>
 
         {/* Sort */}
-        <div className="flex items-center gap-2 border-r-2 border-black/10 pr-4">
-          <span className="font-space text-[10px] font-bold text-[#555550]">SORT</span>
+        <div className="flex items-center gap-2 border-r-2 border-foreground/10 pr-4">
+          <span className="font-space text-[10px] font-bold text-muted-foreground">SORT</span>
           <select
             value={sortField}
             onChange={e => setSortField(e.target.value as SortField)}
-            className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
+            className="px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
           >
             <option value="date">Date</option>
             <option value="deadline">Deadline</option>
@@ -225,30 +225,30 @@ export function ListView({
           </select>
           <button
             onClick={() => setSortAsc(!sortAsc)}
-            className="p-1.5 bg-white border-2 border-black rounded-[0.75rem] hover:shadow-[2px_2px_0_black] hover:-translate-y-[1px] transition-all cursor-pointer"
+            className="p-1.5 bg-card border-2 border-foreground rounded-[0.75rem] hover:shadow-[2px_2px_0_black] hover:-translate-y-[1px] transition-all cursor-pointer"
             title={sortAsc ? "Ascending" : "Descending"}
           >
-            {sortAsc ? <ArrowDown className="w-4 h-4 text-black" /> : <ArrowUp className="w-4 h-4 text-black" />}
+            {sortAsc ? <ArrowDown className="w-4 h-4 text-foreground" /> : <ArrowUp className="w-4 h-4 text-foreground" />}
           </button>
         </div>
 
         {/* Group */}
-        <div className="flex items-center gap-2 border-r-2 border-black/10 pr-4">
-          <span className="font-space text-[10px] font-bold text-[#555550]">GROUP</span>
+        <div className="flex items-center gap-2 border-r-2 border-foreground/10 pr-4">
+          <span className="font-space text-[10px] font-bold text-muted-foreground">GROUP</span>
           <button
             onClick={() => setGroupBy(groupBy === 'date' ? 'none' : 'date')}
-            className={`px-3 py-1.5 border-2 border-black rounded-[0.75rem] font-vietnam text-sm font-bold transition-all cursor-pointer ${groupBy === 'date'
+            className={`px-3 py-1.5 border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm font-bold transition-all cursor-pointer ${groupBy === 'date'
               ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              : 'bg-card shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Date
           </button>
           <button
             onClick={() => setGroupBy(groupBy === 'category' ? 'none' : 'category')}
-            className={`px-3 py-1.5 border-2 border-black rounded-[0.75rem] font-vietnam text-sm font-bold transition-all cursor-pointer ${groupBy === 'category'
+            className={`px-3 py-1.5 border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm font-bold transition-all cursor-pointer ${groupBy === 'category'
               ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              : 'bg-card shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Category
@@ -257,11 +257,11 @@ export function ListView({
 
         {/* Filters */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-space text-[10px] font-bold text-[#555550]">FILTERS</span>
+          <span className="font-space text-[10px] font-bold text-muted-foreground">FILTERS</span>
           <select
             value={filterPriority}
             onChange={e => setFilterPriority(e.target.value)}
-            className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
+            className="px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
           >
             <option value="all">Priority: All</option>
             <option value="high">High</option>
@@ -273,7 +273,7 @@ export function ListView({
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
-            className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
+            className="px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
           >
             <option value="all">Status: All</option>
             <option value="todo">Todo</option>
@@ -283,7 +283,7 @@ export function ListView({
           <select
             value={filterCategory}
             onChange={e => setFilterCategory(e.target.value)}
-            className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer max-w-[150px]"
+            className="px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer max-w-[150px]"
           >
             <option value="all">Category: All</option>
             <option value="none">Uncategorized</option>
@@ -294,9 +294,9 @@ export function ListView({
 
           <button
             onClick={() => setFilterToday(!filterToday)}
-            className={`ml-2 px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${filterToday
-              ? 'bg-black text-white shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+            className={`ml-2 px-4 py-1.5 border-2 border-foreground rounded-full font-space text-sm font-bold transition-all cursor-pointer ${filterToday
+              ? 'bg-foreground text-white shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-card text-foreground shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Today
@@ -315,7 +315,7 @@ export function ListView({
           )}
           <button
             onClick={() => setShowToolbar(false)}
-            className="p-1.5 text-[#555550] hover:text-black hover:bg-black/10 rounded-[0.5rem] transition-colors cursor-pointer"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-[0.5rem] transition-colors cursor-pointer"
             title="Hide Menu"
           >
             <X className="w-4 h-4" />
@@ -326,7 +326,7 @@ export function ListView({
         <div className="flex justify-end -mb-2">
           <button
             onClick={() => setShowToolbar(true)}
-            className="flex items-center gap-2 px-3 py-1.5 font-space text-xs font-bold text-[#555550] hover:text-black transition-colors cursor-pointer opacity-50 hover:opacity-100"
+            className="flex items-center gap-2 px-3 py-1.5 font-space text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer opacity-50 hover:opacity-100"
           >
             <ListFilter className="w-4 h-4" />
             Show Menu
@@ -337,10 +337,10 @@ export function ListView({
       {/* Task List */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-24 h-24 mb-6 rounded-full bg-[#E8E8E0] border-[3px] border-black flex items-center justify-center shadow-[4px_4px_0_black]">
-            <CircleSlash className="w-10 h-10 text-black" />
+          <div className="w-24 h-24 mb-6 rounded-full bg-muted border-[3px] border-foreground flex items-center justify-center shadow-[4px_4px_0_black]">
+            <CircleSlash className="w-10 h-10 text-foreground" />
           </div>
-          <h2 className="font-jakarta font-bold text-[24px] text-black">
+          <h2 className="font-jakarta font-bold text-[24px] text-foreground">
             {filterToday ? "Nothing due today — you're all caught up." : "No tasks yet. Type above to add your first one."}
           </h2>
         </div>
@@ -353,11 +353,11 @@ export function ListView({
                 {groupBy !== 'none' && (
                   <button
                     onClick={() => toggleGroup(group.name)}
-                    className="flex items-center gap-3 w-fit hover:bg-[#F5F5F0] p-2 -ml-2 rounded-lg transition-colors outline-none cursor-pointer"
+                    className="flex items-center gap-3 w-fit hover:bg-background p-2 -ml-2 rounded-lg transition-colors outline-none cursor-pointer"
                   >
-                    {isCollapsed ? <ChevronRight className="w-5 h-5 text-black" /> : <ChevronDown className="w-5 h-5 text-black" />}
-                    <h3 className="font-jakarta font-bold text-[20px] text-black">{group.name}</h3>
-                    <Badge className="bg-black text-white hover:bg-black font-space border-none">
+                    {isCollapsed ? <ChevronRight className="w-5 h-5 text-foreground" /> : <ChevronDown className="w-5 h-5 text-foreground" />}
+                    <h3 className="font-jakarta font-bold text-[20px] text-foreground">{group.name}</h3>
+                    <Badge className="bg-foreground text-white hover:bg-foreground font-space border-none">
                       {group.tasks.length}
                     </Badge>
                   </button>

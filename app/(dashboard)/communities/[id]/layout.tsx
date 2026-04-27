@@ -76,22 +76,22 @@ function CommunitySidebar({
           className={`
             relative flex items-center md:flex-1 gap-3 transition-all
             ${collapsed ? "justify-center p-3 rounded-[1rem] mx-2" : "px-4 py-3 rounded-[1rem] mx-4"}
-            border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none
+            border-[2px] border-foreground shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none
             ${isActive
               ? "bg-[#FFD600]"
-              : "bg-[#FFFFFF]"
+              : "bg-card"
             }
           `}
           style={{ minHeight: 48 }}
         >
           <Icon
             className="shrink-0"
-            style={{ width: 20, height: 20, color: "#0A0A0A" }}
+            style={{ width: 20, height: 20, color: "var(--foreground)" }}
             strokeWidth={isActive ? 2.5 : 2}
           />
           {!collapsed && (
             <span
-              className="font-sans text-[14px] text-[#0A0A0A] whitespace-nowrap overflow-hidden"
+              className="font-sans text-[14px] text-foreground whitespace-nowrap overflow-hidden"
               style={{ fontWeight: isActive ? 700 : 500 }}
             >
               {label}
@@ -114,8 +114,8 @@ function CommunitySidebar({
         // NOTE: no 'display' here — let className="hidden md:flex" control it
         // so that inline style doesn't override the hidden class on mobile.
         flexDirection: "column",
-        background: "#F5F5F0",
-        borderLeft: "2px solid #0A0A0A",
+        background: "var(--background)",
+        borderLeft: "2px solid var(--foreground)",
         zIndex: 30,
         overflow: "hidden",
       }}
@@ -123,7 +123,7 @@ function CommunitySidebar({
     >
       {/* Toggle button */}
       <div
-        className="shrink-0 flex items-center border-b-[2px] border-b-[#0A0A0A] bg-[#FFFFFF] shadow-sm mb-4"
+        className="shrink-0 flex items-center border-b-[2px] border-b-[var(--foreground)] bg-card shadow-sm mb-4"
         style={{
           height: 64,
           justifyContent: communitySidebarOpen ? "flex-end" : "center",
@@ -133,12 +133,12 @@ function CommunitySidebar({
         <button
           onClick={toggleCommunitySidebar}
           title={communitySidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          className="flex items-center justify-center bg-[#FFFFFF] hover:bg-[#FFD600] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all rounded-[10px]"
+          className="flex items-center justify-center bg-card hover:bg-[#FFD600] border-[2px] border-foreground shadow-[3px_3px_0_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all rounded-[10px]"
           style={{ width: 40, height: 40, minWidth: 40 }}
         >
           {communitySidebarOpen
-            ? <ChevronRight style={{ width: 20, height: 20, color: "#0A0A0A" }} />
-            : <ChevronLeft style={{ width: 20, height: 20, color: "#0A0A0A" }} />
+            ? <ChevronRight style={{ width: 20, height: 20, color: "var(--foreground)" }} />
+            : <ChevronLeft style={{ width: 20, height: 20, color: "var(--foreground)" }} />
           }
         </button>
       </div>
@@ -156,7 +156,7 @@ function CommunitySidebar({
       {/* Backdrop */}
       {communitySidebarMobileOpen && (
         <div
-          className="fixed inset-0 bg-[#0A0A0A]/50 z-40 md:hidden"
+          className="fixed inset-0 bg-foreground/50 z-40 md:hidden"
           onClick={() => setCommunitySidebarMobileOpen(false)}
         />
       )}
@@ -173,23 +173,23 @@ function CommunitySidebar({
           transition: "transform 0.25s ease",
           // NOTE: no 'display' here — 'flex' is in className so md:hidden can override
           flexDirection: "column",
-          background: "#F5F5F0",
-          borderLeft: "2px solid #0A0A0A",
+          background: "var(--background)",
+          borderLeft: "2px solid var(--foreground)",
           zIndex: 50,
         }}
         className="flex flex-col md:hidden shadow-[-4px_0_10px_rgba(0,0,0,0.05)]"
       >
         <div
-          className="shrink-0 flex items-center justify-between border-b-[2px] border-b-[#0A0A0A] bg-[#FFFFFF] px-4 mb-4"
+          className="shrink-0 flex items-center justify-between border-b-[2px] border-b-[var(--foreground)] bg-card px-4 mb-4"
           style={{ height: 64 }}
         >
-          <span className="font-heading font-bold text-[15px] text-[#0A0A0A]">Apps</span>
+          <span className="font-heading font-bold text-[15px] text-foreground">Apps</span>
           <button
             onClick={() => setCommunitySidebarMobileOpen(false)}
-            className="flex items-center justify-center bg-[#FFFFFF] hover:bg-[#FFD600] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all rounded-[10px]"
+            className="flex items-center justify-center bg-card hover:bg-[#FFD600] border-[2px] border-foreground shadow-[3px_3px_0_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all rounded-[10px]"
             style={{ width: 40, height: 40, minWidth: 40 }}
           >
-            <X style={{ width: 18, height: 18, color: "#0A0A0A" }} />
+            <X style={{ width: 18, height: 18, color: "var(--foreground)" }} />
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto flex flex-col py-8 pb-12 gap-5">
@@ -270,12 +270,12 @@ function CommunityHeader({
   if (isSubPage) {
     return (
       <header
-        className="flex items-center bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[6px_6px_0px_#0A0A0A] px-5 py-3 gap-3 sticky top-4 z-40 shrink-0 transition-all duration-300 ease-in-out"
+        className="flex items-center bg-card border-[3px] border-foreground rounded-[1.5rem] shadow-[6px_6px_0px_black] px-5 py-3 gap-3 sticky top-4 z-40 shrink-0 transition-all duration-300 ease-in-out"
       >
         {/* Back link */}
         <Link
           href={`/communities/${id}`}
-          className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all shrink-0"
+          className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:bg-background hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all shrink-0"
           title="Back to community home"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -284,10 +284,10 @@ function CommunityHeader({
 
         {/* Community name and member count */}
         <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 flex-1 overflow-hidden">
-          <span className="font-heading font-extrabold text-[#0A0A0A] leading-none truncate text-[18px]">
+          <span className="font-heading font-extrabold text-foreground leading-none truncate text-[18px]">
             {community.name}
           </span>
-          <span className="font-mono text-[12px] text-[#555550]">
+          <span className="font-mono text-[12px] text-muted-foreground">
             <span className="hidden md:inline mr-2">•</span>
             {community.member_count} member{community.member_count !== 1 ? "s" : ""}
           </span>
@@ -297,7 +297,7 @@ function CommunityHeader({
         <div className="flex items-center gap-2 shrink-0">
           <span
             title={community.type.toUpperCase()}
-            className={`flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] ${community.type === "Public"
+            className={`flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-foreground shadow-[2px_2px_0_black] ${community.type === "Public"
               ? "bg-[#00C853] text-white"
               : "bg-[#FF6B00] text-white"
               }`}
@@ -309,22 +309,22 @@ function CommunityHeader({
           </span>
 
           {role === "owner" && (
-            <span title="Owner" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] bg-[#0057FF] text-white">
+            <span title="Owner" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-foreground shadow-[2px_2px_0_black] bg-[#0057FF] text-white">
               <Shield className="w-4 h-4" />
             </span>
           )}
           {role === "curator" && (
-            <span title="Curator" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] bg-[#FF3CAC] text-white">
+            <span title="Curator" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-foreground shadow-[2px_2px_0_black] bg-[#FF3CAC] text-white">
               <Star className="w-4 h-4" />
             </span>
           )}
           {role === "peer" && (
-            <span title="Peer" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] bg-[#FFD600] text-[#0A0A0A]">
+            <span title="Peer" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-foreground shadow-[2px_2px_0_black] bg-[#FFD600] text-foreground">
               <User className="w-4 h-4" />
             </span>
           )}
           {role === "pending" && (
-            <span title="Pending" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] bg-[#E8E8E0] text-[#0A0A0A]">
+            <span title="Pending" className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-foreground shadow-[2px_2px_0_black] bg-muted text-foreground">
               <Clock className="w-4 h-4" />
             </span>
           )}
@@ -334,11 +334,11 @@ function CommunityHeader({
         {isMember && (
           <button
             onClick={onMobileMenuOpen}
-            className="ml-auto flex items-center justify-center bg-[#FFFFFF] hover:bg-[#FFD600] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-[8px] md:hidden shrink-0"
+            className="ml-auto flex items-center justify-center bg-card hover:bg-[#FFD600] border-[2px] border-foreground shadow-[2px_2px_0_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-[8px] md:hidden shrink-0"
             style={{ width: 36, height: 36 }}
             title="Open apps"
           >
-            <Menu style={{ width: 18, height: 18, color: "#0A0A0A" }} />
+            <Menu style={{ width: 18, height: 18, color: "var(--foreground)" }} />
           </button>
         )}
       </header>
@@ -348,17 +348,17 @@ function CommunityHeader({
   // ── Expanded header (community home) ──────────────────────────────────────
   return (
     <header
-      className="relative bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] overflow-hidden"
+      className="relative bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] overflow-hidden"
       style={{ transition: "all 0.3s ease" }}
     >
       {/* Banner */}
-      <div className="h-48 md:h-64 bg-[#FFD600] border-b-[3px] border-[#0A0A0A] relative flex items-center justify-center overflow-hidden">
-        <div className="absolute top-4 left-4 w-12 h-12 rounded-full border-[3px] border-[#0A0A0A] bg-[#FF3CAC] -translate-x-2 -translate-y-2 pointer-events-none" />
-        <div className="absolute bottom-4 right-4 w-16 h-16 border-[3px] border-[#0A0A0A] bg-[#0057FF] rotate-12 translate-x-2 translate-y-2 pointer-events-none" />
+      <div className="h-48 md:h-64 bg-[#FFD600] border-b-[3px] border-foreground relative flex items-center justify-center overflow-hidden">
+        <div className="absolute top-4 left-4 w-12 h-12 rounded-full border-[3px] border-foreground bg-[#FF3CAC] -translate-x-2 -translate-y-2 pointer-events-none" />
+        <div className="absolute bottom-4 right-4 w-16 h-16 border-[3px] border-foreground bg-[#0057FF] rotate-12 translate-x-2 translate-y-2 pointer-events-none" />
         <div
           className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
-            backgroundImage: "radial-gradient(#0A0A0A 2.5px, transparent 2.5px)",
+            backgroundImage: "radial-gradient(var(--foreground) 2.5px, transparent 2.5px)",
             backgroundSize: "30px 30px",
           }}
         />
@@ -369,7 +369,7 @@ function CommunityHeader({
             className="w-full h-full object-cover relative z-10"
           />
         ) : (
-          <h1 className="font-heading font-extrabold text-8xl text-[#0A0A0A] opacity-20 relative z-10 select-none">
+          <h1 className="font-heading font-extrabold text-8xl text-foreground opacity-20 relative z-10 select-none">
             {community.name[0]?.toUpperCase()}
           </h1>
         )}
@@ -389,14 +389,14 @@ function CommunityHeader({
       <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 justify-between items-start">
         <div className="flex-1 space-y-4">
           <div className="flex items-center flex-wrap gap-3">
-            <h1 className="font-heading font-extrabold text-[32px] md:text-[42px] leading-none text-[#0A0A0A]">
+            <h1 className="font-heading font-extrabold text-[32px] md:text-[42px] leading-none text-foreground">
               {community.name}
             </h1>
 
             <span
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide ${community.type === "Public"
-                ? "bg-[#00C853] text-[#FFFFFF]"
-                : "bg-[#FF6B00] text-[#FFFFFF]"
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-foreground shadow-[2px_2px_0px_black] font-mono text-[13px] font-bold tracking-wide ${community.type === "Public"
+                ? "bg-[#00C853] text-white"
+                : "bg-[#FF6B00] text-white"
                 }`}
             >
               {community.type === "Public"
@@ -407,25 +407,25 @@ function CommunityHeader({
             </span>
 
             {role === "owner" && (
-              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[12px] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide bg-[#0057FF] text-[#FFFFFF]">
+              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[12px] border-[2px] border-foreground shadow-[3px_3px_0px_black] font-mono text-[13px] font-bold tracking-wide bg-[#0057FF] text-white">
                 <Shield className="w-4 h-4" />
                 OWNER
               </span>
             )}
             {role === "curator" && (
-              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide bg-[#FF3CAC] text-[#FFFFFF]">
+              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-foreground shadow-[2px_2px_0px_black] font-mono text-[13px] font-bold tracking-wide bg-[#FF3CAC] text-white">
                 <Star className="w-4 h-4" />
                 CURATOR
               </span>
             )}
             {role === "peer" && (
-              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide bg-[#FFD600] text-[#0A0A0A]">
+              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-foreground shadow-[2px_2px_0px_black] font-mono text-[13px] font-bold tracking-wide bg-[#FFD600] text-foreground">
                 <User className="w-4 h-4" />
                 PEER
               </span>
             )}
             {role === "pending" && (
-              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide bg-[#E8E8E0] text-[#0A0A0A]">
+              <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-foreground shadow-[2px_2px_0px_black] font-mono text-[13px] font-bold tracking-wide bg-muted text-foreground">
                 <Clock className="w-4 h-4" />
                 PENDING
               </span>
@@ -434,7 +434,7 @@ function CommunityHeader({
             {isOwner && (
               <button
                 onClick={onManageMembers}
-                className="ml-auto md:ml-2 px-4 py-1.5 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#FFD600] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all flex items-center gap-2"
+                className="ml-auto md:ml-2 px-4 py-1.5 rounded-[0.75rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:bg-[#FFD600] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
                 Manage Members
@@ -442,13 +442,13 @@ function CommunityHeader({
             )}
           </div>
 
-          <p className="font-sans text-[16px] md:text-[18px] text-[#555550] max-w-3xl leading-relaxed">
+          <p className="font-sans text-[16px] md:text-[18px] text-muted-foreground max-w-3xl leading-relaxed">
             {community.description || "No description provided."}
           </p>
 
-          <div className="flex items-center gap-2 font-mono text-[14px] text-[#0A0A0A]">
-            <div className="w-10 h-10 rounded-[10px] bg-[#E8E8E0] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
-              <Users className="w-5 h-5 text-[#0A0A0A]" />
+          <div className="flex items-center gap-2 font-mono text-[14px] text-foreground">
+            <div className="w-10 h-10 rounded-[10px] bg-muted border-[2px] border-foreground flex items-center justify-center shadow-[2px_2px_0px_black]">
+              <Users className="w-5 h-5 text-foreground" />
             </div>
             <span className="font-bold text-[16px]">{community.member_count}</span>
             {" "}member{community.member_count !== 1 ? "s" : ""}
@@ -459,7 +459,7 @@ function CommunityHeader({
           {isOwner ? (
             <button
               disabled
-              className="px-6 py-3 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#F5F5F0] font-heading font-bold text-[15px] text-[#0A0A0A] opacity-70 flex items-center justify-center gap-2 w-full md:w-auto"
+              className="px-6 py-3 rounded-[1rem] border-[3px] border-foreground bg-background font-heading font-bold text-[15px] text-foreground opacity-70 flex items-center justify-center gap-2 w-full md:w-auto"
             >
               <Shield className="w-5 h-5" />
               You are the Owner
@@ -467,7 +467,7 @@ function CommunityHeader({
           ) : isPending ? (
             <button
               disabled
-              className="px-6 py-3 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#E8E8E0] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[15px] text-[#0A0A0A] flex items-center justify-center gap-2 w-full md:w-auto opacity-70 cursor-not-allowed"
+              className="px-6 py-3 rounded-[1rem] border-[3px] border-foreground bg-muted shadow-[4px_4px_0px_black] font-heading font-bold text-[15px] text-foreground flex items-center justify-center gap-2 w-full md:w-auto opacity-70 cursor-not-allowed"
             >
               <Loader2 className="w-5 h-5 animate-spin" />
               Request Pending...
@@ -480,7 +480,7 @@ function CommunityHeader({
                 }
               }}
               disabled={leaveMutation.isPending}
-              className="px-6 py-3 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FF3B30] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[15px] text-[#FFFFFF] flex items-center justify-center gap-2 disabled:opacity-50 w-full md:w-auto"
+              className="px-6 py-3 rounded-[1rem] border-[3px] border-foreground bg-[#FF3B30] shadow-[4px_4px_0px_black] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-heading font-bold text-[15px] text-white flex items-center justify-center gap-2 disabled:opacity-50 w-full md:w-auto"
             >
               {leaveMutation.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -493,7 +493,7 @@ function CommunityHeader({
             <button
               onClick={() => joinMutation.mutate()}
               disabled={joinMutation.isPending}
-              className="px-6 py-3 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[6px_6px_0px_#0A0A0A] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none transition-all font-heading font-bold text-[16px] text-[#0A0A0A] flex items-center justify-center gap-2 disabled:opacity-50 w-full md:w-auto"
+              className="px-6 py-3 rounded-[1rem] border-[3px] border-foreground bg-[#FFD600] shadow-[6px_6px_0px_black] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none transition-all font-heading font-bold text-[16px] text-foreground flex items-center justify-center gap-2 disabled:opacity-50 w-full md:w-auto"
             >
               {joinMutation.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -513,10 +513,10 @@ function CommunityHeader({
             {isMember && (
               <button
                 onClick={onMobileMenuOpen}
-                className="w-12 h-12 rounded-[12px] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all flex items-center justify-center md:hidden"
+                className="w-12 h-12 rounded-[12px] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all flex items-center justify-center md:hidden"
                 title="Open apps"
               >
-                <Menu className="w-5 h-5 text-[#0A0A0A]" />
+                <Menu className="w-5 h-5 text-foreground" />
               </button>
             )}
           </div>
@@ -551,7 +551,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
   if (isLoading) {
     return (
       <div className="w-full flex justify-center py-32">
-        <Loader2 className="w-10 h-10 animate-spin text-[#0A0A0A]" />
+        <Loader2 className="w-10 h-10 animate-spin text-foreground" />
       </div>
     )
   }
@@ -559,12 +559,12 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
   if (!community) {
     return (
       <div className="p-8 text-center mt-20">
-        <h2 className="font-heading font-extrabold text-[28px] text-[#0A0A0A]">
+        <h2 className="font-heading font-extrabold text-[28px] text-foreground">
           Community Not Found
         </h2>
         <Link
           href="/explore"
-          className="px-5 py-2.5 mt-4 inline-flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+          className="px-5 py-2.5 mt-4 inline-flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:bg-background hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
         >
           <ArrowLeft className="w-4 h-4" /> Go back to Communities
         </Link>
@@ -771,11 +771,11 @@ function ManageMembersModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-lg p-6 flex flex-col max-h-[85vh]">
+      <DialogContent className="bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] max-w-lg p-6 flex flex-col max-h-[85vh]">
         <DialogHeader className="mb-4 shrink-0">
-          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[8px] bg-[#FFD600] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#0A0A0A]" />
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-foreground flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] bg-[#FFD600] border-[2px] border-foreground shadow-[2px_2px_0px_black] flex items-center justify-center">
+              <Users className="w-4 h-4 text-foreground" />
             </div>
             Manage Members
           </DialogTitle>
@@ -784,16 +784,16 @@ function ManageMembersModal({
         <div className="overflow-y-auto pr-2 space-y-8 flex-1">
           {isLoading ? (
             <div className="flex justify-center py-10">
-              <Loader2 className="w-8 h-8 animate-spin text-[#0A0A0A]" />
+              <Loader2 className="w-8 h-8 animate-spin text-foreground" />
             </div>
           ) : (
             <>
               {/* Pending Requests */}
               {pendingMembers.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="font-heading font-extrabold text-[16px] text-[#0A0A0A] flex items-center justify-between border-b-[2px] border-[#0A0A0A] pb-2 border-dashed">
+                  <h3 className="font-heading font-extrabold text-[16px] text-foreground flex items-center justify-between border-b-[2px] border-foreground pb-2 border-dashed">
                     Pending Requests
-                    <span className="bg-[#FF6B00] text-white px-2 py-0.5 rounded-[100px] text-[12px] shadow-[2px_2px_0px_#0A0A0A] border-[1.5px] border-[#0A0A0A]">
+                    <span className="bg-[#FF6B00] text-white px-2 py-0.5 rounded-[100px] text-[12px] shadow-[2px_2px_0px_black] border-[1.5px] border-foreground">
                       {pendingMembers.length}
                     </span>
                   </h3>
@@ -801,21 +801,21 @@ function ManageMembersModal({
                     {pendingMembers.map((m: any) => (
                       <div
                         key={m.user_id}
-                        className="flex items-center justify-between p-3 rounded-[1rem] border-[2px] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] bg-[#FFFFFF] hover:-translate-y-1 transition-transform"
+                        className="flex items-center justify-between p-3 rounded-[1rem] border-[2px] border-foreground shadow-[4px_4px_0px_black] bg-card hover:-translate-y-1 transition-transform"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-[8px] bg-[#E8E8E0] border-[1.5px] border-[#0A0A0A] overflow-hidden flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-[8px] bg-muted border-[1.5px] border-foreground overflow-hidden flex items-center justify-center shrink-0">
                             {m.user?.profile_pic ? (
                               <img src={m.user.profile_pic} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <UserPlus className="w-5 h-5 text-[#555550]" />
+                              <UserPlus className="w-5 h-5 text-muted-foreground" />
                             )}
                           </div>
                           <div>
-                            <div className="font-bold font-heading text-[15px] text-[#0A0A0A] line-clamp-1">
+                            <div className="font-bold font-heading text-[15px] text-foreground line-clamp-1">
                               {m.user?.name || "Unknown User"}
                             </div>
-                            <div className="font-sans text-[12px] text-[#555550]">
+                            <div className="font-sans text-[12px] text-muted-foreground">
                               Requested {new Date(m.joined_at).toLocaleDateString()}
                             </div>
                           </div>
@@ -824,14 +824,14 @@ function ManageMembersModal({
                           <button
                             disabled={approveMutation.isPending || kickMutation.isPending}
                             onClick={() => kickMutation.mutate(m.user_id)}
-                            className="w-10 h-10 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#FF3B30] hover:text-[#FFFFFF] transition-colors flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]"
+                            className="w-10 h-10 rounded-[8px] border-[2px] border-foreground bg-card hover:bg-[#FF3B30] hover:text-white transition-colors flex items-center justify-center shadow-[2px_2px_0px_black]"
                           >
                             <UserMinus className="w-4 h-4" />
                           </button>
                           <button
                             disabled={approveMutation.isPending || kickMutation.isPending}
                             onClick={() => approveMutation.mutate(m.user_id)}
-                            className="bg-[#00C853] text-[#FFFFFF] text-[14px] font-heading font-bold px-4 py-2 rounded-[8px] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all flex items-center gap-1"
+                            className="bg-[#00C853] text-white text-[14px] font-heading font-bold px-4 py-2 rounded-[8px] border-[2px] border-foreground shadow-[3px_3px_0px_black] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all flex items-center gap-1"
                           >
                             Approve
                           </button>
@@ -844,9 +844,9 @@ function ManageMembersModal({
 
               {/* Active Members */}
               <div className="space-y-4">
-                <h3 className="font-heading font-extrabold text-[16px] text-[#0A0A0A] flex items-center justify-between border-b-[2px] border-[#0A0A0A] pb-2 border-dashed">
+                <h3 className="font-heading font-extrabold text-[16px] text-foreground flex items-center justify-between border-b-[2px] border-foreground pb-2 border-dashed">
                   Active Members
-                  <span className="bg-[#E8E8E0] text-[#0A0A0A] px-2 py-0.5 rounded-[100px] text-[12px] shadow-[2px_2px_0px_#0A0A0A] border-[1.5px] border-[#0A0A0A]">
+                  <span className="bg-muted text-foreground px-2 py-0.5 rounded-[100px] text-[12px] shadow-[2px_2px_0px_black] border-[1.5px] border-foreground">
                     {activeMembers.length}
                   </span>
                 </h3>
@@ -854,28 +854,28 @@ function ManageMembersModal({
                   {activeMembers.map((m: any) => (
                     <div
                       key={m.user_id}
-                      className="flex items-center justify-between p-3 rounded-[1rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] transition-colors"
+                      className="flex items-center justify-between p-3 rounded-[1rem] border-[2px] border-foreground bg-card hover:bg-background transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[8px] bg-[#FFD600] border-[1.5px] border-[#0A0A0A] overflow-hidden flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#0A0A0A]">
+                        <div className="w-10 h-10 rounded-[8px] bg-[#FFD600] border-[1.5px] border-foreground overflow-hidden flex items-center justify-center shrink-0 shadow-[2px_2px_0px_black]">
                           {m.user?.profile_pic ? (
                             <img src={m.user.profile_pic} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="font-bold font-heading text-[16px] text-[#0A0A0A]">
+                            <span className="font-bold font-heading text-[16px] text-foreground">
                               {m.user?.name?.[0]?.toUpperCase()}
                             </span>
                           )}
                         </div>
                         <div>
-                          <div className="font-bold text-[14px] font-heading text-[#0A0A0A] line-clamp-1 flex items-center gap-2">
+                          <div className="font-bold text-[14px] font-heading text-foreground line-clamp-1 flex items-center gap-2">
                             {m.user?.name || "Unknown User"}
                             {m.role === "owner" && (
-                              <span className="text-[10px] bg-[#FFD600] border-[1.5px] border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A] px-1.5 rounded-[100px] font-bold tracking-widest uppercase">
+                              <span className="text-[10px] bg-[#FFD600] border-[1.5px] border-foreground shadow-[1px_1px_0px_black] px-1.5 rounded-[100px] font-bold tracking-widest uppercase">
                                 Owner
                               </span>
                             )}
                           </div>
-                          <div className="font-sans text-[12px] text-[#555550] mt-0.5">
+                          <div className="font-sans text-[12px] text-muted-foreground mt-0.5">
                             Joined {new Date(m.joined_at).toLocaleDateString()}
                           </div>
                         </div>
@@ -888,7 +888,7 @@ function ManageMembersModal({
                             onChange={(e) =>
                               roleMutation.mutate({ userId: m.user_id, role: e.target.value })
                             }
-                            className="px-3 py-1.5 rounded-[8px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] bg-[#FFFFFF] text-[13px] font-bold font-sans outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all cursor-pointer disabled:opacity-50 appearance-none pr-8 relative hover:bg-[#F5F5F0]"
+                            className="px-3 py-1.5 rounded-[8px] border-[2px] border-foreground shadow-[2px_2px_0px_black] bg-card text-[13px] font-bold font-sans outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all cursor-pointer disabled:opacity-50 appearance-none pr-8 relative hover:bg-background"
                             style={{
                               backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230A0A0A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")`,
                               backgroundRepeat: "no-repeat",
@@ -908,13 +908,13 @@ function ManageMembersModal({
                               }
                             }}
                             title="Remove User"
-                            className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FF3B30] text-[#FFFFFF] shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
+                            className="w-8 h-8 rounded-[8px] border-[2px] border-foreground bg-[#FF3B30] text-white shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
                           >
                             <UserMinus className="w-4 h-4" />
                           </button>
                         </div>
                       ) : (
-                        <div className="text-[12px] font-bold text-[#555550]">
+                        <div className="text-[12px] font-bold text-muted-foreground">
                           Owner (Immutable)
                         </div>
                       )}

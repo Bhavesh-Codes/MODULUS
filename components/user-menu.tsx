@@ -90,7 +90,7 @@ export default function UserMenu() {
       {/* Avatar Button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] font-mono font-bold text-[12px] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all overflow-hidden p-0"
+        className="flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-foreground bg-[#FFD600] shadow-[2px_2px_0px_black] font-mono font-bold text-[12px] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all overflow-hidden p-0"
         suppressHydrationWarning
         aria-label="User menu"
         aria-expanded={open}
@@ -109,18 +109,18 @@ export default function UserMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-[calc(100%+8px)] w-[220px] bg-[#FFFFFF] border-[2px] border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] rounded-[16px] overflow-hidden z-[100]"
+            className="absolute right-0 top-[calc(100%+8px)] w-[220px] bg-card border-[2px] border-foreground shadow-[6px_6px_0px_black] rounded-[16px] overflow-hidden z-[100]"
           >
             {/* Profile Summary */}
-            <div className="px-4 py-3 border-b-[2px] border-[#E8E8E0] bg-[#F5F5F0]">
-              <p className="font-heading font-bold text-[14px] text-[#0A0A0A] truncate">
+            <div className="px-4 py-3 border-b-[2px] border-border bg-background">
+              <p className="font-heading font-bold text-[14px] text-foreground truncate">
                 {profile?.name ?? "Loading…"}
               </p>
-              <p className="font-mono text-[11px] text-[#555550] truncate mt-0.5">
+              <p className="font-mono text-[11px] text-muted-foreground truncate mt-0.5">
                 {profile?.email ?? ""}
               </p>
               {profile?.college && (
-                <p className="font-mono text-[11px] text-[#999990] truncate">
+                <p className="font-mono text-[11px] text-muted-foreground/70 truncate">
                   {profile.college}
                 </p>
               )}
@@ -130,7 +130,7 @@ export default function UserMenu() {
             <div className="py-1">
               <button
                 onClick={handleViewProfile}
-                className="w-full flex items-center gap-3 px-4 py-2.5 font-sans font-medium text-[14px] text-[#0A0A0A] hover:bg-[#FFD600] transition-colors text-left"
+                className="w-full flex items-center gap-3 px-4 py-2.5 font-sans font-medium text-[14px] text-foreground hover:bg-[#FFD600] transition-colors text-left"
               >
                 <User className="w-4 h-4 shrink-0" />
                 View Profile
@@ -138,13 +138,13 @@ export default function UserMenu() {
 
               <button
                 onClick={handleEditProfile}
-                className="w-full flex items-center gap-3 px-4 py-2.5 font-sans font-medium text-[14px] text-[#0A0A0A] hover:bg-[#FFD600] transition-colors text-left"
+                className="w-full flex items-center gap-3 px-4 py-2.5 font-sans font-medium text-[14px] text-foreground hover:bg-[#FFD600] transition-colors text-left"
               >
                 <Settings className="w-4 h-4 shrink-0" />
                 Edit Profile
               </button>
 
-              <div className="h-[2px] bg-[#E8E8E0] mx-4 my-1" />
+              <div className="h-[2px] bg-muted mx-4 my-1" />
 
               <button
                 onClick={handleLogout}

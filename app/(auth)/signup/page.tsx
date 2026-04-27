@@ -74,10 +74,10 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="bg-[#FFFFFF] p-8 rounded-[24px] border-[2px] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
+    <div className="bg-card p-8 rounded-[24px] border-[2px] border-foreground shadow-[4px_4px_0px_black]">
       <div className="mb-8">
-        <h2 className="font-heading font-bold text-[28px] text-[#0A0A0A] mb-2">Create Account</h2>
-        <p className="font-sans text-[16px] text-[#555550]">Join your campus community on MODULUS.</p>
+        <h2 className="font-heading font-bold text-[28px] text-foreground mb-2">Create Account</h2>
+        <p className="font-sans text-[16px] text-muted-foreground">Join your campus community on MODULUS.</p>
       </div>
 
       <div className="space-y-6">
@@ -94,10 +94,10 @@ export default function SignupPage() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-[#E8E8E0]" />
+            <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-[#FFFFFF] px-2 font-mono text-[#999990]">OR CONTINUE WITH</span>
+            <span className="bg-card px-2 font-mono text-muted-foreground/70">OR CONTINUE WITH</span>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export default function SignupPage() {
             <button 
               type="button" 
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555550] hover:text-[#0A0A0A]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
@@ -150,7 +150,7 @@ export default function SignupPage() {
         </div>
 
         {errorText && (
-          <div className="bg-[#FF3B30] text-[#FFFFFF] p-3 rounded-[12px] text-[14px] font-sans border-[2px] border-[#0A0A0A]">
+          <div className="bg-[#FF3B30] text-white p-3 rounded-[12px] text-[14px] font-sans border-[2px] border-foreground">
             {errorText}
           </div>
         )}
@@ -162,9 +162,9 @@ export default function SignupPage() {
       </form>
       </div>
 
-      <div className="mt-8 text-center font-sans text-[14px] text-[#555550]">
+      <div className="mt-8 text-center font-sans text-[14px] text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="text-[#0A0A0A] font-bold hover:underline">
+        <Link href="/login" className="text-foreground font-bold hover:underline">
           Log in
         </Link>
       </div>

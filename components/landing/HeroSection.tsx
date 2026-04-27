@@ -10,7 +10,7 @@ function MemphisShapes() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.08]">
       {/* Circle */}
       <motion.div
-        className="absolute top-[20%] left-[10%] w-16 h-16 rounded-full border-[3px] border-black bg-transparent"
+        className="absolute top-[20%] left-[10%] w-16 h-16 rounded-full border-[3px] border-foreground bg-transparent"
         animate={{ y: [0, -20, 0], rotate: [0, 45, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -30,7 +30,7 @@ function MemphisShapes() {
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       >
         {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="w-2 h-2 bg-black rounded-full" />
+          <div key={i} className="w-2 h-2 bg-foreground rounded-full" />
         ))}
       </motion.div>
       {/* Squiggle */}
@@ -57,10 +57,10 @@ function MemphisShapes() {
         animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
       >
-        <div className="bg-black" />
-        <div className="border-2 border-black" />
-        <div className="border-2 border-black" />
-        <div className="bg-black" />
+        <div className="bg-foreground" />
+        <div className="border-2 border-foreground" />
+        <div className="border-2 border-foreground" />
+        <div className="bg-foreground" />
       </motion.div>
     </div>
   );
@@ -74,34 +74,34 @@ function FloatingProductMockup() {
       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       style={{ rotate: "2deg" }}
     >
-      <div className="bg-white border-[3px] border-black rounded-[24px] shadow-[12px_12px_0px_#0A0A0A] overflow-hidden flex flex-col h-[400px]">
+      <div className="bg-card border-[3px] border-foreground rounded-[24px] shadow-[12px_12px_0px_black] overflow-hidden flex flex-col h-[400px]">
         {/* Mockup Header */}
-        <div className="h-16 bg-[#FFD600] border-b-[3px] border-black px-6 flex items-center justify-between">
+        <div className="h-16 bg-[#FFD600] border-b-[3px] border-foreground px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-[#FFD600] font-bold font-display text-sm">
+            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center text-[#FFD600] font-bold font-display text-sm">
               IT
             </div>
-            <span className="font-display font-bold text-lg text-black">Information Technology 101</span>
+            <span className="font-display font-bold text-lg text-foreground">Information Technology 101</span>
           </div>
           <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full border-2 border-black bg-white" />
-            <div className="w-3 h-3 rounded-full border-2 border-black bg-white" />
-            <div className="w-3 h-3 rounded-full border-2 border-black bg-white" />
+            <div className="w-3 h-3 rounded-full border-2 border-foreground bg-card" />
+            <div className="w-3 h-3 rounded-full border-2 border-foreground bg-card" />
+            <div className="w-3 h-3 rounded-full border-2 border-foreground bg-card" />
           </div>
         </div>
         {/* Mockup Body */}
-        <div className="flex-1 bg-[#F5F5F0] p-6 grid grid-cols-2 gap-4">
+        <div className="flex-1 bg-background p-6 grid grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-white border-2 border-black rounded-xl p-4 shadow-[4px_4px_0px_#0A0A0A] flex flex-col gap-3"
+              className="bg-card border-2 border-foreground rounded-xl p-4 shadow-[4px_4px_0px_black] flex flex-col gap-3"
             >
-              <div className={`w-8 h-8 rounded-md border-2 border-black flex items-center justify-center ${i % 2 === 0 ? 'bg-[#0057FF]' : 'bg-[#FF3CAC]'}`}>
-                <div className="w-4 h-4 bg-white rounded-sm border border-black" />
+              <div className={`w-8 h-8 rounded-md border-2 border-foreground flex items-center justify-center ${i % 2 === 0 ? 'bg-[#0057FF]' : 'bg-[#FF3CAC]'}`}>
+                <div className="w-4 h-4 bg-card rounded-sm border border-foreground" />
               </div>
               <div className="space-y-1.5">
-                <div className="h-2.5 w-full bg-black/10 rounded-full" />
-                <div className="h-2.5 w-2/3 bg-black/10 rounded-full" />
+                <div className="h-2.5 w-full bg-foreground/10 rounded-full" />
+                <div className="h-2.5 w-2/3 bg-foreground/10 rounded-full" />
               </div>
             </div>
           ))}
@@ -120,7 +120,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen bg-white flex items-center pt-20 overflow-hidden">
+    <section className="relative min-h-screen bg-card flex items-center pt-20 overflow-hidden">
       <MemphisShapes />
 
       <div className="max-w-[1280px] mx-auto px-4 md:px-8 w-full flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8 relative z-10 py-16">
@@ -130,7 +130,7 @@ export default function HeroSection() {
 
           <div className="relative mb-6">
             <div className="absolute inset-0 bg-[#FFD600] scale-105 transform -rotate-2" />
-            <span className="relative z-10 font-mono text-sm tracking-[0.2em] uppercase font-bold text-black px-1">
+            <span className="relative z-10 font-mono text-sm tracking-[0.2em] uppercase font-bold text-foreground px-1">
               The Student OS
             </span>
           </div>
@@ -164,20 +164,20 @@ export default function HeroSection() {
             in one place.
           </h1>
 
-          <p className="font-sans text-xl text-[#555550] mb-10 leading-relaxed max-w-lg">
+          <p className="font-sans text-xl text-muted-foreground mb-10 leading-relaxed max-w-lg">
             Notes, communities, real-time study rooms, and focus tracking — built for students, not corporations.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 mb-10 w-full sm:w-auto">
             <Link href="/signup" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto bg-[#FFD600] border-[3px] border-black font-display font-bold text-black rounded-[14px] shadow-[6px_6px_0px_#0A0A0A] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none hover:bg-[#FFD600]/90 transition-all h-14 px-8 text-lg">
+              <Button className="w-full sm:w-auto bg-[#FFD600] border-[3px] border-foreground font-display font-bold text-foreground rounded-[14px] shadow-[6px_6px_0px_black] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none hover:bg-[#FFD600]/90 transition-all h-14 px-8 text-lg">
                 Get Started Free
               </Button>
             </Link>
             <Button
               onClick={scrollToNext}
               variant="outline"
-              className="w-full sm:w-auto bg-white border-[3px] border-black font-display font-bold text-black rounded-[14px] shadow-[6px_6px_0px_#0A0A0A] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none transition-all h-14 px-8 text-lg"
+              className="w-full sm:w-auto bg-card border-[3px] border-foreground font-display font-bold text-foreground rounded-[14px] shadow-[6px_6px_0px_black] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none transition-all h-14 px-8 text-lg"
             >
               See How It Works
               <ArrowDown className="ml-2 w-5 h-5" />
@@ -186,11 +186,11 @@ export default function HeroSection() {
 
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
-              <div className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center bg-[#0057FF] text-white font-mono text-xs font-bold z-30">AJ</div>
-              <div className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center bg-[#FF6B00] text-black font-mono text-xs font-bold z-20">MK</div>
-              <div className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center bg-[#00C853] text-black font-mono text-xs font-bold z-10">SR</div>
+              <div className="w-10 h-10 rounded-full border-2 border-foreground flex items-center justify-center bg-[#0057FF] text-white font-mono text-xs font-bold z-30">AJ</div>
+              <div className="w-10 h-10 rounded-full border-2 border-foreground flex items-center justify-center bg-[#FF6B00] text-foreground font-mono text-xs font-bold z-20">MK</div>
+              <div className="w-10 h-10 rounded-full border-2 border-foreground flex items-center justify-center bg-[#00C853] text-foreground font-mono text-xs font-bold z-10">SR</div>
             </div>
-            <p className="font-mono text-sm text-[#555550] font-medium">
+            <p className="font-mono text-sm text-muted-foreground font-medium">
               Join students already using MODULUS
             </p>
           </div>

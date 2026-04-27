@@ -33,6 +33,6 @@ export function getPriorityColor(priority: string | null) {
     case 'high': return 'bg-[#FF3B30]';
     case 'medium': return 'bg-[#FFD600]';
     case 'low': return 'bg-[#00C853]';
-    default: return 'bg-[#E8E8E0]';
+    default: return 'bg-muted';
   }
 }

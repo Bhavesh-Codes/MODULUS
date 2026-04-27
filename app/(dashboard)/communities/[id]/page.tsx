@@ -42,10 +42,10 @@ function Avatar({ name, src, size = 7 }: { name?: string; src?: string; size?: n
   const colors = ["#FFD600", "#0057FF", "#00C853", "#FF6B00", "#FF3B30"]
   const color = colors[(name?.charCodeAt(0) ?? 0) % colors.length]
   return src ? (
-    <img src={src} alt={name} className={`w-${size} h-${size} rounded-full object-cover border-[1.5px] border-[#0A0A0A] shrink-0`} />
+    <img src={src} alt={name} className={`w-${size} h-${size} rounded-full object-cover border-[1.5px] border-foreground shrink-0`} />
   ) : (
     <div
-      className={`w-${size} h-${size} rounded-full border-[1.5px] border-[#0A0A0A] flex items-center justify-center shrink-0 font-heading font-bold text-[10px] text-[#0A0A0A]`}
+      className={`w-${size} h-${size} rounded-full border-[1.5px] border-foreground flex items-center justify-center shrink-0 font-heading font-bold text-[10px] text-foreground`}
       style={{ backgroundColor: color }}
     >
       {initials}
@@ -65,12 +65,12 @@ function ActivityRow({ icon, avatar, name, action, meta, time }: {
     <div className="flex items-start gap-2.5 py-2 border-b-[1.5px] border-[#F0F0E8] last:border-0">
       <Avatar name={name} src={avatar} size={6} />
       <div className="flex-1 min-w-0">
-        <p className="font-sans text-[12px] text-[#0A0A0A] leading-snug">
+        <p className="font-sans text-[12px] text-foreground leading-snug">
           <span className="font-bold">{name}</span>{" "}
-          <span className="text-[#555550]">{action}</span>
-          {meta && <span className="font-medium text-[#0A0A0A]"> {meta}</span>}
+          <span className="text-muted-foreground">{action}</span>
+          {meta && <span className="font-medium text-foreground"> {meta}</span>}
         </p>
-        <span className="font-mono text-[10px] text-[#999990]">{time}</span>
+        <span className="font-mono text-[10px] text-muted-foreground/70">{time}</span>
       </div>
       <div className="shrink-0 mt-0.5">{icon}</div>
     </div>
@@ -97,16 +97,16 @@ function Widget({ id, title, icon, accentColor, href, size, canExpand, onResize,
   const router = useRouter()
   const sizeIdx = SIZES.indexOf(size)
   return (
-    <div className={`${SIZE_CLASSES[size]} ${SIZE_HEIGHT[size]} group relative bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1.25rem] shadow-[4px_4px_0px_#0A0A0A] flex flex-col overflow-hidden transition-all duration-200`}>
+    <div className={`${SIZE_CLASSES[size]} ${SIZE_HEIGHT[size]} group relative bg-card border-[2px] border-foreground rounded-[1.25rem] shadow-[4px_4px_0px_black] flex flex-col overflow-hidden transition-all duration-200`}>
       {/* header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b-[2px] border-[#0A0A0A] shrink-0" style={{ backgroundColor: accentColor }}>
+      <div className="light-surface flex items-center justify-between px-3 py-2 border-b-[2px] border-foreground shrink-0" style={{ backgroundColor: accentColor }}>
         <div className="flex items-center gap-1.5">
-          <span className="font-heading font-extrabold text-[11px] text-[#0A0A0A] uppercase tracking-wide">{title}</span>
+          <span className="font-heading font-extrabold text-[11px] text-black uppercase tracking-wide">{title}</span>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {sizeIdx > 0 && (
-            <button onClick={() => onResize(id, SIZES[sizeIdx - 1])} className="w-5 h-5 rounded-[5px] bg-[#FFFFFF44] hover:bg-[#FFFFFF88] flex items-center justify-center" title="Shrink">
-              <Minimize2 className="w-2.5 h-2.5 text-[#0A0A0A]" />
+            <button onClick={() => onResize(id, SIZES[sizeIdx - 1])} className="w-5 h-5 rounded-[5px] bg-[var(--card)44] hover:bg-[var(--card)88] flex items-center justify-center" title="Shrink">
+              <Minimize2 className="w-2.5 h-2.5 text-black" />
             </button>
           )}
           {sizeIdx < SIZES.length - 1 && (
@@ -114,16 +114,16 @@ function Widget({ id, title, icon, accentColor, href, size, canExpand, onResize,
               onClick={() => canExpand ? onResize(id, SIZES[sizeIdx + 1]) : undefined}
               disabled={!canExpand}
               title={canExpand ? "Expand" : "No space — shrink another widget first"}
-              className={`w-5 h-5 rounded-[5px] flex items-center justify-center ${canExpand ? "bg-[#FFFFFF44] hover:bg-[#FFFFFF88]" : "bg-[#FFFFFF22] opacity-40 cursor-not-allowed"}`}
+              className={`w-5 h-5 rounded-[5px] flex items-center justify-center ${canExpand ? "bg-[var(--card)44] hover:bg-[var(--card)88]" : "bg-[var(--card)22] opacity-40 cursor-not-allowed"}`}
             >
-              <Maximize2 className="w-2.5 h-2.5 text-[#0A0A0A]" />
+              <Maximize2 className="w-2.5 h-2.5 text-black" />
             </button>
           )}
-          <button onClick={() => router.push(href)} className="w-5 h-5 rounded-[5px] bg-[#FFFFFF44] hover:bg-[#FFFFFF88] flex items-center justify-center" title={`Open ${title}`}>
-            <ChevronRight className="w-2.5 h-2.5 text-[#0A0A0A]" />
+          <button onClick={() => router.push(href)} className="w-5 h-5 rounded-[5px] bg-[var(--card)44] hover:bg-[var(--card)88] flex items-center justify-center" title={`Open ${title}`}>
+            <ChevronRight className="w-2.5 h-2.5 text-black" />
           </button>
-          <button onClick={() => onHide(id)} className="w-5 h-5 rounded-[5px] bg-[#FFFFFF44] hover:bg-[#FF3B3033] flex items-center justify-center" title="Hide widget">
-            <EyeOff className="w-2.5 h-2.5 text-[#0A0A0A]" />
+          <button onClick={() => onHide(id)} className="w-5 h-5 rounded-[5px] bg-[var(--card)44] hover:bg-[#FF3B3033] flex items-center justify-center" title="Hide widget">
+            <EyeOff className="w-2.5 h-2.5 text-black" />
           </button>
         </div>
       </div>
@@ -184,7 +184,7 @@ function ThreadsActivity({ communityId, limit }: { communityId: string; limit: n
       {items.map((t: any) => (
         <ActivityRow
           key={t.id}
-          icon={<MessageSquare className="w-3 h-3 text-[#0A0A0A]" />}
+          icon={<MessageSquare className="w-3 h-3 text-foreground" />}
           avatar={t.author?.profile_pic}
           name={t.author?.name ?? "Someone"}
           action="started a thread"
@@ -318,9 +318,9 @@ export default function CommunityHomePage() {
 
   if (!isMember) {
     return (
-      <div className="bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[1.5rem] border-dashed p-8 text-center mt-8">
-        <h3 className="font-heading font-bold text-[20px] text-[#0A0A0A] mb-2">Private Access</h3>
-        <p className="font-sans text-[15px] text-[#555550]">Join the community to unlock files, tasks, circles, and discussions.</p>
+      <div className="bg-background border-[2px] border-foreground rounded-[1.5rem] border-dashed p-8 text-center mt-8">
+        <h3 className="font-heading font-bold text-[20px] text-foreground mb-2">Private Access</h3>
+        <p className="font-sans text-[15px] text-muted-foreground">Join the community to unlock files, tasks, circles, and discussions.</p>
       </div>
     )
   }
@@ -332,12 +332,12 @@ export default function CommunityHomePage() {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-heading font-extrabold text-[20px] text-[#0A0A0A] leading-tight">Activity</h2>
+          <h2 className="font-heading font-extrabold text-[20px] text-foreground leading-tight">Activity</h2>
           <p className="font-sans text-[11px] text-[#777770]">Recent actions from community members</p>
         </div>
         <button
           onClick={() => setManaging(m => !m)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] border-[2px] border-[#0A0A0A] font-heading font-bold text-[12px] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all ${managing ? "bg-[#0A0A0A] text-white" : "bg-[#FFD600] text-[#0A0A0A]"}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] border-[2px] border-foreground font-heading font-bold text-[12px] shadow-[3px_3px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all ${managing ? "bg-foreground text-white" : "bg-[#FFD600] text-foreground"}`}
         >
           <Settings2 className="w-3.5 h-3.5" /> {managing ? "Done" : "Manage"}
         </button>
@@ -345,27 +345,27 @@ export default function CommunityHomePage() {
 
       {/* Manage panel — hidden widget pills */}
       {managing && (
-        <div className="bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[1.25rem] p-3 flex flex-wrap gap-2">
+        <div className="bg-background border-[2px] border-foreground rounded-[1.25rem] p-3 flex flex-wrap gap-2">
           {WIDGETS.map(w => {
             const isHidden = hidden.has(w.id)
             return (
               <button
                 key={w.id}
                 onClick={() => isHidden ? onShow(w.id) : onHide(w.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[0.625rem] border-[2px] border-[#0A0A0A] font-heading font-bold text-[12px] transition-all shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none`}
-                style={{ backgroundColor: isHidden ? "#E8E8E0" : w.accent }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[0.625rem] border-[2px] border-foreground font-heading font-bold text-[12px] transition-all shadow-[2px_2px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none`}
+                style={{ backgroundColor: isHidden ? "var(--border)" : w.accent }}
               >
-                {isHidden ? <EyeOff className="w-3 h-3 text-[#999990]" /> : <Eye className="w-3 h-3 text-[#0A0A0A]" />}
-                <span className={isHidden ? "text-[#999990] line-through" : "text-[#0A0A0A]"}>{w.label}</span>
+                {isHidden ? <EyeOff className="w-3 h-3 text-muted-foreground/70" /> : <Eye className="w-3 h-3 text-foreground" />}
+                <span className={isHidden ? "text-muted-foreground/70 line-through" : "text-foreground"}>{w.label}</span>
               </button>
             )
           })}
-          <span className="ml-auto font-mono text-[11px] text-[#999990] self-center">{hidden.size} hidden</span>
+          <span className="ml-auto font-mono text-[11px] text-muted-foreground/70 self-center">{hidden.size} hidden</span>
         </div>
       )}
 
       {/* Bounded widget area */}
-      <div className="bg-[#F5F5F0] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[5px_5px_0px_#0A0A0A] p-4">
+      <div className="bg-background border-[3px] border-foreground rounded-[2rem] shadow-[5px_5px_0px_black] p-4">
         {visibleWidgets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <EyeOff className="w-8 h-8 text-[#CCCCCC]" />

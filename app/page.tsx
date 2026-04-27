@@ -32,14 +32,14 @@ export default function HomePage() {
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-card">
         {/* Simple loader or entirely blank while checking auth */}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#0A0A0A] font-sans selection:bg-[#FFD600] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-card text-foreground font-sans selection:bg-[#FFD600] selection:text-foreground overflow-x-hidden">
       <LandingNav />
       <main>
         <HeroSection />

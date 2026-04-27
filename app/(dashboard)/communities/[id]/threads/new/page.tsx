@@ -10,7 +10,7 @@ import Link from "next/link"
 type PostType = "text" | "question" | "image"
 
 const TYPE_OPTIONS: { type: PostType; label: string; Icon: React.ElementType; accent: string }[] = [
-    { type: "text", label: "Text", Icon: AlignLeft, accent: "bg-[#E8E8E0] text-[#0A0A0A]" },
+    { type: "text", label: "Text", Icon: AlignLeft, accent: "bg-muted text-foreground" },
     { type: "question", label: "Question", Icon: HelpCircle, accent: "bg-[#0057FF] text-white" },
     { type: "image", label: "Image", Icon: ImageIcon, accent: "bg-[#FF3CAC] text-white" },
 ]
@@ -98,22 +98,22 @@ export default function NewThreadPage() {
             <div className="flex items-center gap-3">
                 <Link
                     href={`/communities/${communityId}/threads`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0_#0A0A0A] font-heading font-bold text-[13px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0_black] font-heading font-bold text-[13px] text-foreground hover:bg-background hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back
                 </Link>
-                <h2 className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">New Thread</h2>
+                <h2 className="font-heading font-extrabold text-[22px] text-foreground">New Thread</h2>
             </div>
 
             {/* Form card */}
             <form
                 onSubmit={handleSubmit}
-                className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[6px_6px_0_#0A0A0A] p-6 space-y-6"
+                className="bg-card border-[3px] border-foreground rounded-[1.5rem] shadow-[6px_6px_0_black] p-6 space-y-6"
             >
                 {/* Post type selector */}
                 <div className="space-y-2">
-                    <label className="font-heading font-bold text-[13px] text-[#0A0A0A] uppercase tracking-wide">
+                    <label className="font-heading font-bold text-[13px] text-foreground uppercase tracking-wide">
                         Post Type
                     </label>
                     <div className="flex gap-3 flex-wrap">
@@ -122,9 +122,9 @@ export default function NewThreadPage() {
                                 key={type}
                                 type="button"
                                 onClick={() => setPostType(type)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-[0.75rem] border-[2px] border-[#0A0A0A] font-heading font-bold text-[14px] transition-all ${postType === type
+                                className={`flex items-center gap-2 px-4 py-2 rounded-[0.75rem] border-[2px] border-foreground font-heading font-bold text-[14px] transition-all ${postType === type
                                     ? `${accent} shadow-none translate-x-[3px] translate-y-[3px]`
-                                    : "bg-[#FFFFFF] text-[#0A0A0A] shadow-[3px_3px_0_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
+                                    : "bg-card text-foreground shadow-[3px_3px_0_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
                                     }`}
                             >
                                 <Icon className="w-4 h-4" />
@@ -137,7 +137,7 @@ export default function NewThreadPage() {
                 {/* Content textarea (shown for text + question, optional description for image) */}
                 {postType !== "image" && (
                     <div className="space-y-2">
-                        <label className="font-heading font-bold text-[13px] text-[#0A0A0A] uppercase tracking-wide">
+                        <label className="font-heading font-bold text-[13px] text-foreground uppercase tracking-wide">
                             {postType === "question" ? "Your Question" : "Content"}
                         </label>
                         <textarea
@@ -149,7 +149,7 @@ export default function NewThreadPage() {
                                     : "Write something for the community..."
                             }
                             rows={6}
-                            className="w-full px-4 py-3 rounded-[1rem] border-[2px] border-[#0A0A0A] bg-[#F5F5F0] font-sans text-[15px] text-[#0A0A0A] placeholder:text-[#999990] focus:outline-none focus:ring-2 focus:ring-[#FFD600] resize-none"
+                            className="w-full px-4 py-3 rounded-[1rem] border-[2px] border-foreground bg-background font-sans text-[15px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[#FFD600] resize-none"
                         />
                     </div>
                 )}
@@ -157,16 +157,16 @@ export default function NewThreadPage() {
                 {/* Image upload */}
                 {postType === "image" && (
                     <div className="space-y-2">
-                        <label className="font-heading font-bold text-[13px] text-[#0A0A0A] uppercase tracking-wide">
+                        <label className="font-heading font-bold text-[13px] text-foreground uppercase tracking-wide">
                             Image
                         </label>
                         {imagePreview ? (
-                            <div className="relative rounded-[1rem] border-[2px] border-[#0A0A0A] overflow-hidden">
+                            <div className="relative rounded-[1rem] border-[2px] border-foreground overflow-hidden">
                                 <img src={imagePreview} alt="Preview" className="w-full max-h-64 object-cover" />
                                 <button
                                     type="button"
                                     onClick={() => { setImageFile(null); setImagePreview(null) }}
-                                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#FF3B30] border-[2px] border-[#0A0A0A] flex items-center justify-center text-white hover:scale-105 transition-transform"
+                                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#FF3B30] border-[2px] border-foreground flex items-center justify-center text-white hover:scale-105 transition-transform"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -175,10 +175,10 @@ export default function NewThreadPage() {
                             <button
                                 type="button"
                                 onClick={() => fileRef.current?.click()}
-                                className="w-full h-40 rounded-[1rem] border-[2px] border-dashed border-[#0A0A0A] bg-[#F5F5F0] flex flex-col items-center justify-center gap-2 hover:bg-[#E8E8E0] transition-colors"
+                                className="w-full h-40 rounded-[1rem] border-[2px] border-dashed border-foreground bg-background flex flex-col items-center justify-center gap-2 hover:bg-muted transition-colors"
                             >
-                                <UploadCloud className="w-8 h-8 text-[#0A0A0A] opacity-40" />
-                                <span className="font-sans text-[14px] text-[#555550]">Click to upload an image</span>
+                                <UploadCloud className="w-8 h-8 text-foreground opacity-40" />
+                                <span className="font-sans text-[14px] text-muted-foreground">Click to upload an image</span>
                             </button>
                         )}
                         <input
@@ -191,7 +191,7 @@ export default function NewThreadPage() {
 
                         {/* Optional caption */}
                         <div className="space-y-1 pt-2">
-                            <label className="font-heading font-bold text-[12px] text-[#555550] uppercase tracking-wide">
+                            <label className="font-heading font-bold text-[12px] text-muted-foreground uppercase tracking-wide">
                                 Caption (optional)
                             </label>
                             <textarea
@@ -199,7 +199,7 @@ export default function NewThreadPage() {
                                 onChange={(e) => setContent(e.target.value)}
                                 placeholder="Add a caption..."
                                 rows={2}
-                                className="w-full px-4 py-3 rounded-[1rem] border-[2px] border-[#0A0A0A] bg-[#F5F5F0] font-sans text-[15px] text-[#0A0A0A] placeholder:text-[#999990] focus:outline-none focus:ring-2 focus:ring-[#FFD600] resize-none"
+                                className="w-full px-4 py-3 rounded-[1rem] border-[2px] border-foreground bg-background font-sans text-[15px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[#FFD600] resize-none"
                             />
                         </div>
                     </div>
@@ -209,7 +209,7 @@ export default function NewThreadPage() {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 rounded-[1rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[5px_5px_0_#0A0A0A] font-heading font-extrabold text-[16px] text-[#0A0A0A] hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-[1rem] border-[3px] border-foreground bg-[#FFD600] shadow-[5px_5px_0_black] font-heading font-extrabold text-[16px] text-foreground hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                     {uploading ? "Uploading image..." : createMutation.isPending ? "Posting..." : "Post Thread"}

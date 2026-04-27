@@ -92,7 +92,7 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
       case 'high': return "border-2 border-[#FF3B30] bg-[#FF3B30]/10 data-[state=checked]:bg-[#FF3B30] data-[state=checked]:border-[#FF3B30] data-[state=checked]:text-white";
       case 'medium': return "border-2 border-[#FF9500] bg-[#FF9500]/10 data-[state=checked]:bg-[#FF9500] data-[state=checked]:border-[#FF9500] data-[state=checked]:text-white";
       case 'low': return "border-2 border-[#00C853] bg-[#00C853]/10 data-[state=checked]:bg-[#00C853] data-[state=checked]:border-[#00C853] data-[state=checked]:text-white";
-      default: return "border-2 border-black bg-white data-[state=checked]:bg-[#FFD600] data-[state=checked]:border-black data-[state=checked]:text-black";
+      default: return "border-2 border-foreground bg-card data-[state=checked]:bg-[#FFD600] data-[state=checked]:border-foreground data-[state=checked]:text-foreground";
     }
   };
 
@@ -100,7 +100,7 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
     <div
       ref={cardRef}
       onClick={onClick}
-      className={`group relative flex flex-col p-4 bg-white border-2 border-black rounded-[1rem] shadow-[4px_4px_0_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_black] transition-all cursor-pointer ${isCompleting ? 'pointer-events-none' : ''}`}
+      className={`group relative flex flex-col p-4 bg-card border-2 border-foreground rounded-[1rem] shadow-[4px_4px_0_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_black] transition-all cursor-pointer ${isCompleting ? 'pointer-events-none' : ''}`}
     >
       <div className="flex items-start justify-between w-full gap-4">
         {/* Left: Checkbox & Details */}
@@ -115,7 +115,7 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
 
           <div className="flex flex-col gap-2.5 overflow-hidden flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`font-vietnam font-bold text-[18px] truncate ${isCompleting ? 'line-through text-[#999990]' : isOverdue ? 'text-[#FF3B30]' : 'text-[#0A0A0A]'}`}>
+              <span className={`font-vietnam font-bold text-[18px] truncate ${isCompleting ? 'line-through text-muted-foreground/70' : isOverdue ? 'text-[#FF3B30]' : 'text-foreground'}`}>
                 {task.title}
               </span>
 
@@ -125,12 +125,12 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
                     e.stopPropagation();
                     setIsSubtasksExpanded(!isSubtasksExpanded);
                   }}
-                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[0.5rem] transition-all border-2 ml-1 ${isSubtasksExpanded ? 'border-black bg-[#FFD600] shadow-[2px_2px_0_black] translate-x-[-1px] translate-y-[-1px]' : 'border-black bg-white shadow-[2px_2px_0_black] hover:bg-[#F5F5F0] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]'}`}
+                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[0.5rem] transition-all border-2 ml-1 ${isSubtasksExpanded ? 'border-foreground bg-[#FFD600] shadow-[2px_2px_0_black] translate-x-[-1px] translate-y-[-1px]' : 'border-foreground bg-card shadow-[2px_2px_0_black] hover:bg-background hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]'}`}
                 >
-                  <span className="font-space font-bold text-[11px] text-black">
+                  <span className="font-space font-bold text-[11px] text-foreground">
                     {subtasksCompleted}/{subtasksTotal} SUBTASKS
                   </span>
-                  {isSubtasksExpanded ? <ChevronUp className="w-3 h-3 text-black" /> : <ChevronDown className="w-3 h-3 text-black" />}
+                  {isSubtasksExpanded ? <ChevronUp className="w-3 h-3 text-foreground" /> : <ChevronDown className="w-3 h-3 text-foreground" />}
                 </button>
               )}
             </div>
@@ -138,7 +138,7 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
             {/* Metadata row */}
             <div className="flex items-center gap-2 flex-wrap mt-0.5">
               {task.category && (
-                <Badge variant="outline" className="text-[#555550] border-[1.5px] border-black bg-[#F5F5F0] font-space text-[10px] px-2 py-0 uppercase">
+                <Badge variant="outline" className="text-muted-foreground border-[1.5px] border-foreground bg-background font-space text-[10px] px-2 py-0 uppercase">
                   {task.category.name}
                 </Badge>
               )}
@@ -151,7 +151,7 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
               )}
 
               {task.deadline && (
-                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${isOverdue ? 'border-[#FF3B30] bg-[#FF3B30]/10 text-[#FF3B30]' : 'border-black/20 bg-black/5 text-[#555550]'}`}>
+                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${isOverdue ? 'border-[#FF3B30] bg-[#FF3B30]/10 text-[#FF3B30]' : 'border-foreground/20 bg-foreground/5 text-muted-foreground'}`}>
                   <Calendar className="w-3 h-3" />
                   <span className="font-space text-[10px] font-bold uppercase">
                     {isOverdue ? 'OVERDUE ' : 'DUE '}
@@ -167,26 +167,26 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
         <div className={`flex items-center gap-1.5 shrink-0 ${hideActionsUntilHover ? "opacity-0 group-hover:opacity-100" : "opacity-100"} transition-opacity`} onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => { e.stopPropagation(); handleTogglePin(); }}
-            className={`p-2 rounded-[0.5rem] transition-colors border-2 ${task.is_pinned ? 'bg-[#FFD600] border-black shadow-[2px_2px_0_black]' : 'border-transparent hover:border-black hover:bg-[#F5F5F0]'}`}
+            className={`p-2 rounded-[0.5rem] transition-colors border-2 ${task.is_pinned ? 'bg-[#FFD600] border-foreground shadow-[2px_2px_0_black]' : 'border-transparent hover:border-foreground hover:bg-background'}`}
             title={task.is_pinned ? "Unpin task" : "Pin task"}
           >
-            <Pin className={`w-4 h-4 ${task.is_pinned ? 'text-black fill-black' : 'text-[#555550]'}`} />
+            <Pin className={`w-4 h-4 ${task.is_pinned ? 'text-foreground fill-foreground' : 'text-muted-foreground'}`} />
           </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-[0.5rem] transition-colors border-2 border-transparent hover:border-black hover:bg-[#F5F5F0]" title="Reschedule">
-                <Calendar className="w-4 h-4 text-[#555550]" />
+              <button className="p-2 rounded-[0.5rem] transition-colors border-2 border-transparent hover:border-foreground hover:bg-background" title="Reschedule">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 bg-white border-2 border-black rounded-[0.75rem] shadow-[4px_4px_0_black] p-1 font-vietnam">
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleReschedule(1); }} className="cursor-pointer focus:bg-[#F5F5F0] rounded-md text-[#0A0A0A]">
+            <DropdownMenuContent align="end" className="w-40 bg-card border-2 border-foreground rounded-[0.75rem] shadow-[4px_4px_0_black] p-1 font-vietnam">
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleReschedule(1); }} className="cursor-pointer focus:bg-background rounded-md text-foreground">
                 Tomorrow
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleReschedule(7); }} className="cursor-pointer focus:bg-[#F5F5F0] rounded-md text-[#0A0A0A]">
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleReschedule(7); }} className="cursor-pointer focus:bg-background rounded-md text-foreground">
                 Next Week
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleReschedule(null); }} className="cursor-pointer focus:bg-[#F5F5F0] rounded-md text-[#0A0A0A]">
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleReschedule(null); }} className="cursor-pointer focus:bg-background rounded-md text-foreground">
                 Clear Date
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -194,10 +194,10 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
 
           <button
             onClick={(e) => { e.stopPropagation(); handleArchive(); }}
-            className="p-2 rounded-[0.5rem] transition-colors border-2 border-transparent hover:border-black hover:bg-[#F5F5F0]"
+            className="p-2 rounded-[0.5rem] transition-colors border-2 border-transparent hover:border-foreground hover:bg-background"
             title="Archive task"
           >
-            <Archive className="w-4 h-4 text-[#555550]" />
+            <Archive className="w-4 h-4 text-muted-foreground" />
           </button>
 
           <button
@@ -218,9 +218,9 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
                 <Checkbox
                   checked={st.is_completed}
                   onCheckedChange={() => handleToggleSubtask(st.id, st.is_completed)}
-                  className="w-5 h-5 mt-0.5 border-2 border-black rounded-sm data-[state=checked]:bg-[#FFD600] data-[state=checked]:text-black transition-colors shrink-0"
+                  className="w-5 h-5 mt-0.5 border-2 border-foreground rounded-sm data-[state=checked]:bg-[#FFD600] data-[state=checked]:text-foreground transition-colors shrink-0"
                 />
-                <span className={`font-vietnam text-[15px] pt-0.5 leading-tight ${st.is_completed ? 'line-through text-[#999990]' : 'text-[#555550]'}`}>
+                <span className={`font-vietnam text-[15px] pt-0.5 leading-tight ${st.is_completed ? 'line-through text-muted-foreground/70' : 'text-muted-foreground'}`}>
                   {st.title}
                 </span>
               </div>

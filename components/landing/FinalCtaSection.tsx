@@ -55,7 +55,7 @@ function LargeMemphisShapes() {
 
 export default function FinalCtaSection() {
   return (
-    <section className="relative min-h-[90vh] bg-white flex flex-col items-center justify-center overflow-hidden py-32 px-4">
+    <section className="relative min-h-[90vh] bg-card flex flex-col items-center justify-center overflow-hidden py-32 px-4">
       <LargeMemphisShapes />
       
       <div className="relative z-10 max-w-3xl mx-auto text-center flex flex-col items-center">
@@ -65,17 +65,17 @@ export default function FinalCtaSection() {
           Your focus.
         </h2>
         
-        <p className="font-sans text-xl md:text-2xl text-[#555550] mb-12">
+        <p className="font-sans text-xl md:text-2xl text-muted-foreground mb-12">
           Stop juggling apps. Start actually studying.
         </p>
 
         <Link href="/signup">
-          <button className="bg-[#FFD600] border-[3px] border-black font-display font-bold text-black rounded-[14px] shadow-[6px_6px_0px_#0A0A0A] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none hover:bg-[#FFD600]/90 transition-all h-16 px-10 text-xl flex items-center justify-center -ml-[3px]">
+          <button className="bg-[#FFD600] border-[3px] border-foreground font-display font-bold text-foreground rounded-[14px] shadow-[6px_6px_0px_black] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none hover:bg-[#FFD600]/90 transition-all h-16 px-10 text-xl flex items-center justify-center -ml-[3px]">
             Get Started Free — It's Free
           </button>
         </Link>
 
-        <p className="font-mono text-sm text-[#999990] mt-6">
+        <p className="font-mono text-sm text-muted-foreground/70 mt-6">
           No payment. No credit card. Just your email.
         </p>
       </div>

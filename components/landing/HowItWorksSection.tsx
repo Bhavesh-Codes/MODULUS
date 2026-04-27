@@ -38,11 +38,11 @@ export default function HowItWorksSection() {
   const pathLength = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
-    <section ref={containerRef} className="py-32 bg-[#F5F5F0] w-full relative overflow-hidden">
+    <section ref={containerRef} className="py-32 bg-background w-full relative overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-4 md:px-8 relative z-10">
         
         <div className="text-center mb-24">
-          <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-black">
+          <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-foreground">
             From signup to studying in three steps.
           </h1>
         </div>
@@ -63,7 +63,7 @@ export default function HowItWorksSection() {
               />
               <motion.line 
                 x1="5" y1="0" x2="5" y2="100" 
-                stroke="#0A0A0A" 
+                stroke="var(--foreground)" 
                 strokeWidth="3" 
                 style={{ pathLength }}
               />
@@ -83,27 +83,27 @@ export default function HowItWorksSection() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, margin: "-150px" }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
-                    className={`w-full md:w-[45%] bg-white border-[3px] border-black rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] p-8 md:p-12 relative overflow-hidden`}
+                    className={`w-full md:w-[45%] bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] p-8 md:p-12 relative overflow-hidden`}
                   >
                     {/* Watermark Number */}
-                    <div className="absolute -bottom-10 -right-6 font-display font-extrabold text-[12rem] leading-none text-black/5 select-none pointer-events-none">
+                    <div className="absolute -bottom-10 -right-6 font-display font-extrabold text-[12rem] leading-none text-foreground/5 select-none pointer-events-none">
                       {step.num}
                     </div>
 
                     <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-[1rem] bg-[#FFD600] border-2 border-black flex items-center justify-center mb-8 shadow-[4px_4px_0px_#0A0A0A]">
-                        <step.icon className="w-8 h-8 text-black" />
+                      <div className="w-16 h-16 rounded-[1rem] bg-[#FFD600] border-2 border-foreground flex items-center justify-center mb-8 shadow-[4px_4px_0px_black]">
+                        <step.icon className="w-8 h-8 text-foreground" />
                       </div>
-                      <h3 className="font-display font-bold text-2xl lg:text-3xl mb-4 text-black">
+                      <h3 className="font-display font-bold text-2xl lg:text-3xl mb-4 text-foreground">
                         {step.title}
                       </h3>
-                      <p className="font-sans text-lg text-[#555550]">
+                      <p className="font-sans text-lg text-muted-foreground">
                         {step.desc}
                       </p>
                     </div>
 
                     {/* Desktop Connector Dot */}
-                    <div className={`hidden md:block absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-[3px] border-black bg-[#FFD600] ${isLeft ? "-right-[calc(11%_+_12px)] xl:-right-[calc(11%_+_28px)]" : "-left-[calc(11%_+_12px)] xl:-left-[calc(11%_+_28px)]"}`} />
+                    <div className={`hidden md:block absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-[3px] border-foreground bg-[#FFD600] ${isLeft ? "-right-[calc(11%_+_12px)] xl:-right-[calc(11%_+_28px)]" : "-left-[calc(11%_+_12px)] xl:-left-[calc(11%_+_28px)]"}`} />
                   </motion.div>
                 </div>
               );

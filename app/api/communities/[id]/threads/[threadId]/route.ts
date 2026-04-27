@@ -49,6 +49,8 @@ export async function GET(
         .eq('target_id', threadId)
 
     const threadVoteScore = (threadVotes ?? []).reduce((s, v) => s + v.value, 0)
+    const threadVoteUpCount = (threadVotes ?? []).filter(v => v.value > 0).length
+    const threadVoteDownCount = (threadVotes ?? []).filter(v => v.value < 0).length
 
     const { data: myThreadVote } = await supabase
         .from('votes')
@@ -98,10 +100,14 @@ export async function GET(
                 supabase.from('votes').select('value').eq('target_type', 'reply').eq('target_id', reply.id).eq('user_id', user.id).maybeSingle(),
             ])
             const voteScore = (votes ?? []).reduce((s, v) => s + v.value, 0)
+            const voteUpCount = (votes ?? []).filter(v => v.value > 0).length
+            const voteDownCount = (votes ?? []).filter(v => v.value < 0).length
             return {
                 ...reply,
                 author: getAuthor(reply.author_id),
                 vote_score: voteScore,
+                vote_up_count: voteUpCount,
+                vote_down_count: voteDownCount,
                 my_vote: myVote?.value ?? 0
             }
         })
@@ -114,6 +120,8 @@ export async function GET(
         content: clean_content,
         author: getAuthor(thread.author_id),
         vote_score: threadVoteScore,
+        vote_up_count: threadVoteUpCount,
+        vote_down_count: threadVoteDownCount,
         my_vote: myThreadVote?.value ?? 0,
         image_file_id: imageFileId,
         replies: replyTree,

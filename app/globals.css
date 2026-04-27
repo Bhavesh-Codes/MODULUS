@@ -49,23 +49,24 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  color-scheme: light;
+  --background: oklch(0.972 0.012 102);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.86 0.18 95);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.93 0.014 102);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.93 0.014 102);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.86 0.18 95);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.86 0.014 102);
+  --input: oklch(0.86 0.014 102);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
@@ -73,7 +74,7 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -84,30 +85,31 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  color-scheme: dark;
+  --background: oklch(0.18 0.005 100);
+  --foreground: oklch(0.965 0.006 102);
+  --card: oklch(0.235 0.007 100);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.235 0.007 100);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  --primary: oklch(0.88 0.18 95);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.31 0.008 100);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.31 0.008 100);
+  --muted-foreground: oklch(0.76 0.006 102);
+  --accent: oklch(0.88 0.18 95);
+  --accent-foreground: oklch(0.145 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.22 0.006 100);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -126,5 +128,96 @@
   }
   html {
     @apply font-sans;
+  }
+
+  .dark * {
+    border-color: #000000 !important;
+  }
+
+  .dark :where(body, h1, h2, h3, h4, h5, h6, p, span, a, button, label, input, textarea, select, option, li, td, th, div) {
+    color: #ffffff;
+  }
+
+  .dark svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
+  }
+
+  .dark :where(
+    [class*="bg-white"],
+    [class*="bg-[#FFFFFF]"],
+    [class*="bg-[#FFD600]"],
+    [class*="bg-[#FF9500]"],
+    [class*="bg-[#FF6B00]"],
+    [class*="bg-[#00C853]"],
+    [class*="bg-[#00E676]"],
+    [class*="bg-[#E"],
+    [class*="bg-[#D"],
+    [class*="bg-[#F0"],
+    [class*="bg-[#EEF"],
+    [class*="bg-[#FFF"],
+    [class*="bg-muted"],
+    [class*="bg-primary"],
+    .light-surface
+  ),
+  .dark :where(
+    [class*="bg-white"],
+    [class*="bg-[#FFFFFF]"],
+    [class*="bg-[#FFD600]"],
+    [class*="bg-[#FF9500]"],
+    [class*="bg-[#FF6B00]"],
+    [class*="bg-[#00C853]"],
+    [class*="bg-[#00E676]"],
+    [class*="bg-[#E"],
+    [class*="bg-[#D"],
+    [class*="bg-[#F0"],
+    [class*="bg-[#EEF"],
+    [class*="bg-[#FFF"],
+    [class*="bg-muted"],
+    [class*="bg-primary"],
+    .light-surface
+  ) :where(*) {
+    color: #000000 !important;
+  }
+
+  .dark :where(
+    [class*="bg-white"],
+    [class*="bg-[#FFFFFF]"],
+    [class*="bg-[#FFD600]"],
+    [class*="bg-[#FF9500]"],
+    [class*="bg-[#FF6B00]"],
+    [class*="bg-[#00C853]"],
+    [class*="bg-[#00E676]"],
+    [class*="bg-[#E"],
+    [class*="bg-[#D"],
+    [class*="bg-[#F0"],
+    [class*="bg-[#EEF"],
+    [class*="bg-[#FFF"],
+    [class*="bg-muted"],
+    [class*="bg-primary"],
+    .light-surface
+  ) svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
+  }
+
+  .dark .viewer-chrome,
+  .dark .viewer-chrome :where(*) {
+    color: #ffffff !important;
+  }
+
+  .dark .viewer-chrome svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+  }
+
+  .dark .viewer-chrome .viewer-file-icon,
+  .dark .viewer-chrome .viewer-file-icon :where(*) {
+    color: #000000 !important;
+  }
+
+  .dark .viewer-chrome .viewer-file-icon svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
   }
 }

@@ -207,7 +207,7 @@ export function GanttView({
       case 'high': return 'bg-[#FF3B30]';
       case 'medium': return 'bg-[#FF9500]';
       case 'low': return 'bg-[#00C853]';
-      default: return 'bg-white'; // White color for no priority
+      default: return 'bg-card'; // White color for no priority
     }
   };
 
@@ -217,8 +217,8 @@ export function GanttView({
     if (!date && !deadline) {
       return (
         <div className="absolute inset-x-0 h-full flex items-center justify-center opacity-30 pointer-events-none">
-          <div className="w-full border-t-2 border-dashed border-black absolute top-1/2 -translate-y-1/2" />
-          <span className="font-space text-xs bg-[#F5F5F0] px-2 z-10 border-2 border-black rounded-full shadow-[2px_2px_0_black]">No dates set</span>
+          <div className="w-full border-t-2 border-dashed border-foreground absolute top-1/2 -translate-y-1/2" />
+          <span className="font-space text-xs bg-background px-2 z-10 border-2 border-foreground rounded-full shadow-[2px_2px_0_black]">No dates set</span>
         </div>
       );
     }
@@ -244,9 +244,9 @@ export function GanttView({
     const startX = (startDays - minStartDays) * pixelsPerDay;
     const width = spanDays * pixelsPerDay;
 
-    let colorClass = "bg-white text-black"; // Default to white
+    let colorClass = "bg-card text-foreground"; // Default to white
     if (task.priority === 'high') colorClass = "bg-[#FF3B30] text-white";
-    else if (task.priority === 'medium') colorClass = "bg-[#FF9500] text-black";
+    else if (task.priority === 'medium') colorClass = "bg-[#FF9500] text-foreground";
     else if (task.priority === 'low') colorClass = "bg-[#00C853] text-white";
 
     const isOverdue = task.deadline && task.deadline < todayStr && task.status !== 'done';
@@ -262,39 +262,39 @@ export function GanttView({
       >
         {type === 'bar' && (
           <div
-            className={`w-full h-full border-[2px] border-black rounded-[0.5rem] shadow-[2px_2px_0_black] flex items-center px-2 cursor-grab active:cursor-grabbing transition-transform ${colorClass} ${isOverdue ? 'animate-[pulse_1s_ease-in-out_infinite] border-red-500 shadow-[2px_2px_0_red]' : ''} ${isDragging ? '!shadow-[4px_4px_0_black] -translate-y-[2px] scale-[1.02] z-50' : 'hover:-translate-y-[1px]'}`}
+            className={`w-full h-full border-[2px] border-foreground rounded-[0.5rem] shadow-[2px_2px_0_black] flex items-center px-2 cursor-grab active:cursor-grabbing transition-transform ${colorClass} ${isOverdue ? 'animate-[pulse_1s_ease-in-out_infinite] border-red-500 shadow-[2px_2px_0_red]' : ''} ${isDragging ? '!shadow-[4px_4px_0_black] -translate-y-[2px] scale-[1.02] z-50' : 'hover:-translate-y-[1px]'}`}
             onMouseDown={(e) => { e.preventDefault(); setDragState({ taskId: task.id, type: 'bar', startX: e.clientX, currentX: e.clientX, initialDate: task.date || undefined, initialDeadline: task.deadline || undefined }); }}
             onClick={(e) => { e.stopPropagation(); onTaskClick(task); }}
           >
             {task.is_pinned && <Pin className="w-3 h-3 shrink-0 mr-1" />}
-            {isDragging && <span className="font-space text-[10px] font-bold bg-white text-black px-1 border border-black rounded shadow-sm">{date}</span>}
+            {isDragging && <span className="font-space text-[10px] font-bold bg-card text-foreground px-1 border border-foreground rounded shadow-sm">{date}</span>}
             {task.is_recurring && <Repeat className="w-3 h-3 shrink-0 ml-auto" />}
           </div>
         )}
 
         {type === 'start' && (
           <div
-            className={`w-[20px] h-[20px] rounded-full border-[2px] border-black shadow-[2px_2px_0_black] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform ${colorClass}`}
+            className={`w-[20px] h-[20px] rounded-full border-[2px] border-foreground shadow-[2px_2px_0_black] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform ${colorClass}`}
             onMouseDown={(e) => { e.preventDefault(); setDragState({ taskId: task.id, type: 'bar', startX: e.clientX, currentX: e.clientX, initialDate: task.date || undefined, initialDeadline: task.deadline || undefined }); }}
             onClick={(e) => { e.stopPropagation(); onTaskClick(task); }}
           >
-            {isDragging && <span className="font-space text-[10px] font-bold bg-white text-black px-1 border border-black rounded shadow-sm absolute -top-6 -left-2 whitespace-nowrap">{date}</span>}
+            {isDragging && <span className="font-space text-[10px] font-bold bg-card text-foreground px-1 border border-foreground rounded shadow-sm absolute -top-6 -left-2 whitespace-nowrap">{date}</span>}
           </div>
         )}
 
         {type === 'milestone' && (
           <div
-            className={`w-[20px] h-[20px] rotate-45 border-[2px] border-black shadow-[2px_2px_0_black] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform ${isOverdue ? 'bg-[#FF3B30] animate-[pulse_1s_ease-in-out_infinite]' : colorClass}`}
+            className={`w-[20px] h-[20px] rotate-45 border-[2px] border-foreground shadow-[2px_2px_0_black] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform ${isOverdue ? 'bg-[#FF3B30] animate-[pulse_1s_ease-in-out_infinite]' : colorClass}`}
             onMouseDown={(e) => { e.preventDefault(); setDragState({ taskId: task.id, type: 'bar', startX: e.clientX, currentX: e.clientX, initialDate: task.date || undefined, initialDeadline: task.deadline || undefined }); }}
             onClick={(e) => { e.stopPropagation(); onTaskClick(task); }}
           >
-            {isDragging && <span className="font-space text-[10px] font-bold bg-white text-black px-1 border border-black rounded shadow-sm absolute -top-8 -left-2 rotate-[-45deg] whitespace-nowrap">{deadline}</span>}
+            {isDragging && <span className="font-space text-[10px] font-bold bg-card text-foreground px-1 border border-foreground rounded shadow-sm absolute -top-8 -left-2 rotate-[-45deg] whitespace-nowrap">{deadline}</span>}
           </div>
         )}
 
         {type === 'bar' && (
           <div
-            className="absolute right-0 top-0 w-3 h-full cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/20 z-20 hover:bg-black/40 transition-colors rounded-r-[0.3rem]"
+            className="absolute right-0 top-0 w-3 h-full cursor-ew-resize opacity-0 group-hover:opacity-100 bg-foreground/20 z-20 hover:bg-foreground/40 transition-colors rounded-r-[0.3rem]"
             onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); setDragState({ taskId: task.id, type: 'edge', startX: e.clientX, currentX: e.clientX, initialDate: task.date || undefined, initialDeadline: task.deadline || undefined }); }}
           />
         )}
@@ -321,9 +321,9 @@ export function GanttView({
 
       return (
         <div className="flex flex-col w-full h-full">
-          <div className="flex border-b-2 border-black h-8">
+          <div className="flex border-b-2 border-foreground h-8">
             {months.map(m => (
-              <div key={m.label} style={{ width: m.days * 40 }} className="border-r-2 border-black px-2 flex items-center font-jakarta font-bold text-sm text-black overflow-hidden whitespace-nowrap">
+              <div key={m.label} style={{ width: m.days * 40 }} className="border-r-2 border-foreground px-2 flex items-center font-jakarta font-bold text-sm text-foreground overflow-hidden whitespace-nowrap">
                 {m.label}
               </div>
             ))}
@@ -332,9 +332,9 @@ export function GanttView({
             {daysArr.map(d => {
               const isToday = formatDateObj(d) === todayStr;
               return (
-                <div key={d.toISOString()} style={{ width: 40 }} className={`flex-shrink-0 border-r-2 border-black/10 flex flex-col items-center justify-center font-space text-xs ${isToday ? 'bg-[#FFD600]/20 font-bold' : ''}`}>
-                  <span className="text-[10px] text-black/60">{['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()]}</span>
-                  <span className={isToday ? 'bg-[#FFD600] w-5 h-5 rounded-full flex items-center justify-center border-[1.5px] border-black shadow-[2px_2px_0_black]' : ''}>{d.getDate()}</span>
+                <div key={d.toISOString()} style={{ width: 40 }} className={`flex-shrink-0 border-r-2 border-foreground/10 flex flex-col items-center justify-center font-space text-xs ${isToday ? 'bg-[#FFD600]/20 font-bold' : ''}`}>
+                  <span className="text-[10px] text-foreground/60">{['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()]}</span>
+                  <span className={isToday ? 'bg-[#FFD600] w-5 h-5 rounded-full flex items-center justify-center border-[1.5px] border-foreground shadow-[2px_2px_0_black]' : ''}>{d.getDate()}</span>
                 </div>
               );
             })}
@@ -359,7 +359,7 @@ export function GanttView({
       return (
         <div className="flex h-full items-end pb-2">
           {weeks.map((w, i) => (
-            <div key={i} style={{ width: w.days * (80 / 7) }} className="flex-shrink-0 border-r-2 border-black px-2 font-space text-xs font-bold overflow-hidden whitespace-nowrap text-black">
+            <div key={i} style={{ width: w.days * (80 / 7) }} className="flex-shrink-0 border-r-2 border-foreground px-2 font-space text-xs font-bold overflow-hidden whitespace-nowrap text-foreground">
               W of {w.date.getDate()} {w.date.toLocaleString('default', { month: 'short' })}
             </div>
           ))}
@@ -384,7 +384,7 @@ export function GanttView({
       return (
         <div className="flex h-full items-end pb-2">
           {months.map(m => (
-            <div key={m.label} style={{ width: m.days * (120 / 30) }} className="flex-shrink-0 border-r-2 border-black px-2 font-jakarta text-sm font-bold overflow-hidden whitespace-nowrap text-black">
+            <div key={m.label} style={{ width: m.days * (120 / 30) }} className="flex-shrink-0 border-r-2 border-foreground px-2 font-jakarta text-sm font-bold overflow-hidden whitespace-nowrap text-foreground">
               {m.label}
             </div>
           ))}
@@ -398,7 +398,7 @@ export function GanttView({
       {daysArr.map(d => {
         const isToday = formatDateObj(d) === todayStr;
         return (
-          <div key={d.toISOString()} style={{ width: pixelsPerDay }} className={`border-r-[1px] border-black/5 flex-shrink-0 ${isToday ? 'bg-[#FFD600]/10 border-r-[#FFD600]/40' : ''}`} />
+          <div key={d.toISOString()} style={{ width: pixelsPerDay }} className={`border-r-[1px] border-foreground/5 flex-shrink-0 ${isToday ? 'bg-[#FFD600]/10 border-r-[#FFD600]/40' : ''}`} />
         );
       })}
     </div>
@@ -408,16 +408,16 @@ export function GanttView({
     <div className="flex flex-col gap-6 h-full min-h-0" ref={containerRef}>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-3 items-center bg-[#F5F5F0] px-4 py-2.5 rounded-[1rem] border-2 border-black shadow-[2px_2px_0_black] shrink-0">
-        <div className="flex items-center gap-2 border-r-2 border-black/10 pr-4">
-          <ListFilter className="w-4 h-4 text-[#555550]" />
-          <span className="font-space text-[10px] font-bold text-[#555550]">GANTT FILTERS</span>
+      <div className="flex flex-wrap gap-3 items-center bg-background px-4 py-2.5 rounded-[1rem] border-2 border-foreground shadow-[2px_2px_0_black] shrink-0">
+        <div className="flex items-center gap-2 border-r-2 border-foreground/10 pr-4">
+          <ListFilter className="w-4 h-4 text-muted-foreground" />
+          <span className="font-space text-[10px] font-bold text-muted-foreground">GANTT FILTERS</span>
         </div>
 
         <select
           value={filterPriority}
           onChange={e => setFilterPriority(e.target.value)}
-          className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
+          className="px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
         >
           <option value="all">Priority: All</option>
           <option value="high">High</option>
@@ -429,7 +429,7 @@ export function GanttView({
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
-          className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
+          className="px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
         >
           <option value="all">Status: All</option>
           <option value="todo">Todo</option>
@@ -438,29 +438,29 @@ export function GanttView({
 
         <button
           onClick={() => setGroupByCategory(!groupByCategory)}
-          className={`ml-2 px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${groupByCategory
-              ? 'bg-black text-white shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+          className={`ml-2 px-4 py-1.5 border-2 border-foreground rounded-full font-space text-sm font-bold transition-all cursor-pointer ${groupByCategory
+              ? 'bg-foreground text-white shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-card text-foreground shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
             }`}
         >
           Group by Category
         </button>
 
-        <div className="ml-auto flex bg-white border-2 border-black rounded-[0.875rem] p-1 shadow-[2px_2px_0_black]">
-          <button onClick={() => setZoom('day')} className={`px-4 py-1 font-bold font-vietnam text-xs rounded-[0.5rem] transition-colors ${zoom === 'day' ? 'bg-[#FFD600] border border-black shadow-[1px_1px_0_black]' : 'hover:bg-[#F5F5F0] border border-transparent'}`}>Day</button>
-          <button onClick={() => setZoom('week')} className={`px-4 py-1 font-bold font-vietnam text-xs rounded-[0.5rem] transition-colors ${zoom === 'week' ? 'bg-[#FFD600] border border-black shadow-[1px_1px_0_black]' : 'hover:bg-[#F5F5F0] border border-transparent'}`}>Week</button>
-          <button onClick={() => setZoom('month')} className={`px-4 py-1 font-bold font-vietnam text-xs rounded-[0.5rem] transition-colors ${zoom === 'month' ? 'bg-[#FFD600] border border-black shadow-[1px_1px_0_black]' : 'hover:bg-[#F5F5F0] border border-transparent'}`}>Month</button>
+        <div className="ml-auto flex bg-card border-2 border-foreground rounded-[0.875rem] p-1 shadow-[2px_2px_0_black]">
+          <button onClick={() => setZoom('day')} className={`px-4 py-1 font-bold font-vietnam text-xs rounded-[0.5rem] transition-colors ${zoom === 'day' ? 'bg-[#FFD600] border border-foreground shadow-[1px_1px_0_black]' : 'hover:bg-background border border-transparent'}`}>Day</button>
+          <button onClick={() => setZoom('week')} className={`px-4 py-1 font-bold font-vietnam text-xs rounded-[0.5rem] transition-colors ${zoom === 'week' ? 'bg-[#FFD600] border border-foreground shadow-[1px_1px_0_black]' : 'hover:bg-background border border-transparent'}`}>Week</button>
+          <button onClick={() => setZoom('month')} className={`px-4 py-1 font-bold font-vietnam text-xs rounded-[0.5rem] transition-colors ${zoom === 'month' ? 'bg-[#FFD600] border border-foreground shadow-[1px_1px_0_black]' : 'hover:bg-background border border-transparent'}`}>Month</button>
         </div>
       </div>
 
       {/* Gantt Chart Area */}
-      <div className="flex-1 bg-white border-[3px] border-black rounded-[1.5rem] shadow-[6px_6px_0_black] overflow-hidden relative">
+      <div className="flex-1 bg-card border-[3px] border-foreground rounded-[1.5rem] shadow-[6px_6px_0_black] overflow-hidden relative">
         <div className="w-full h-full overflow-auto flex custom-scrollbar" ref={scrollContainerRef}>
 
           <div className="flex flex-col relative min-w-max pb-10">
             {/* Header Row */}
-            <div className="flex h-[80px] border-b-[3px] border-black bg-[#E8E8E0] sticky top-0 z-40 shadow-sm">
-              <div className="sticky left-0 w-[380px] px-6 flex items-center font-jakarta font-bold text-xl bg-[#E8E8E0] border-r-[3px] border-black z-50 shrink-0">
+            <div className="flex h-[80px] border-b-[3px] border-foreground bg-muted sticky top-0 z-40 shadow-sm">
+              <div className="sticky left-0 w-[380px] px-6 flex items-center font-jakarta font-bold text-xl bg-muted border-r-[3px] border-foreground z-50 shrink-0">
                 Task Details
               </div>
               <div className="flex-1 relative z-30">
@@ -478,31 +478,31 @@ export function GanttView({
               {rows.map((row, idx) => {
                 if (row.isGroupRow) {
                   return (
-                    <div key={`g-${idx}`} className="flex h-[40px] border-b-2 border-black w-full mt-2">
-                      <div className="sticky left-0 w-[380px] px-6 flex items-center font-jakarta font-bold text-sm bg-[#F5F5F0] border-r-[3px] border-black z-30 shrink-0 shadow-[4px_0_0_black]">
+                    <div key={`g-${idx}`} className="flex h-[40px] border-b-2 border-foreground w-full mt-2">
+                      <div className="sticky left-0 w-[380px] px-6 flex items-center font-jakarta font-bold text-sm bg-background border-r-[3px] border-foreground z-30 shrink-0 shadow-[4px_0_0_black]">
                         {row.label}
                       </div>
-                      <div className="flex-1 bg-[#F5F5F0]/50 backdrop-blur-sm relative z-10 border-b-2 border-black"></div>
+                      <div className="flex-1 bg-background/50 backdrop-blur-sm relative z-10 border-b-2 border-foreground"></div>
                     </div>
                   );
                 } else {
                   const task = row.task;
                   return (
-                    <div key={task.id} className="task-row flex h-[48px] border-b border-black/10 w-full group hover:bg-black/5 transition-colors">
+                    <div key={task.id} className="task-row flex h-[48px] border-b border-foreground/10 w-full group hover:bg-foreground/5 transition-colors">
                       {/* Left Panel - Task Title */}
-                      <div className="sticky left-0 w-[380px] bg-white group-hover:bg-[#F5F5F0] border-r-[3px] border-black px-4 flex items-center justify-between gap-3 z-30 shrink-0 cursor-pointer transition-colors" onClick={() => onTaskClick(task)}>
+                      <div className="sticky left-0 w-[380px] bg-card group-hover:bg-background border-r-[3px] border-foreground px-4 flex items-center justify-between gap-3 z-30 shrink-0 cursor-pointer transition-colors" onClick={() => onTaskClick(task)}>
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="font-vietnam font-bold text-[15px] text-[#0A0A0A] truncate">{task.title}</span>
-                          {task.is_pinned && <Pin className="w-3.5 h-3.5 shrink-0 text-black fill-black" />}
+                          <span className="font-vietnam font-bold text-[15px] text-foreground truncate">{task.title}</span>
+                          {task.is_pinned && <Pin className="w-3.5 h-3.5 shrink-0 text-foreground fill-foreground" />}
                         </div>
                         <div className="flex items-center gap-2 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
                           {task.category && (
-                            <span className="font-space text-[10px] font-bold uppercase tracking-wider text-[#555550]">
+                            <span className="font-space text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                               {task.category.name}
                             </span>
                           )}
                           {task.priority && (
-                            <div className={`w-2.5 h-2.5 rounded-sm border border-black ${getPriorityColor(task.priority)}`} title={`Priority: ${task.priority}`} />
+                            <div className={`w-2.5 h-2.5 rounded-sm border border-foreground ${getPriorityColor(task.priority)}`} title={`Priority: ${task.priority}`} />
                           )}
                         </div>
                       </div>
@@ -520,9 +520,9 @@ export function GanttView({
             {/* Empty State Overlay */}
             {tasks.length > 0 && !tasks.some(t => t.date || t.deadline) && (
               <div className="absolute inset-0 top-[80px] flex items-center justify-center pointer-events-none z-50">
-                <div className="bg-white/90 backdrop-blur-sm border-[3px] border-black rounded-[1rem] p-6 shadow-[6px_6px_0_black] flex flex-col items-center">
-                  <span className="font-jakarta font-bold text-xl text-black">No Dates Scheduled</span>
-                  <span className="font-space text-sm text-[#555550] mt-2">Add dates or deadlines to your tasks to see them here.</span>
+                <div className="bg-card/90 backdrop-blur-sm border-[3px] border-foreground rounded-[1rem] p-6 shadow-[6px_6px_0_black] flex flex-col items-center">
+                  <span className="font-jakarta font-bold text-xl text-foreground">No Dates Scheduled</span>
+                  <span className="font-space text-sm text-muted-foreground mt-2">Add dates or deadlines to your tasks to see them here.</span>
                 </div>
               </div>
             )}

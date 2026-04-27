@@ -50,9 +50,9 @@ export default function CircleRoomPage(props: { params: Params }) {
   // Once token is set, BackgroundCircleRoom in the layout renders the full room UI.
   if (!isThisRoom) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 w-full bg-[#F5F5F0]">
+      <div className="flex h-full min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 w-full bg-background">
         <Loader2 className="h-10 w-10 animate-spin text-[#FFD600]" />
-        <p className="font-heading font-extrabold text-[20px] text-[#0A0A0A]">Connecting to Study Circle...</p>
+        <p className="font-heading font-extrabold text-[20px] text-foreground">Connecting to Study Circle...</p>
       </div>
     )
   }

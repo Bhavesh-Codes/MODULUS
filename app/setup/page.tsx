@@ -161,18 +161,18 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative Memphis Background */}
-      <div className="absolute top-[10%] left-[5%] w-32 h-32 rounded-full border-[2px] border-[#0A0A0A] bg-[#FFD600] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[5%] w-40 h-40 rotate-[12deg] border-[2px] border-[#0A0A0A] bg-[#0057FF] pointer-events-none" />
-      <div className="absolute top-[20%] right-[15%] w-16 h-16 rotate-[45deg] border-[2px] border-[#0A0A0A] bg-[#FF3CAC] pointer-events-none" />
+      <div className="absolute top-[10%] left-[5%] w-32 h-32 rounded-full border-[2px] border-foreground bg-[#FFD600] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[5%] w-40 h-40 rotate-[12deg] border-[2px] border-foreground bg-[#0057FF] pointer-events-none" />
+      <div className="absolute top-[20%] right-[15%] w-16 h-16 rotate-[45deg] border-[2px] border-foreground bg-[#FF3CAC] pointer-events-none" />
 
-      <div className="w-full max-w-2xl bg-[#FFFFFF] border-[3px] border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] rounded-[32px] p-8 md:p-12 relative z-10">
+      <div className="w-full max-w-2xl bg-card border-[3px] border-foreground shadow-[8px_8px_0px_black] rounded-[32px] p-8 md:p-12 relative z-10">
         <div className="absolute top-8 right-8">
           <button
             onClick={handleSkip}
             type="button"
-            className="px-4 py-2 flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+            className="px-4 py-2 flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:bg-background hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
@@ -180,10 +180,10 @@ export default function SetupPage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="font-heading font-extrabold text-[36px] text-[#0A0A0A] mb-2 leading-none">
+          <h1 className="font-heading font-extrabold text-[36px] text-foreground mb-2 leading-none">
             Build your Profile
           </h1>
-          <p className="font-sans text-[16px] text-[#555550]">
+          <p className="font-sans text-[16px] text-muted-foreground">
             Let your campus know who you are.
           </p>
         </div>
@@ -193,8 +193,8 @@ export default function SetupPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`h-3 w-12 rounded-full border-[2px] border-[#0A0A0A] transition-colors duration-300 ${
-                step >= i ? "bg-[#FFD600]" : "bg-[#E8E8E0]"
+              className={`h-3 w-12 rounded-full border-[2px] border-foreground transition-colors duration-300 ${
+                step >= i ? "bg-[#FFD600]" : "bg-muted"
               }`}
             />
           ))}
@@ -298,7 +298,7 @@ export default function SetupPage() {
                         <Plus className="w-5 h-5" />
                       </Button>
                     </div>
-                    <p className="font-sans text-[12px] text-[#999990] mt-1">
+                    <p className="font-sans text-[12px] text-muted-foreground/70 mt-1">
                       Press enter or click '+' to add to your interests.
                     </p>
                   </div>
@@ -307,20 +307,20 @@ export default function SetupPage() {
                     {formTags.map((tag) => (
                       <div
                         key={tag}
-                        className="bg-[#FFD600] border-[1.5px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] px-3 py-1.5 rounded-full flex items-center gap-1"
+                        className="bg-[#FFD600] border-[1.5px] border-foreground shadow-[3px_3px_0px_black] px-3 py-1.5 rounded-full flex items-center gap-1"
                       >
                         <span className="font-mono text-[12px] font-medium leading-none mt-[2px]">{tag}</span>
                         <button
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="hover:bg-black/10 rounded-full p-0.5 transition-colors"
+                          className="hover:bg-foreground/10 rounded-full p-0.5 transition-colors"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
                     {formTags.length === 0 && (
-                      <p className="font-sans text-[14px] text-[#555550] italic">No tags added yet.</p>
+                      <p className="font-sans text-[14px] text-muted-foreground italic">No tags added yet.</p>
                     )}
                   </div>
                 </div>
@@ -329,12 +329,12 @@ export default function SetupPage() {
           </AnimatePresence>
         </div>
 
-        <div className="mt-12 flex justify-between items-center pt-6 border-t-[2px] border-[#E8E8E0]">
+        <div className="mt-12 flex justify-between items-center pt-6 border-t-[2px] border-border">
           {step > 1 ? (
             <button 
               onClick={handleBack} 
               type="button"
-              className="px-5 py-2.5 flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:bg-[#F5F5F0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+              className="px-5 py-2.5 flex items-center justify-center gap-2 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:bg-background hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
             >
               <ArrowLeft className="h-4 w-4" />
               Back

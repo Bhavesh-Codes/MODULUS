@@ -66,8 +66,12 @@ export async function GET(
 
         const userMap = new Map((usersData ?? []).map(u => [u.id, u]))
         const voteScoreMap = new Map<string, number>()
+        const voteUpMap = new Map<string, number>()
+        const voteDownMap = new Map<string, number>()
         for (const v of allVotes ?? []) {
             voteScoreMap.set(v.target_id, (voteScoreMap.get(v.target_id) ?? 0) + v.value)
+            if (v.value > 0) voteUpMap.set(v.target_id, (voteUpMap.get(v.target_id) ?? 0) + 1)
+            if (v.value < 0) voteDownMap.set(v.target_id, (voteDownMap.get(v.target_id) ?? 0) + 1)
         }
         const myVoteMap = new Map((myVotes ?? []).map(v => [v.target_id, v.value]))
         const replyCountMap = new Map<string, number>()
@@ -89,6 +93,8 @@ export async function GET(
                 content: clean_content,
                 author: userMap.get(thread.author_id) ?? { id: thread.author_id, name: 'Unknown', profile_pic: null },
                 vote_score: voteScoreMap.get(thread.id) ?? 0,
+                vote_up_count: voteUpMap.get(thread.id) ?? 0,
+                vote_down_count: voteDownMap.get(thread.id) ?? 0,
                 reply_count: replyCountMap.get(thread.id) ?? 0,
                 my_vote: myVoteMap.get(thread.id) ?? 0,
                 image_file_id: imageFileId,

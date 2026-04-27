@@ -46,7 +46,7 @@ function MiniRoomBar({ communityId, circleId }: { communityId: string; circleId:
             fixed z-[100] bottom-0 left-0 right-0
             md:bottom-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-auto
             flex items-center gap-2 md:gap-3 px-4 py-3 md:py-2.5
-            bg-[#0A0A0A] border-t-[2px] md:border-[2px] border-[#FFD600]
+            bg-black border-t-[2px] md:border-[2px] border-[#FFD600]
             md:rounded-[1.5rem] select-none
             shadow-[0_-4px_24px_rgba(0,0,0,0.4)] md:shadow-[0_8px_32px_rgba(0,0,0,0.5)]
             pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:pb-2.5
@@ -55,14 +55,14 @@ function MiniRoomBar({ communityId, circleId }: { communityId: string; circleId:
                 <span className="w-2 h-2 rounded-full bg-[#00C853] animate-pulse" />
                 <span className="font-mono text-[11px] text-[#00C853] font-bold uppercase tracking-wide">Live</span>
             </span>
-            <span className="text-[#444] font-mono text-[11px] hidden md:inline">•</span>
+            <span className="text-[#777] font-mono text-[11px] hidden md:inline">•</span>
             <span className="font-sans text-[12px] md:text-[13px] text-white font-medium truncate">
                 {participants.length} in room
             </span>
             <div className="flex items-center gap-2 ml-auto md:ml-0">
                 <button
                     onClick={() => router.push(`/communities/${communityId}/circles/${encodeURIComponent(circleId)}`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] bg-[#FFD600] hover:bg-yellow-300 text-[#0A0A0A] font-heading font-bold text-[12px] transition-all shrink-0"
+                    className="light-surface flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] bg-[#FFD600] hover:bg-yellow-300 text-black font-heading font-bold text-[12px] transition-all shrink-0"
                 >
                     <ExternalLink className="w-3 h-3" />
                     <span className="hidden sm:inline">Return</span>
@@ -119,7 +119,7 @@ function FullRoomUI({ communityId, circleId }: { communityId: string; circleId: 
     return (
         <div
             ref={containerRef}
-            className="fixed bg-[#0A0A0A] overflow-hidden z-[45] flex flex-col"
+            className="fixed bg-foreground overflow-hidden z-[45] flex flex-col"
             style={{
                 top: isFullscreen ? 0 : TOPNAV_HEIGHT,
                 left: 0,

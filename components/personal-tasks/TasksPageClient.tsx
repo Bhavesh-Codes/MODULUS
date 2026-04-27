@@ -76,18 +76,18 @@ export function TasksPageClient({ initialTasks, initialCategories }: { initialTa
       return (
         <div className="flex flex-col gap-4 pb-20 max-w-4xl mx-auto w-full">
           {archivedTasks.length === 0 ? (
-            <div className="py-20 text-center font-space text-[#999990]">No completed tasks yet.</div>
+            <div className="py-20 text-center font-space text-muted-foreground/70">No completed tasks yet.</div>
           ) : (
             archivedTasks.map(t => (
-              <div key={t.id} className="flex items-center p-4 bg-white border-[3px] border-black rounded-[1rem] shadow-[4px_4px_0_black] opacity-60 hover:opacity-100 transition-opacity">
-                 <div className={`w-3.5 h-3.5 rounded-full shrink-0 border-[2px] border-black mr-4 ${t.priority === 'high' ? 'bg-[#FF3B30]' : t.priority === 'medium' ? 'bg-[#FF9500]' : t.priority === 'low' ? 'bg-[#00C853]' : 'bg-[#E8E8E0]'}`} />
-                 <span className="font-vietnam font-medium text-black line-through flex-1 truncate mr-4">{t.title}</span>
+              <div key={t.id} className="flex items-center p-4 bg-card border-[3px] border-foreground rounded-[1rem] shadow-[4px_4px_0_black] opacity-60 hover:opacity-100 transition-opacity">
+                 <div className={`w-3.5 h-3.5 rounded-full shrink-0 border-[2px] border-foreground mr-4 ${t.priority === 'high' ? 'bg-[#FF3B30]' : t.priority === 'medium' ? 'bg-[#FF9500]' : t.priority === 'low' ? 'bg-[#00C853]' : 'bg-muted'}`} />
+                 <span className="font-vietnam font-medium text-foreground line-through flex-1 truncate mr-4">{t.title}</span>
                  {t.category && (
-                   <span className="px-3 py-1 bg-[#F5F5F0] border-2 border-black rounded-full font-space font-bold text-[10px] mr-4 shrink-0 shadow-[2px_2px_0_black]">
+                   <span className="px-3 py-1 bg-background border-2 border-foreground rounded-full font-space font-bold text-[10px] mr-4 shrink-0 shadow-[2px_2px_0_black]">
                      {t.category.name}
                    </span>
                  )}
-                 <span suppressHydrationWarning className="font-space font-bold text-xs text-[#555550] shrink-0">
+                 <span suppressHydrationWarning className="font-space font-bold text-xs text-muted-foreground shrink-0">
                    Completed {new Date(t.completed_at || t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                  </span>
               </div>
@@ -116,25 +116,25 @@ export function TasksPageClient({ initialTasks, initialCategories }: { initialTa
         {/* Header Row */}
         <div className="flex justify-between items-center gap-4 w-full">
           <div className="flex-1 flex items-center gap-4 min-w-0">
-            <h1 className="font-jakarta font-bold text-xl text-black uppercase tracking-tight shrink-0 bg-[#FFD600] px-3 py-1 rounded-[0.5rem] border-2 border-black shadow-[2px_2px_0_black]">My Tasks</h1>
+            <h1 className="font-jakarta font-bold text-xl text-foreground uppercase tracking-tight shrink-0 bg-[#FFD600] px-3 py-1 rounded-[0.5rem] border-2 border-foreground shadow-[2px_2px_0_black]">My Tasks</h1>
             <div className="flex-1">
               <QuickAddBar categories={categories} />
             </div>
           </div>
           
           {/* View Toggles */}
-          <div className={`flex bg-white border-[3px] border-black rounded-[1rem] p-1 shadow-[4px_4px_0_black] transition-opacity ${archiveMode ? 'opacity-50 pointer-events-none' : ''} shrink-0`}>
+          <div className={`flex bg-card border-[3px] border-foreground rounded-[1rem] p-1 shadow-[4px_4px_0_black] transition-opacity ${archiveMode ? 'opacity-50 pointer-events-none' : ''} shrink-0`}>
              {['List', 'Kanban', 'Calendar', 'Gantt'].map(v => (
                <button 
                  key={v}
                  onClick={() => setViewMode(v as ViewMode)}
-                 className={`flex items-center gap-2 px-4 py-2 font-space font-bold text-sm rounded-[0.5rem] transition-all cursor-pointer outline-none ${viewMode === v ? 'bg-[#FFD600] border-[2px] border-black shadow-[2px_2px_0_black] translate-y-[-1px]' : 'border-[2px] border-transparent hover:bg-[#F5F5F0]'}`}
+                 className={`flex items-center gap-2 px-4 py-2 font-space font-bold text-sm rounded-[0.5rem] transition-all cursor-pointer outline-none ${viewMode === v ? 'bg-[#FFD600] border-[2px] border-foreground shadow-[2px_2px_0_black] translate-y-[-1px]' : 'border-[2px] border-transparent hover:bg-background'}`}
                >
-                 {v === 'List' && <LayoutList className="w-4 h-4 text-black"/>}
-                 {v === 'Kanban' && <KanbanSquare className="w-4 h-4 text-black"/>}
-                 {v === 'Calendar' && <CalendarIcon className="w-4 h-4 text-black"/>}
-                 {v === 'Gantt' && <AlignLeft className="w-4 h-4 text-black"/>}
-                 <span className="text-black">{v}</span>
+                 {v === 'List' && <LayoutList className="w-4 h-4 text-foreground"/>}
+                 {v === 'Kanban' && <KanbanSquare className="w-4 h-4 text-foreground"/>}
+                 {v === 'Calendar' && <CalendarIcon className="w-4 h-4 text-foreground"/>}
+                 {v === 'Gantt' && <AlignLeft className="w-4 h-4 text-foreground"/>}
+                 <span className="text-foreground">{v}</span>
                </button>
              ))}
           </div>
@@ -149,7 +149,7 @@ export function TasksPageClient({ initialTasks, initialCategories }: { initialTa
          <div className="mt-8 flex justify-center pb-8">
            <button 
              onClick={() => setArchiveMode(!archiveMode)}
-             className="flex items-center gap-2 font-space text-xs font-bold text-[#555550] hover:text-black hover:underline transition-all cursor-pointer"
+             className="flex items-center gap-2 font-space text-xs font-bold text-muted-foreground hover:text-foreground hover:underline transition-all cursor-pointer"
            >
              <Archive className="w-4 h-4"/>
              {archiveMode ? 'Back to Active Tasks' : `View ${archivedCount} Archived Task${archivedCount !== 1 ? 's' : ''}`}

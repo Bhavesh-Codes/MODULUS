@@ -62,10 +62,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-[#FFFFFF] p-8 rounded-[24px] border-[2px] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
+    <div className="bg-card p-8 rounded-[24px] border-[2px] border-foreground shadow-[4px_4px_0px_black]">
       <div className="mb-8">
-        <h2 className="font-heading font-bold text-[28px] text-[#0A0A0A] mb-2">Welcome Back</h2>
-        <p className="font-sans text-[16px] text-[#555550]">Enter your details to access your vault.</p>
+        <h2 className="font-heading font-bold text-[28px] text-foreground mb-2">Welcome Back</h2>
+        <p className="font-sans text-[16px] text-muted-foreground">Enter your details to access your vault.</p>
       </div>
 
       <div className="space-y-6">
@@ -94,10 +94,10 @@ export default function LoginPage() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-[#E8E8E0]" />
+            <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-[#FFFFFF] px-2 font-mono text-[#999990]">OR CONTINUE WITH</span>
+            <span className="bg-card px-2 font-mono text-muted-foreground/70">OR CONTINUE WITH</span>
           </div>
         </div>
 
@@ -117,7 +117,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <Link href="/reset" className="font-mono text-[12px] text-[#0A0A0A] underline hover:text-[#555550]">
+              <Link href="/reset" className="font-mono text-[12px] text-foreground underline hover:text-muted-foreground">
                 Forgot password?
               </Link>
             </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
               <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555550] hover:text-[#0A0A0A]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
@@ -143,7 +143,7 @@ export default function LoginPage() {
           </div>
 
           {errorText && (
-            <div className="bg-[#FF3B30] text-[#FFFFFF] p-3 rounded-[12px] text-[14px] font-sans border-[2px] border-[#0A0A0A]">
+            <div className="bg-[#FF3B30] text-white p-3 rounded-[12px] text-[14px] font-sans border-[2px] border-foreground">
               {errorText}
             </div>
           )}
@@ -155,9 +155,9 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <div className="mt-8 text-center font-sans text-[14px] text-[#555550]">
+      <div className="mt-8 text-center font-sans text-[14px] text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link href={signupUrl} className="text-[#0A0A0A] font-bold hover:underline">
+        <Link href={signupUrl} className="text-foreground font-bold hover:underline">
           Sign up
         </Link>
       </div>

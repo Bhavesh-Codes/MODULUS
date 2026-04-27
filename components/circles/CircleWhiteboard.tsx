@@ -95,7 +95,7 @@ export default function CircleWhiteboard() {
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !lastPos.current) return
     const currentPos = getPos(e)
-    const data = { type: 'draw', x0: lastPos.current.x, y0: lastPos.current.y, x1: currentPos.x, y1: currentPos.y, color: '#0A0A0A' }
+    const data = { type: 'draw', x0: lastPos.current.x, y0: lastPos.current.y, x1: currentPos.x, y1: currentPos.y, color: 'var(--foreground)' }
     
     drawLineLocal(data.x0, data.y0, data.x1, data.y1, data.color)
     
@@ -120,13 +120,13 @@ export default function CircleWhiteboard() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-white">
-      <div className="border-b-[3px] border-[#0A0A0A] p-5 bg-[#F5F5F0] flex items-center justify-between">
-        <h2 className="font-heading font-extrabold text-[20px] text-[#0A0A0A]">Whiteboard</h2>
-        <button onClick={clearBoardNetwork} className="font-mono text-[12px] font-bold text-[#0A0A0A] bg-[#FFD600] border-[2px] border-[#0A0A0A] px-3 py-1 rounded-[8px] shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0A0A0A] transition-all">Clear</button>
+    <div className="flex h-full w-full flex-col bg-card">
+      <div className="border-b-[3px] border-foreground p-5 bg-background flex items-center justify-between">
+        <h2 className="font-heading font-extrabold text-[20px] text-foreground">Whiteboard</h2>
+        <button onClick={clearBoardNetwork} className="font-mono text-[12px] font-bold text-foreground bg-[#FFD600] border-[2px] border-foreground px-3 py-1 rounded-[8px] shadow-[2px_2px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_black] transition-all">Clear</button>
       </div>
-      <div ref={containerRef} className="flex-1 w-full relative bg-white overflow-hidden cursor-crosshair">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0A0A0A 2px, transparent 2px)', backgroundSize: '16px 16px' }} />
+      <div ref={containerRef} className="flex-1 w-full relative bg-card overflow-hidden cursor-crosshair">
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(var(--foreground) 2px, transparent 2px)', backgroundSize: '16px 16px' }} />
         <canvas
           ref={canvasRef}
           onPointerDown={handlePointerDown}

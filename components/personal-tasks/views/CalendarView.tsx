@@ -95,7 +95,7 @@ export function CalendarView({
     
     return (
       <div className={`flex items-center gap-1 w-full overflow-hidden text-white leading-none ${isMonthView ? 'px-1 py-[1px]' : 'px-2 py-1.5'}`}>
-        <div className={`${isMonthView ? 'w-1 h-1' : 'w-2 h-2'} rounded-full bg-white shrink-0`} />
+        <div className={`${isMonthView ? 'w-1 h-1' : 'w-2 h-2'} rounded-full bg-card shrink-0`} />
         <span className={`font-vietnam font-semibold whitespace-nowrap overflow-hidden text-ellipsis flex-1 leading-tight ${isMonthView ? 'text-[9px]' : 'text-[13px]'}`}>
           {eventInfo.event.title}
         </span>
@@ -106,7 +106,7 @@ export function CalendarView({
   };
 
   return (
-    <div className="flex-1 min-h-0 bg-white border-[3px] border-black rounded-[1.5rem] shadow-[6px_6px_0_black] p-4 md:p-6 h-full fc-wrapper overflow-hidden flex flex-col">
+    <div className="flex-1 min-h-0 bg-card border-[3px] border-foreground rounded-[1.5rem] shadow-[6px_6px_0_black] p-4 md:p-6 h-full fc-wrapper overflow-hidden flex flex-col">
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, interactionPlugin]}
@@ -157,9 +157,9 @@ export function CalendarView({
         }
         .fc-wrapper {
           --fc-page-bg-color: #ffffff;
-          --fc-neutral-bg-color: #F5F5F0;
-          --fc-neutral-text-color: #555550;
-          --fc-border-color: #0A0A0A;
+          --fc-neutral-bg-color: var(--background);
+          --fc-neutral-text-color: var(--muted-foreground);
+          --fc-border-color: var(--foreground);
           --fc-event-text-color: #ffffff;
         }
         .fc-wrapper .fc {
@@ -169,12 +169,12 @@ export function CalendarView({
 
         .fc-wrapper .fc-theme-standard td, 
         .fc-wrapper .fc-theme-standard th {
-          border-color: #0A0A0A;
+          border-color: var(--foreground);
           border-width: 2px;
         }
 
         .fc-wrapper .fc-theme-standard th {
-          background-color: #F5F5F0 !important;
+          background-color: var(--background) !important;
         }
 
         .fc-wrapper .fc-day-sat, .fc-wrapper .fc-day-sun {
@@ -182,10 +182,10 @@ export function CalendarView({
         }
 
         .fc-wrapper .fc-theme-standard .fc-scrollgrid {
-          border: 3px solid #0A0A0A;
+          border: 3px solid var(--foreground);
           border-radius: 1rem;
           overflow: hidden;
-          background-color: #FFFFFF;
+          background-color: var(--card);
         }
 
         .fc-wrapper .fc-scroller {
@@ -193,11 +193,11 @@ export function CalendarView({
         }
 
         .fc-wrapper .fc-button {
-          background-color: #FFFFFF !important;
-          color: #0A0A0A !important;
-          border: 2px solid #0A0A0A !important;
+          background-color: var(--card) !important;
+          color: var(--foreground) !important;
+          border: 2px solid var(--foreground) !important;
           border-radius: 0.875rem !important;
-          box-shadow: 3px 3px 0px #0A0A0A !important;
+          box-shadow: 3px 3px 0px #000000 !important;
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-weight: 700 !important;
           text-transform: capitalize !important;
@@ -209,18 +209,18 @@ export function CalendarView({
         .fc-wrapper .fc-button:hover {
           transform: translate(3px, 3px) !important;
           box-shadow: none !important;
-          background-color: #F5F5F0 !important;
+          background-color: var(--background) !important;
         }
 
         .fc-wrapper .fc-button-primary:not(:disabled).fc-button-active,
         .fc-wrapper .fc-button-primary:not(:disabled):active {
           background-color: #FFD600 !important;
-          color: #0A0A0A !important;
+          color: var(--foreground) !important;
         }
         
         .fc-wrapper .fc-button-primary:disabled {
-          background-color: #E8E8E0 !important;
-          color: #999990 !important;
+          background-color: var(--border) !important;
+          color: var(--muted-foreground) !important;
           box-shadow: none !important;
           transform: translate(3px, 3px) !important;
         }
@@ -229,13 +229,13 @@ export function CalendarView({
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-weight: 800 !important;
           font-size: 1.5rem !important;
-          color: #0A0A0A !important;
+          color: var(--foreground) !important;
         }
 
         .fc-wrapper .fc-col-header-cell-cushion {
           font-family: 'Space Grotesk', sans-serif !important;
           font-weight: 500 !important;
-          color: #0A0A0A !important;
+          color: var(--foreground) !important;
           padding: 0.75rem !important;
         }
 
@@ -246,7 +246,7 @@ export function CalendarView({
         .fc-wrapper .fc-daygrid-day-number {
           font-family: 'Space Grotesk', sans-serif !important;
           font-weight: 700 !important;
-          color: #0A0A0A !important;
+          color: var(--foreground) !important;
           padding: 0.25rem 0.5rem !important;
           font-size: 0.75rem !important;
           text-decoration: none !important;
@@ -254,7 +254,7 @@ export function CalendarView({
 
         .fc-wrapper .modulus-today .fc-daygrid-day-number {
           background-color: #FFD600 !important;
-          border: 2px solid #0A0A0A !important;
+          border: 2px solid var(--foreground) !important;
           border-radius: 50% !important;
           width: 1.25rem !important;
           height: 1.25rem !important;
@@ -269,7 +269,7 @@ export function CalendarView({
           border-radius: 0.25rem !important;
           border-width: 1.5px !important;
           border-style: solid !important;
-          box-shadow: 1px 1px 0px #0A0A0A !important;
+          box-shadow: 1px 1px 0px #000000 !important;
           transition: transform 0.15s ease, box-shadow 0.15s ease !important;
           cursor: pointer !important;
           margin-bottom: 2px !important;
@@ -278,7 +278,7 @@ export function CalendarView({
         .fc-wrapper .fc-view-dayGridWeek .fc-event {
           border-radius: 0.5rem !important;
           border-width: 2px !important;
-          box-shadow: 3px 3px 0px #0A0A0A !important;
+          box-shadow: 3px 3px 0px #000000 !important;
           margin-bottom: 6px !important;
         }
 
@@ -293,19 +293,19 @@ export function CalendarView({
         }
 
         .fc-wrapper .fc-popover {
-          border: 3px solid #0A0A0A !important;
+          border: 3px solid var(--foreground) !important;
           border-radius: 1.5rem !important;
-          box-shadow: 8px 8px 0px #0A0A0A !important;
+          box-shadow: 8px 8px 0px #000000 !important;
           font-family: 'Be Vietnam Pro', sans-serif !important;
           z-index: 50 !important;
         }
 
         .fc-wrapper .fc-popover-header {
-          background-color: #F5F5F0 !important;
+          background-color: var(--background) !important;
           font-family: 'Plus Jakarta Sans', sans-serif !important;
           font-weight: 700 !important;
-          color: #0A0A0A !important;
-          border-bottom: 2px solid #0A0A0A !important;
+          color: var(--foreground) !important;
+          border-bottom: 2px solid var(--foreground) !important;
           border-top-left-radius: 1.25rem !important;
           border-top-right-radius: 1.25rem !important;
           padding: 0.75rem 1rem !important;
@@ -317,8 +317,8 @@ export function CalendarView({
 
         .fc-wrapper .fc-popover-close {
           opacity: 1 !important;
-          color: #0A0A0A !important;
-          background: #E8E8E0 !important;
+          color: var(--foreground) !important;
+          background: var(--border) !important;
           border-radius: 50% !important;
           width: 24px !important;
           height: 24px !important;
@@ -336,12 +336,12 @@ export function CalendarView({
           font-family: 'Space Grotesk', sans-serif !important;
           font-weight: 700 !important;
           font-size: 0.75rem !important;
-          color: #555550 !important;
+          color: var(--muted-foreground) !important;
           margin-left: 0.25rem !important;
         }
 
         .fc-wrapper .fc-daygrid-more-link:hover {
-          color: #0A0A0A !important;
+          color: var(--foreground) !important;
           text-decoration: underline !important;
         }
       `}</style>

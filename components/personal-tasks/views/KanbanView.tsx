@@ -139,43 +139,43 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
   return (
     <div className="flex flex-col gap-6 h-full min-h-0">
       {/* Filter Row */}
-      <div className="flex flex-wrap gap-3 items-center bg-[#F5F5F0] px-4 py-2.5 rounded-[1rem] border-2 border-black shadow-[2px_2px_0_black] shrink-0">
-        <div className="flex items-center gap-2 border-r-2 border-black/10 pr-4">
-          <ListFilter className="w-4 h-4 text-[#555550]" />
-          <span className="font-space text-[10px] font-bold text-[#555550]">KANBAN FILTERS</span>
+      <div className="flex flex-wrap gap-3 items-center bg-background px-4 py-2.5 rounded-[1rem] border-2 border-foreground shadow-[2px_2px_0_black] shrink-0">
+        <div className="flex items-center gap-2 border-r-2 border-foreground/10 pr-4">
+          <ListFilter className="w-4 h-4 text-muted-foreground" />
+          <span className="font-space text-[10px] font-bold text-muted-foreground">KANBAN FILTERS</span>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setTimeframe('today')}
-            className={`px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'today'
-              ? 'bg-[#FFD600] text-black shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+            className={`px-4 py-1.5 border-2 border-foreground rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'today'
+              ? 'bg-[#FFD600] text-foreground shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-card text-foreground shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Today
           </button>
           <button
             onClick={() => setTimeframe('week')}
-            className={`px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'week'
-              ? 'bg-[#FFD600] text-black shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+            className={`px-4 py-1.5 border-2 border-foreground rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'week'
+              ? 'bg-[#FFD600] text-foreground shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-card text-foreground shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             This Week
           </button>
           <button
             onClick={() => setTimeframe('month')}
-            className={`px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'month'
-              ? 'bg-[#FFD600] text-black shadow-none translate-y-[2px] translate-x-[2px]'
-              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+            className={`px-4 py-1.5 border-2 border-foreground rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'month'
+              ? 'bg-[#FFD600] text-foreground shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-card text-foreground shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             This Month
           </button>
 
           <div className="flex items-center gap-2 ml-2">
-            <span className="font-space text-[10px] font-bold text-[#555550]">CUSTOM DATE</span>
+            <span className="font-space text-[10px] font-bold text-muted-foreground">CUSTOM DATE</span>
             <input
               type="date"
               value={timeframe === 'custom' ? customDate : ''}
@@ -184,7 +184,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
                 setTimeframe('custom');
               }}
               onClick={() => setTimeframe('custom')}
-              className={`px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm outline-none cursor-pointer ${timeframe === 'custom' ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]' : 'shadow-[2px_2px_0_black] focus:shadow-[2px_2px_0_black]'}`}
+              className={`px-2 py-1.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm outline-none cursor-pointer ${timeframe === 'custom' ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]' : 'shadow-[2px_2px_0_black] focus:shadow-[2px_2px_0_black]'}`}
             />
           </div>
         </div>
@@ -200,14 +200,14 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#F0F8FF] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E1F0FF]' : ''}`}
+                className={`flex-1 bg-[#F0F8FF] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E1F0FF]' : ''}`}
               >
-                <div className="p-4 border-b-[3px] border-black bg-white flex justify-between items-center z-10 shrink-0">
+                <div className="p-4 border-b-[3px] border-foreground bg-card flex justify-between items-center z-10 shrink-0">
                   <h3 className="font-jakarta font-bold text-[18px] flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-[#007AFF] border-2 border-black inline-block"></span>
+                    <span className="w-3 h-3 rounded-full bg-[#007AFF] border-2 border-foreground inline-block"></span>
                     Todo
                   </h3>
-                  <Badge className="bg-[#E8E8E0] text-black hover:bg-[#E8E8E0] font-space border-[1.5px] border-black shadow-[2px_2px_0_black] pointer-events-none">
+                  <Badge className="bg-muted text-foreground hover:bg-muted font-space border-[1.5px] border-foreground shadow-[2px_2px_0_black] pointer-events-none">
                     {todoTasks.length}
                   </Badge>
                 </div>
@@ -235,7 +235,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
                   ))}
                   {provided.placeholder}
                   {todoTasks.length === 0 && (
-                    <div className="flex-1 flex flex-col items-center justify-center text-[#999990] font-space text-sm py-10 opacity-60">
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/70 font-space text-sm py-10 opacity-60">
                       No tasks here.
                     </div>
                   )}
@@ -250,14 +250,14 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#FFF4E6] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#FFE8CC]' : ''}`}
+                className={`flex-1 bg-[#FFF4E6] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#FFE8CC]' : ''}`}
               >
-                <div className="p-4 border-b-[3px] border-black bg-white flex justify-between items-center z-10 shrink-0">
+                <div className="p-4 border-b-[3px] border-foreground bg-card flex justify-between items-center z-10 shrink-0">
                   <h3 className="font-jakarta font-bold text-[18px] flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-[#FF9500] border-2 border-black inline-block"></span>
+                    <span className="w-3 h-3 rounded-full bg-[#FF9500] border-2 border-foreground inline-block"></span>
                     In Progress
                   </h3>
-                  <Badge className="bg-[#E8E8E0] text-black hover:bg-[#E8E8E0] font-space border-[1.5px] border-black shadow-[2px_2px_0_black] pointer-events-none">
+                  <Badge className="bg-muted text-foreground hover:bg-muted font-space border-[1.5px] border-foreground shadow-[2px_2px_0_black] pointer-events-none">
                     {inProgressTasks.length}
                   </Badge>
                 </div>
@@ -285,7 +285,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
                   ))}
                   {provided.placeholder}
                   {inProgressTasks.length === 0 && (
-                    <div className="flex-1 flex flex-col items-center justify-center text-[#999990] font-space text-sm py-10 opacity-60">
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/70 font-space text-sm py-10 opacity-60">
                       No tasks here.
                     </div>
                   )}
@@ -300,14 +300,14 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#E6F9EC] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] opacity-90 ${snapshot.isDraggingOver ? 'bg-[#CCF2D9]' : ''}`}
+                className={`flex-1 bg-[#E6F9EC] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] opacity-90 ${snapshot.isDraggingOver ? 'bg-[#CCF2D9]' : ''}`}
               >
-                <div className="p-4 border-b-[3px] border-black bg-white flex justify-between items-center z-10 shrink-0">
-                  <h3 className="font-jakarta font-bold text-[18px] text-black flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-[#00C853] border-2 border-black inline-block"></span>
+                <div className="p-4 border-b-[3px] border-foreground bg-card flex justify-between items-center z-10 shrink-0">
+                  <h3 className="font-jakarta font-bold text-[18px] text-foreground flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#00C853] border-2 border-foreground inline-block"></span>
                     Done
                   </h3>
-                  <Badge className="bg-[#E8E8E0] text-black hover:bg-[#E8E8E0] font-space border-[1.5px] border-black shadow-[2px_2px_0_black] pointer-events-none">
+                  <Badge className="bg-muted text-foreground hover:bg-muted font-space border-[1.5px] border-foreground shadow-[2px_2px_0_black] pointer-events-none">
                     {doneTasks.length}
                   </Badge>
                 </div>
@@ -335,7 +335,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
                   ))}
                   {provided.placeholder}
                   {doneTasks.length === 0 && (
-                    <div className="flex-1 flex flex-col items-center justify-center text-[#999990] font-space text-sm py-10 opacity-60">
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/70 font-space text-sm py-10 opacity-60">
                       No tasks here.
                     </div>
                   )}

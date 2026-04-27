@@ -106,10 +106,10 @@ const getFileIcon = (mimeType: string = "") => {
   if (mimeType.startsWith("audio/")) return <Music className="w-8 h-8 text-[#FFD600]" />
   if (mimeType.includes("pdf")) return <FileText className="w-8 h-8 text-[#FF3B30]" />
   if (mimeType.includes("zip") || mimeType.includes("tar") || mimeType.includes("compressed"))
-    return <Archive className="w-8 h-8 text-[#0A0A0A]" />
+    return <Archive className="w-8 h-8 text-foreground" />
   if (mimeType.includes("json") || mimeType.includes("javascript") || mimeType.includes("html"))
     return <FileCode className="w-8 h-8 text-[#4285F4]" />
-  return <File className="w-8 h-8 text-[#555550]" />
+  return <File className="w-8 h-8 text-muted-foreground" />
 }
 
 const formatBytes = (bytes: number) => {
@@ -153,7 +153,7 @@ function TagEditor({ tags, onChange }: { tags: string[]; onChange: (t: string[])
 
   return (
     <div className="space-y-2">
-      <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider flex items-center gap-1">
+      <Label className="font-mono text-[12px] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
         <Tag className="w-3.5 h-3.5" /> Tags
       </Label>
       <div className="flex gap-2">
@@ -162,14 +162,14 @@ function TagEditor({ tags, onChange }: { tags: string[]; onChange: (t: string[])
           onChange={(e) => setTagInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag() } }}
           placeholder="Type a tag and press Enter…"
-          className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px] flex-1"
+          className="border-[2px] border-foreground rounded-[0.75rem] font-sans text-[14px] flex-1"
         />
         <button
           type="button"
           onClick={addTag}
-          className="px-3 py-2 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#F5F5F0] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+          className="px-3 py-2 rounded-[0.75rem] border-[2px] border-foreground bg-background shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
         >
-          <Plus className="w-4 h-4 text-[#0A0A0A]" />
+          <Plus className="w-4 h-4 text-foreground" />
         </button>
       </div>
       {tags.length > 0 && (
@@ -177,7 +177,7 @@ function TagEditor({ tags, onChange }: { tags: string[]; onChange: (t: string[])
           {tags.map((t) => (
             <span
               key={t}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[12px] font-medium text-[#0A0A0A]"
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-[100px] border-[1.5px] border-foreground bg-[#FFD600] shadow-[2px_2px_0px_black] font-mono text-[12px] font-medium text-foreground"
             >
               #{t}
               <button
@@ -237,11 +237,11 @@ function NewFolderModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-8">
+      <DialogContent className="bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] max-w-sm p-8">
         <DialogHeader>
-          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#FFD600] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
-              <FolderPlus className="w-4 h-4 text-[#0A0A0A]" />
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-foreground flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-foreground bg-[#FFD600] flex items-center justify-center shadow-[2px_2px_0px_black]">
+              <FolderPlus className="w-4 h-4 text-foreground" />
             </div>
             New Folder
           </DialogTitle>
@@ -249,14 +249,14 @@ function NewFolderModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-3">
           <div className="space-y-2">
-            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+            <Label className="font-mono text-[12px] text-muted-foreground uppercase tracking-wider">
               Folder Name
             </Label>
             <Input
               {...register("name", { required: "A folder name is required" })}
               autoFocus
               placeholder="e.g. Semester 1, Projects…"
-              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+              className="border-[2px] border-foreground rounded-[0.75rem] font-sans text-[14px]"
             />
             {errors.name && (
               <p className="font-sans text-[12px] text-[#FF3B30]">{errors.name.message}</p>
@@ -267,14 +267,14 @@ function NewFolderModal({
             <button
               type="button"
               onClick={handleClose}
-              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isCreating}
-              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-[#FFD600] shadow-[4px_4px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderPlus className="w-4 h-4" />}
               {isCreating ? "Creating…" : "Create Folder"}
@@ -427,9 +427,9 @@ function UploadModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-lg p-8 max-h-[90vh] flex flex-col">
+      <DialogContent className="bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] max-w-lg p-8 max-h-[90vh] flex flex-col">
         <DialogHeader className="shrink-0">
-          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-foreground">
             Upload to Vault
           </DialogTitle>
         </DialogHeader>
@@ -438,60 +438,60 @@ function UploadModal({
           {/* Drop zones */}
           <div className="grid grid-cols-2 gap-3 shrink-0">
             <div
-              className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#E8E8E0] transition-colors text-center"
+              className="border-[2px] border-dashed border-foreground rounded-[1.25rem] bg-background p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted transition-colors text-center"
               onClick={() => fileInputRef.current?.click()}
             >
-              <div className="w-8 h-8 bg-[#FFD600] rounded-[8px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
-                <Upload className="w-4 h-4 text-[#0A0A0A]" />
+              <div className="w-8 h-8 bg-[#FFD600] rounded-[8px] border-[2px] border-foreground flex items-center justify-center shadow-[2px_2px_0px_black]">
+                <Upload className="w-4 h-4 text-foreground" />
               </div>
-              <p className="font-heading font-bold text-[13px] text-[#0A0A0A]">Upload Files</p>
+              <p className="font-heading font-bold text-[13px] text-foreground">Upload Files</p>
               <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
             </div>
 
             <div
-              className="border-[2px] border-dashed border-[#0A0A0A] rounded-[1.25rem] bg-[#F5F5F0] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#E8E8E0] transition-colors text-center"
+              className="border-[2px] border-dashed border-foreground rounded-[1.25rem] bg-background p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted transition-colors text-center"
               onClick={() => folderInputRef.current?.click()}
             >
-              <div className="w-8 h-8 bg-[#FFD600] rounded-[8px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
-                <FolderPlus className="w-4 h-4 text-[#0A0A0A]" />
+              <div className="w-8 h-8 bg-[#FFD600] rounded-[8px] border-[2px] border-foreground flex items-center justify-center shadow-[2px_2px_0px_black]">
+                <FolderPlus className="w-4 h-4 text-foreground" />
               </div>
-              <p className="font-heading font-bold text-[13px] text-[#0A0A0A]">Upload Folder</p>
+              <p className="font-heading font-bold text-[13px] text-foreground">Upload Folder</p>
               {/* @ts-expect-error - webkitdirectory is a non-standard attribute but widely supported */}
               <input ref={folderInputRef} type="file" webkitdirectory="" directory="" multiple className="hidden" onChange={handleFileSelect} />
             </div>
           </div>
 
           <div className="mt-4 shrink-0">
-            <Label className="font-mono text-[11px] text-[#555550] uppercase tracking-wider mb-2 block">
+            <Label className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider mb-2 block">
               Global Tags (Applies to all)
             </Label>
             <TagEditor tags={globalTags} onChange={setGlobalTags} />
           </div>
 
           {items.length > 0 && (
-            <div className="mt-4 flex-1 overflow-y-auto pr-2 border-t-[2px] border-[#E8E8E0] pt-4 min-h-[150px]">
+            <div className="mt-4 flex-1 overflow-y-auto pr-2 border-t-[2px] border-border pt-4 min-h-[150px]">
               <div className="flex justify-between items-center mb-3">
                 <span className="font-heading font-bold text-[14px]">Selected ({items.length})</span>
                 <button onClick={() => setItems([])} className="text-[12px] font-bold text-[#FF3B30] hover:underline">Clear All</button>
               </div>
               <div className="space-y-3">
                 {items.map((item) => (
-                  <div key={item.id} className="bg-[#F5F5F0] border-[2px] border-[#0A0A0A] rounded-[1rem] p-3 flex flex-col gap-2 relative group">
-                    <button onClick={() => removeItem(item.id)} className="absolute top-3 right-3 text-[#555550] hover:text-[#FF3B30] opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-[#F5F5F0] rounded-full">
+                  <div key={item.id} className="bg-background border-[2px] border-foreground rounded-[1rem] p-3 flex flex-col gap-2 relative group">
+                    <button onClick={() => removeItem(item.id)} className="absolute top-3 right-3 text-muted-foreground hover:text-[#FF3B30] opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-background rounded-full">
                       <X className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] flex items-center justify-center shrink-0">
-                        <File className="w-4 h-4 text-[#0A0A0A]" />
+                      <div className="w-8 h-8 rounded-[8px] border-[1.5px] border-foreground bg-card flex items-center justify-center shrink-0">
+                        <File className="w-4 h-4 text-foreground" />
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
                         <input
                           value={item.customName}
                           onChange={(e) => updateItem(item.id, { customName: e.target.value })}
-                          className="font-heading font-bold text-[13px] text-[#0A0A0A] bg-transparent border-b border-transparent hover:border-[#0A0A0A] focus:border-[#0A0A0A] outline-none w-full truncate pb-0.5"
+                          className="font-heading font-bold text-[13px] text-foreground bg-transparent border-b border-transparent hover:border-foreground focus:border-foreground outline-none w-full truncate pb-0.5"
                           placeholder="Filename..."
                         />
-                        <p className="font-mono text-[10px] text-[#555550] mt-0.5">{formatBytes(item.file.size)}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{formatBytes(item.file.size)}</p>
                       </div>
                     </div>
                     <div className="pt-1">
@@ -507,14 +507,14 @@ function UploadModal({
         <DialogFooter className="mt-6 gap-3 shrink-0">
           <button
             onClick={handleClose}
-            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={items.length === 0 || isUploading}
-            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-[#FFD600] shadow-[4px_4px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             {isUploading ? "Uploading…" : "Upload"}
@@ -592,10 +592,10 @@ function AddLinkModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
+      <DialogContent className="bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] max-w-md p-8">
         <DialogHeader>
-          <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A] flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#0057FF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+          <DialogTitle className="font-heading font-extrabold text-[22px] text-foreground flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-foreground bg-[#0057FF] flex items-center justify-center shadow-[2px_2px_0px_black]">
               <Link2 className="w-4 h-4 text-white" />
             </div>
             Add External Link
@@ -605,7 +605,7 @@ function AddLinkModal({
         <form onSubmit={handleSubmit} className="space-y-5 mt-3">
           {/* Title */}
           <div className="space-y-2">
-            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+            <Label className="font-mono text-[12px] text-muted-foreground uppercase tracking-wider">
               Title
             </Label>
             <Input
@@ -613,7 +613,7 @@ function AddLinkModal({
               onChange={(e) => { setTitle(e.target.value); setErrors(prev => ({ ...prev, title: undefined })) }}
               placeholder="e.g. React Docs, Lecture Recording…"
               autoFocus
-              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+              className="border-[2px] border-foreground rounded-[0.75rem] font-sans text-[14px]"
             />
             {errors.title && (
               <p className="font-sans text-[12px] text-[#FF3B30]">{errors.title}</p>
@@ -622,7 +622,7 @@ function AddLinkModal({
 
           {/* URL */}
           <div className="space-y-2">
-            <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+            <Label className="font-mono text-[12px] text-muted-foreground uppercase tracking-wider">
               URL
             </Label>
             <Input
@@ -630,7 +630,7 @@ function AddLinkModal({
               value={url}
               onChange={(e) => { setUrl(e.target.value); setErrors(prev => ({ ...prev, url: undefined })) }}
               placeholder="https://example.com"
-              className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+              className="border-[2px] border-foreground rounded-[0.75rem] font-sans text-[14px]"
             />
             {errors.url && (
               <p className="font-sans text-[12px] text-[#FF3B30]">{errors.url}</p>
@@ -644,14 +644,14 @@ function AddLinkModal({
             <button
               type="button"
               onClick={handleClose}
-              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#0057FF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-[#0057FF] shadow-[4px_4px_0px_black] font-heading font-bold text-[14px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
               {isSaving ? "Saving…" : "Save Link"}
@@ -702,20 +702,20 @@ function EditModal({
   }
 
   return (
-    <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-md p-8">
+    <DialogContent className="bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] max-w-md p-8">
       <DialogHeader>
-        <DialogTitle className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">
+        <DialogTitle className="font-heading font-extrabold text-[22px] text-foreground">
           Edit File
         </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-2">
         <div className="space-y-2">
-          <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider">
+          <Label className="font-mono text-[12px] text-muted-foreground uppercase tracking-wider">
             Filename
           </Label>
           <Input
             {...register("filename", { required: "Filename is required" })}
-            className="border-[2px] border-[#0A0A0A] rounded-[0.75rem] font-sans text-[14px]"
+            className="border-[2px] border-foreground rounded-[0.75rem] font-sans text-[14px]"
           />
           {errors.filename && (
             <p className="font-sans text-[12px] text-[#FF3B30]">{errors.filename.message}</p>
@@ -726,14 +726,14 @@ function EditModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSaving}
-            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFD600] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-[#FFD600] shadow-[4px_4px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {isSaving ? "Saving…" : "Save Changes"}
@@ -814,10 +814,10 @@ function MoveModal({
             <button
               disabled={isMoving}
               onClick={() => handleMove(folder.id)}
-              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[8px] border-[1.5px] border-transparent hover:border-[#0A0A0A] hover:bg-[#F5F5F0] hover:shadow-[2px_2px_0px_#0A0A0A] transition-all text-left font-sans text-[13px] font-medium text-[#0A0A0A] group"
+              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[8px] border-[1.5px] border-transparent hover:border-foreground hover:bg-background hover:shadow-[2px_2px_0px_black] transition-all text-left font-sans text-[13px] font-medium text-foreground group"
               style={{ paddingLeft: `${12 + depth * 16}px` }}
             >
-              <Folder className="w-4 h-4 text-[#555550] group-hover:text-[#FFD600] group-hover:fill-[#FFD600] transition-colors" />
+              <Folder className="w-4 h-4 text-muted-foreground group-hover:text-[#FFD600] group-hover:fill-[#FFD600] transition-colors" />
               <span className="truncate">{folder.name}</span>
             </button>
             {renderPickerTree(folder.id, depth + 1)}
@@ -829,10 +829,10 @@ function MoveModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] max-w-sm p-6 overflow-hidden flex flex-col max-h-[80vh]">
+      <DialogContent className="bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] max-w-sm p-6 overflow-hidden flex flex-col max-h-[80vh]">
         <DialogHeader className="shrink-0 mb-4">
-          <DialogTitle className="font-heading font-extrabold text-[20px] text-[#0A0A0A] flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[8px] border-[2px] border-[#0A0A0A] bg-[#0057FF] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A]">
+          <DialogTitle className="font-heading font-extrabold text-[20px] text-foreground flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] border-[2px] border-foreground bg-[#0057FF] flex items-center justify-center shadow-[2px_2px_0px_black]">
               <FolderInput className="w-4 h-4 text-white" />
             </div>
             Move To...
@@ -844,18 +844,18 @@ function MoveModal({
           <button
             disabled={isMoving}
             onClick={() => handleMove(null)}
-            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[8px] border-[1.5px] border-transparent hover:border-[#0A0A0A] hover:bg-[#F5F5F0] hover:shadow-[2px_2px_0px_#0A0A0A] transition-all text-left font-sans text-[13px] font-medium text-[#0A0A0A] group"
+            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[8px] border-[1.5px] border-transparent hover:border-foreground hover:bg-background hover:shadow-[2px_2px_0px_black] transition-all text-left font-sans text-[13px] font-medium text-foreground group"
           >
-            <Home className="w-4 h-4 text-[#555550]" />
+            <Home className="w-4 h-4 text-muted-foreground" />
             <span className="font-bold">Vault Root (All Files)</span>
           </button>
 
-          <div className="my-2 h-[2px] w-full bg-[#E8E8E0]" />
+          <div className="my-2 h-[2px] w-full bg-muted" />
 
           {validFolders.length > 0 ? (
             renderPickerTree(null)
           ) : (
-            <p className="font-mono text-[11px] text-[#999990] text-center pt-4">No nested folders available</p>
+            <p className="font-mono text-[11px] text-muted-foreground/70 text-center pt-4">No nested folders available</p>
           )}
         </div>
       </DialogContent>
@@ -932,8 +932,7 @@ function FolderCard({
   }
 
   return (
-    <motion.div
-      layout
+    <div
       data-drop-target={folder.id}
       draggable={!selectionMode}
       onDragStart={(e: any) => {
@@ -944,30 +943,26 @@ function FolderCard({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
       onClick={selectionMode ? () => onToggle?.(folder.id) : onClick}
       className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 select-none overflow-hidden flex items-center gap-4 ${isSelected
         ? "bg-[#FFFBDE] border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
         : isDragOver
           ? "border-[#0057FF] bg-[#F0F7FF] shadow-[4px_4px_0px_#0057FF] scale-105 cursor-copy"
-          : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+          : "bg-card border-foreground shadow-[4px_4px_0px_black] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
         } ${selectionMode ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
     >
       <div
         onClick={(e) => { e.stopPropagation(); onToggle?.(folder.id) }}
-        className={`w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all shrink-0 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+        className={`w-5 h-5 rounded-[6px] border-[2px] border-foreground flex items-center justify-center cursor-pointer transition-all shrink-0 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-card opacity-100 hover:bg-background' : 'bg-card opacity-0 group-hover:opacity-100 hover:bg-background'}`}
       >
-        {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+        {isSelected && <Check className="w-3 h-3 text-foreground" strokeWidth={4} />}
       </div>
       <div
-        className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] group-hover:bg-[#FFFFFF] transition-colors shrink-0"
+        className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-foreground flex items-center justify-center shadow-[2px_2px_0px_black] group-hover:bg-card transition-colors shrink-0"
       >
-        <Folder className="w-6 h-6 text-[#0A0A0A] fill-current" />
+        <Folder className="w-6 h-6 text-foreground fill-current" />
       </div>
-      <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate flex-1" title={folder.name}>
+      <h3 className="font-heading font-bold text-[15px] text-foreground truncate flex-1" title={folder.name}>
         {folder.name}
       </h3>
 
@@ -977,28 +972,28 @@ function FolderCard({
           <button
             disabled={isDeleting}
             onClick={(e) => e.stopPropagation()}
-            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
+            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-foreground bg-card hover:bg-background flex items-center justify-center shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
           >
-            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-foreground" /> : <MoreVertical className="w-4 h-4 text-foreground" />}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+          className="w-48 bg-card border-[2px] border-foreground rounded-[1rem] shadow-[4px_4px_0px_black] p-1.5 z-50"
         >
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRename(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRename(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-2 py-1.5 rounded-[0.5rem] outline-none">
             <Pencil className="w-4 h-4 text-[#00C853]" /> Rename
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-2 py-1.5 rounded-[0.5rem] outline-none">
             <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
+          <DropdownMenuSeparator className="bg-muted my-1" />
           <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
             <Trash2 className="w-4 h-4" /> Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1110,14 +1105,14 @@ function FileViewerModal({
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent
-        className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] shadow-[8px_8px_0px_#FFD600] p-0 flex flex-col overflow-hidden [&>button:last-child]:hidden"
+        className="viewer-chrome bg-black border-[3px] border-black shadow-[8px_8px_0px_#FFD600] p-0 flex flex-col overflow-hidden [&>button:last-child]:hidden"
         style={{ ...dialogSize, maxWidth: "none", borderRadius: isFullscreen ? 0 : "2rem", transition: isFullscreen ? "all 0.2s ease" : "none" }}
       >
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-3 border-b-[2px] border-[#222] shrink-0 select-none">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-7 h-7 bg-[#FFD600] rounded-[7px] border-[2px] border-[#0A0A0A] flex items-center justify-center shrink-0">
-              {isImage ? <ImageIcon className="w-3.5 h-3.5 text-[#0A0A0A]" /> : <FileText className="w-3.5 h-3.5 text-[#0A0A0A]" />}
+            <div className="viewer-file-icon w-7 h-7 bg-[#FFD600] rounded-[7px] border-[2px] border-black flex items-center justify-center shrink-0">
+              {isImage ? <ImageIcon className="w-3.5 h-3.5 text-foreground" /> : <FileText className="w-3.5 h-3.5 text-foreground" />}
             </div>
             <span className="font-heading font-bold text-[14px] text-white truncate">{filename}</span>
           </div>
@@ -1337,7 +1332,7 @@ function FileCard({
       {/* YouTube embed dialog */}
       {ytVideoId && (
         <Dialog open={ytOpen} onOpenChange={setYtOpen}>
-          <DialogContent className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[8px_8px_0px_#FFD600] max-w-2xl p-0 overflow-hidden">
+          <DialogContent className="bg-foreground border-[3px] border-foreground rounded-[1.5rem] shadow-[8px_8px_0px_#FFD600] max-w-2xl p-0 overflow-hidden">
             <DialogHeader className="px-5 pt-4 pb-3">
               <DialogTitle className="font-heading font-extrabold text-[16px] text-white flex items-center gap-2">
                 <PlayCircle className="w-5 h-5 text-[#FF3B30]" />
@@ -1365,17 +1360,17 @@ function FileCard({
         onClick={selectionMode ? () => onToggle?.(item.id) : (isLink ? handleLinkOpen : undefined)}
         className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 select-none ${isSelected
           ? "bg-[#FFFBDE] border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
-          : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+          : "bg-card border-foreground shadow-[4px_4px_0px_black] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
           } ${isLink || selectionMode ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
       >
         <div
           onClick={(e) => { e.stopPropagation(); onToggle?.(item.id) }}
-          className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+          className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-foreground flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-card opacity-100 hover:bg-background' : 'bg-card opacity-0 group-hover:opacity-100 hover:bg-background'}`}
         >
-          {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
+          {isSelected && <Check className="w-3 h-3 text-foreground" strokeWidth={4} />}
         </div>
         <div className="flex justify-between items-start mb-4 pl-8 relative z-10">
-          <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] ${isLink ? getLinkBgColor(item.url ?? "") : "bg-[#FFFFFF]"
+          <div className={`w-14 h-14 rounded-[12px] border-[2px] border-foreground flex items-center justify-center shadow-[3px_3px_0px_black] ${isLink ? getLinkBgColor(item.url ?? "") : "bg-card"
             }`}>
             {isLink
               ? getLinkIcon(item.url ?? "")
@@ -1386,7 +1381,7 @@ function FileCard({
               onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleView() }}
               disabled={!isLink && isBusy}
               title={isLink ? (ytVideoId ? "Watch on YouTube" : "Open link") : "View in browser"}
-              className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-white flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-[#0A0A0A] disabled:opacity-40"
+              className="w-8 h-8 rounded-[8px] border-[1.5px] border-foreground bg-card hover:bg-[#0057FF] hover:text-white flex items-center justify-center shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-foreground disabled:opacity-40"
             >
               {isLink
                 ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />)
@@ -1397,27 +1392,27 @@ function FileCard({
                 <button
                   disabled={isBusy}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none disabled:opacity-40"
+                  className="w-8 h-8 rounded-[8px] border-[1.5px] border-foreground bg-card hover:bg-background flex items-center justify-center shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none disabled:opacity-40"
                 >
-                  {isBusy && !isViewing ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
+                  {isBusy && !isViewing ? <Loader2 className="w-4 h-4 animate-spin text-foreground" /> : <MoreVertical className="w-4 h-4 text-foreground" />}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+                className="w-48 bg-card border-[2px] border-foreground rounded-[1rem] shadow-[4px_4px_0px_black] p-1.5 z-50"
               >
                 {item.item_type !== "link" && (
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-2 py-1.5 rounded-[0.5rem] outline-none">
                     <Download className="w-4 h-4 text-[#FFD600]" /> Download
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-2 py-1.5 rounded-[0.5rem] outline-none">
                   <Pencil className="w-4 h-4 text-[#00C853]" /> Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-2 py-1.5 rounded-[0.5rem] outline-none">
                   <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
+                <DropdownMenuSeparator className="bg-muted my-1" />
                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
                   <Trash2 className="w-4 h-4" /> Delete
                 </DropdownMenuItem>
@@ -1425,37 +1420,37 @@ function FileCard({
             </DropdownMenu>
           </div>
         </div>
-        <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate mb-1" title={isLink ? (item.title ?? "") : item.files?.filename}>
+        <h3 className="font-heading font-bold text-[15px] text-foreground truncate mb-1" title={isLink ? (item.title ?? "") : item.files?.filename}>
           {isLink ? (item.title || "Untitled Link") : (item.files?.filename || "Unknown File")}
         </h3>
         <div className="flex items-center justify-between mt-1">
           {isLink ? (
-            <span className="font-mono text-[12px] font-medium text-[#555550] truncate max-w-[60%] flex items-center gap-1">
-              <ExternalLink className="w-3 h-3 text-[#999990] shrink-0" />
+            <span className="font-mono text-[12px] font-medium text-muted-foreground truncate max-w-[60%] flex items-center gap-1">
+              <ExternalLink className="w-3 h-3 text-muted-foreground/70 shrink-0" />
               {linkDomain}
             </span>
           ) : (
-            <span className="font-mono text-[12px] font-medium text-[#555550]">
+            <span className="font-mono text-[12px] font-medium text-muted-foreground">
               {formatBytes(item.files?.size_bytes ?? 0)}
             </span>
           )}
-          <span className="font-mono text-[11px] text-[#999990]">{formatDate(item.created_at)}</span>
+          <span className="font-mono text-[11px] text-muted-foreground/70">{formatDate(item.created_at)}</span>
         </div>
         <div className="flex items-center mt-2.5 gap-1.5 overflow-hidden">
-          <Folder className="w-3.5 h-3.5 text-[#999990] shrink-0" />
-          <span className="font-mono text-[10px] text-[#999990] uppercase tracking-wider truncate">
+          <Folder className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0" />
+          <span className="font-mono text-[10px] text-muted-foreground/70 uppercase tracking-wider truncate">
             {pathString}
           </span>
         </div>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-[#0A0A0A] bg-[#F5F5F0] font-mono text-[11px] font-medium text-[#555550] shadow-[2px_2px_0px_#0A0A0A]">
+              <span key={tag} className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-foreground bg-background font-mono text-[11px] font-medium text-muted-foreground shadow-[2px_2px_0px_black]">
                 #{tag}
               </span>
             ))}
             {tags.length > 3 && (
-              <span className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-[#E8E8E0] bg-[#E8E8E0] font-mono text-[11px] text-[#999990]">
+              <span className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-border bg-muted font-mono text-[11px] text-muted-foreground/70">
                 +{tags.length - 3}
               </span>
             )}
@@ -1478,19 +1473,19 @@ function Breadcrumb({
     <nav className="flex items-center gap-1 flex-wrap">
       <button
         onClick={() => onNavigate(null)}
-        className="flex items-center gap-1 px-2.5 py-1 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-mono text-[12px] font-medium text-[#0A0A0A]"
+        className="flex items-center gap-1 px-2.5 py-1 rounded-[8px] border-[1.5px] border-foreground bg-card shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-mono text-[12px] font-medium text-foreground"
       >
         <Home className="w-3.5 h-3.5" />
         Vault
       </button>
       {trail.map((folder, idx) => (
         <div key={folder.id} className="flex items-center gap-1">
-          <ChevronRight className="w-3.5 h-3.5 text-[#999990]" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/70" />
           <button
             onClick={() => onNavigate(folder.id)}
             className={`px-2.5 py-1 rounded-[8px] border-[1.5px] font-mono text-[12px] font-medium transition-all ${idx === trail.length - 1
-              ? "border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] text-[#0A0A0A]"
-              : "border-[#0A0A0A] bg-[#FFFFFF] shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-[#0A0A0A]"
+              ? "border-foreground bg-[#FFD600] shadow-[2px_2px_0px_black] text-foreground"
+              : "border-foreground bg-card shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-foreground"
               }`}
           >
             {folder.name}
@@ -1532,19 +1527,19 @@ function SidebarFolderTree({
               data-drop-target={folder.id}
               onClick={() => onNavigate(folder.id)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${isDropTarget
-                ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
+                ? "bg-[#FFD600] border-[1.5px] border-foreground text-foreground shadow-[0px_0px_0px_3px_#FFD60088]"
                 : isActive
-                  ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A]"
-                  : "hover:bg-[#E8E8E0] text-[#0A0A0A]"
+                  ? "bg-[#FFD600] border-[1.5px] border-foreground text-foreground shadow-[2px_2px_0px_black]"
+                  : "hover:bg-muted text-foreground"
                 }`}
               style={{ paddingLeft: `${8 + depth * 16}px` }}
             >
               {isActive
                 ? <FolderOpen className="w-4 h-4 shrink-0" />
-                : <Folder className="w-4 h-4 shrink-0 text-[#555550]" />}
+                : <Folder className="w-4 h-4 shrink-0 text-muted-foreground" />}
               <span className="truncate">{folder.name}</span>
               {hasChildren && (
-                <ChevronRight className="w-3 h-3 ml-auto shrink-0 text-[#999990]" />
+                <ChevronRight className="w-3 h-3 ml-auto shrink-0 text-muted-foreground/70" />
               )}
             </button>
             {isActive && hasChildren && (
@@ -1802,9 +1797,9 @@ export default function VaultPage() {
 
       <div className={`flex h-full w-full relative transition-all duration-200 ${isDraggingFiles ? 'ring-[3px] ring-inset ring-[#0057FF] rounded-[1rem]' : ''}`}>
         {/* ── Left Sidebar ─────────────────────────────────────────────────── */}
-        <aside className="w-[220px] bg-[#F5F5F0] border-r-[2px] border-[#0A0A0A] flex-col hidden md:flex shrink-0">
-          <div className="p-4 border-b-[2px] border-[#0A0A0A]">
-            <h2 className="font-heading font-extrabold text-[16px] text-[#0A0A0A]">MY VAULT</h2>
+        <aside className="w-[220px] bg-background border-r-[2px] border-foreground flex-col hidden md:flex shrink-0">
+          <div className="p-4 border-b-[2px] border-foreground">
+            <h2 className="font-heading font-extrabold text-[16px] text-foreground">MY VAULT</h2>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -1813,10 +1808,10 @@ export default function VaultPage() {
               data-drop-target="root"
               onClick={() => navigate(null)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${activeDropZone === "root"
-                ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
+                ? "bg-[#FFD600] border-[1.5px] border-foreground text-foreground shadow-[0px_0px_0px_3px_#FFD60088]"
                 : currentFolderId === null
-                  ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A]"
-                  : "hover:bg-[#E8E8E0] text-[#0A0A0A]"
+                  ? "bg-[#FFD600] border-[1.5px] border-foreground text-foreground shadow-[2px_2px_0px_black]"
+                  : "hover:bg-muted text-foreground"
                 }`}
             >
               <Home className="w-4 h-4 shrink-0" />
@@ -1826,13 +1821,13 @@ export default function VaultPage() {
             {foldersLoading ? (
               <div className="space-y-1 pt-1">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-7 bg-[#E8E8E0] rounded-[6px] animate-pulse" />
+                  <div key={i} className="h-7 bg-muted rounded-[6px] animate-pulse" />
                 ))}
               </div>
             ) : (
               <>
                 {allFolders.length > 0 && (
-                  <div className="font-mono text-[10px] text-[#999990] px-2 pt-3 pb-1 uppercase tracking-wider">
+                  <div className="font-mono text-[10px] text-muted-foreground/70 px-2 pt-3 pb-1 uppercase tracking-wider">
                     Folders
                   </div>
                 )}
@@ -1847,14 +1842,14 @@ export default function VaultPage() {
           </div>
 
           {/* Storage quota */}
-          <div className="p-4 border-t-[2px] border-[#0A0A0A] bg-[#FFFFFF]">
+          <div className="p-4 border-t-[2px] border-foreground bg-card">
             <div className="flex justify-between items-center mb-2">
-              <span className="font-mono text-[10px] text-[#555550]">STORAGE</span>
-              <span className="font-mono text-[10px] font-bold text-[#0A0A0A]">
+              <span className="font-mono text-[10px] text-muted-foreground">STORAGE</span>
+              <span className="font-mono text-[10px] font-bold text-foreground">
                 {formatBytes(storageUsed)} / 500 MB
               </span>
             </div>
-            <div className="w-full h-2 bg-[#F5F5F0] rounded-full overflow-hidden border-[1.5px] border-[#0A0A0A]">
+            <div className="w-full h-2 bg-background rounded-full overflow-hidden border-[1.5px] border-foreground">
               <div
                 className={`h-full transition-all ${storageColor}`}
                 style={{ width: `${Math.max(storagePercentage, 2)}%` }}
@@ -1864,10 +1859,10 @@ export default function VaultPage() {
         </aside>
 
         {/* ── Main Content ──────────────────────────────────────────────────── */}
-        <div className="flex-1 bg-[#FFFFFF] flex flex-col overflow-hidden">
+        <div className="flex-1 bg-card flex flex-col overflow-hidden">
 
           {/* Top bar */}
-          <div className="p-6 border-b-[2px] border-[#E8E8E0] bg-[#FFFFFF] z-10 shrink-0 space-y-4">
+          <div className="p-6 border-b-[2px] border-border bg-card z-10 shrink-0 space-y-4">
             {/* Breadcrumb */}
             <Breadcrumb trail={breadcrumb} onNavigate={navigate} />
 
@@ -1875,18 +1870,18 @@ export default function VaultPage() {
             <div className="flex items-center gap-3 flex-wrap">
               {/* Search */}
               <div className="relative flex-1 max-w-sm min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999990] pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name or #tag…"
-                  className="w-full pl-9 pr-8 py-2.5 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#F5F5F0] font-sans text-[14px] text-[#0A0A0A] placeholder:text-[#999990] placeholder:font-mono outline-none focus:bg-[#FFFFFF] focus:shadow-[4px_4px_0px_#0A0A0A] transition-all"
+                  className="w-full pl-9 pr-8 py-2.5 rounded-[0.75rem] border-[2px] border-foreground bg-background font-sans text-[14px] text-foreground placeholder:text-muted-foreground/70 placeholder:font-mono outline-none focus:bg-card focus:shadow-[4px_4px_0px_black] transition-all"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#999990] hover:text-[#0A0A0A]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1896,7 +1891,7 @@ export default function VaultPage() {
               {/* Community Filter Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-4 py-2.5 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[13px] text-[#0A0A0A] flex items-center gap-2">
+                  <button className="px-4 py-2.5 rounded-[0.75rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[13px] text-foreground flex items-center gap-2">
                     {selectedCommunityFilter ?
                       <><Filter className="w-4 h-4 text-[#0057FF]" /> <span className="max-w-[120px] truncate">{selectedCommunityFilter === "PERSONAL_ONLY" ? "Personal Vault Only" : availableCommunities.find(c => c.id === selectedCommunityFilter)?.name}</span></>
                       :
@@ -1904,21 +1899,21 @@ export default function VaultPage() {
                     }
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-2 z-50">
-                  <DropdownMenuItem onClick={() => setSelectedCommunityFilter(null)} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-3 py-2 rounded-[0.5rem] mb-1 outline-none">
+                <DropdownMenuContent align="end" className="w-56 bg-card border-[2px] border-foreground rounded-[1rem] shadow-[4px_4px_0px_black] p-2 z-50">
+                  <DropdownMenuItem onClick={() => setSelectedCommunityFilter(null)} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-3 py-2 rounded-[0.5rem] mb-1 outline-none">
                     All Communities
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setSelectedCommunityFilter("PERSONAL_ONLY")} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-[rgba(255,59,48,0.1)] text-[#FF3B30] px-3 py-2 rounded-[0.5rem] mb-1 outline-none">
                     Personal Vault Only
                   </DropdownMenuItem>
-                  {availableCommunities.length > 0 && <DropdownMenuSeparator className="bg-[#E8E8E0]" />}
+                  {availableCommunities.length > 0 && <DropdownMenuSeparator className="bg-muted" />}
                   {availableCommunities.map(c => (
-                    <DropdownMenuItem key={c.id} onClick={() => setSelectedCommunityFilter(c.id)} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-3 py-2 rounded-[0.5rem] outline-none">
+                    <DropdownMenuItem key={c.id} onClick={() => setSelectedCommunityFilter(c.id)} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-muted px-3 py-2 rounded-[0.5rem] outline-none">
                       {c.name}
                     </DropdownMenuItem>
                   ))}
                   {availableCommunities.length === 0 && (
-                    <div className="px-3 py-2 text-[12px] text-[#999990] font-mono italic">No shared items found.</div>
+                    <div className="px-3 py-2 text-[12px] text-muted-foreground/70 font-mono italic">No shared items found.</div>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -1926,7 +1921,7 @@ export default function VaultPage() {
               {/* New Folder */}
               <button
                 onClick={() => setNewFolderModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[13px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all shrink-0"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[4px_4px_0px_black] font-heading font-bold text-[13px] text-foreground hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all shrink-0"
               >
                 <FolderPlus className="w-4 h-4" />
                 New Folder
@@ -1935,7 +1930,7 @@ export default function VaultPage() {
               {/* Add Link */}
               <button
                 onClick={() => setAddLinkModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#0057FF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[13px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all shrink-0"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-[#0057FF] shadow-[4px_4px_0px_black] font-heading font-bold text-[13px] text-white hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all shrink-0"
               >
                 <Link2 className="w-4 h-4" />
                 Add Link
@@ -1944,7 +1939,7 @@ export default function VaultPage() {
               {/* Upload */}
               <button
                 onClick={() => setUploadModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-[0.875rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[5px_5px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all shrink-0"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-[0.875rem] border-[3px] border-foreground bg-[#FFD600] shadow-[5px_5px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all shrink-0"
               >
                 <Upload className="w-4 h-4" />
                 Upload File
@@ -1953,33 +1948,33 @@ export default function VaultPage() {
           </div>
 
           {/* Grid content */}
-          <div className="flex-1 p-6 overflow-y-auto bg-[#FFFFFF]">
+          <div className="flex-1 p-6 overflow-y-auto bg-card">
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {[...Array(8)].map((_, i) => (
                   <div
                     key={i}
-                    className="animate-pulse bg-[#F5F5F0] border-[2px] border-[#E8E8E0] rounded-[24px] h-[140px]"
+                    className="animate-pulse bg-background border-[2px] border-border rounded-[24px] h-[140px]"
                     style={{ animationDelay: `${i * 0.05}s` }}
                   />
                 ))}
               </div>
             ) : isEmpty ? (
               /* Empty state */
-              <div className="w-full min-h-[400px] border-[2px] border-dashed border-[#0A0A0A] bg-[#F5F5F0] rounded-[24px] flex flex-col items-center justify-center text-center p-8 gap-4">
+              <div className="w-full min-h-[400px] border-[2px] border-dashed border-foreground bg-background rounded-[24px] flex flex-col items-center justify-center text-center p-8 gap-4">
                 <div className="relative w-20 h-20">
-                  <div className="absolute -top-3 -right-3 w-5 h-5 rounded-full bg-[#0057FF] border-[1.5px] border-[#0A0A0A]" />
-                  <div className="absolute -bottom-2 -left-3 w-4 h-4 bg-[#FF3CAC] border-[1.5px] border-[#0A0A0A] rotate-45" />
-                  <div className="w-20 h-20 bg-[#FFFFFF] rounded-[16px] rotate-[-6deg] flex items-center justify-center border-[2px] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
+                  <div className="absolute -top-3 -right-3 w-5 h-5 rounded-full bg-[#0057FF] border-[1.5px] border-foreground" />
+                  <div className="absolute -bottom-2 -left-3 w-4 h-4 bg-[#FF3CAC] border-[1.5px] border-foreground rotate-45" />
+                  <div className="w-20 h-20 bg-card rounded-[16px] rotate-[-6deg] flex items-center justify-center border-[2px] border-foreground shadow-[4px_4px_0px_black]">
                     {currentFolderId
                       ? <FolderOpen className="w-10 h-10 text-[#FFD600]" />
                       : <Sparkles className="w-10 h-10 text-[#FF3CAC]" />}
                   </div>
                 </div>
-                <h3 className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">
+                <h3 className="font-heading font-extrabold text-[22px] text-foreground">
                   {currentFolderId ? "This folder is empty" : "Your Vault is Empty"}
                 </h3>
-                <p className="font-sans text-[15px] text-[#555550] max-w-xs">
+                <p className="font-sans text-[15px] text-muted-foreground max-w-xs">
                   {currentFolderId
                     ? "Upload a file here or create a sub-folder to organise your work."
                     : "Start securing your documents and resources. Upload your first file now."}
@@ -1987,14 +1982,14 @@ export default function VaultPage() {
                 <div className="flex items-center gap-3 flex-wrap justify-center">
                   <button
                     onClick={() => setNewFolderModalOpen(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[4px_4px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[4px_4px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
                   >
                     <FolderPlus className="w-4 h-4" />
                     New Folder
                   </button>
                   <button
                     onClick={() => setUploadModalOpen(true)}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-[0.875rem] border-[3px] border-[#0A0A0A] bg-[#FFD600] shadow-[5px_5px_0px_#0A0A0A] font-heading font-bold text-[15px] text-[#0A0A0A] hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-[0.875rem] border-[3px] border-foreground bg-[#FFD600] shadow-[5px_5px_0px_black] font-heading font-bold text-[15px] text-foreground hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all"
                   >
                     <Upload className="w-4 h-4" />
                     Upload File
@@ -2003,17 +1998,17 @@ export default function VaultPage() {
               </div>
             ) : searchQuery && filteredFolders.length === 0 && filteredItems.length === 0 ? (
               /* No search results */
-              <div className="w-full min-h-[400px] border-[2px] border-dashed border-[#0A0A0A] bg-[#F5F5F0] rounded-[24px] flex flex-col items-center justify-center text-center p-8 gap-4">
-                <div className="w-16 h-16 bg-[#FFFFFF] rounded-[16px] flex items-center justify-center border-[2px] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
-                  <Search className="w-8 h-8 text-[#555550]" />
+              <div className="w-full min-h-[400px] border-[2px] border-dashed border-foreground bg-background rounded-[24px] flex flex-col items-center justify-center text-center p-8 gap-4">
+                <div className="w-16 h-16 bg-card rounded-[16px] flex items-center justify-center border-[2px] border-foreground shadow-[4px_4px_0px_black]">
+                  <Search className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-heading font-extrabold text-[22px] text-[#0A0A0A]">No matches found</h3>
-                <p className="font-sans text-[14px] text-[#555550]">
+                <h3 className="font-heading font-extrabold text-[22px] text-foreground">No matches found</h3>
+                <p className="font-sans text-[14px] text-muted-foreground">
                   Nothing matches &ldquo;<strong>{searchQuery}</strong>&rdquo;
                 </p>
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+                  className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-card shadow-[3px_3px_0px_black] font-heading font-bold text-[14px] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
                 >
                   Clear search
                 </button>
@@ -2061,9 +2056,9 @@ export default function VaultPage() {
                       animate={{ opacity: 1 }}
                     >
                       <div className="flex items-center gap-3 py-1">
-                        <div className="h-[2px] flex-1 bg-[#E8E8E0]" />
-                        <span className="font-mono text-[11px] text-[#999990] uppercase tracking-wider">Files</span>
-                        <div className="h-[2px] flex-1 bg-[#E8E8E0]" />
+                        <div className="h-[2px] flex-1 bg-muted" />
+                        <span className="font-mono text-[11px] text-muted-foreground/70 uppercase tracking-wider">Files</span>
+                        <div className="h-[2px] flex-1 bg-muted" />
                       </div>
                     </motion.div>
                   )}
@@ -2090,7 +2085,7 @@ export default function VaultPage() {
 
             {/* Result count during search */}
             {searchQuery && (filteredFolders.length > 0 || filteredItems.length > 0) && (
-              <p className="font-mono text-[11px] text-[#999990] mt-4">
+              <p className="font-mono text-[11px] text-muted-foreground/70 mt-4">
                 {filteredFolders.length + filteredItems.length} result
                 {filteredFolders.length + filteredItems.length !== 1 ? "s" : ""} for &ldquo;{searchQuery}&rdquo;
               </p>
@@ -2107,21 +2102,21 @@ export default function VaultPage() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[2rem] shadow-[8px_8px_0px_#0A0A0A] px-6 py-3"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-card border-[3px] border-foreground rounded-[2rem] shadow-[8px_8px_0px_black] px-6 py-3"
           >
-            <span className="font-heading font-extrabold text-[15px] text-[#0A0A0A]">
+            <span className="font-heading font-extrabold text-[15px] text-foreground">
               {selectedItemIds.length + selectedFolderIds.length} selected
             </span>
-            <div className="w-[2px] h-5 bg-[#E8E8E0]" />
+            <div className="w-[2px] h-5 bg-muted" />
             <button
               onClick={clearSelection}
-              className="font-heading font-bold text-[13px] text-[#555550] hover:text-[#0A0A0A] transition-colors"
+              className="font-heading font-bold text-[13px] text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleBulkDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-[#FF3B30] text-[#FFFFFF] rounded-[1rem] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[13px]"
+              className="flex items-center gap-2 px-4 py-2 bg-[#FF3B30] text-white rounded-[1rem] border-[2px] border-foreground shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[13px]"
             >
               <Trash2 className="w-4 h-4" />
               Delete {selectedItemIds.length + selectedFolderIds.length} item{selectedItemIds.length + selectedFolderIds.length !== 1 ? "s" : ""}

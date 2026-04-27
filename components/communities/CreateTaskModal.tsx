@@ -24,7 +24,7 @@ import { PlusIcon, Loader2Icon, Rocket, FileText } from "lucide-react"
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-bold text-[#0A0A0A] tracking-wide">
+      <label className="text-sm font-bold text-foreground tracking-wide">
         {label}
       </label>
       {children}
@@ -71,7 +71,7 @@ export default function CreateTaskModal({ communityId }: { communityId: string }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#FFD600] text-[#0A0A0A] border-[3px] border-[#0A0A0A] rounded-[14px] shadow-[6px_6px_0px_#0A0A0A] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none hover:bg-[#FFD600] transition-all duration-150 font-bold h-12 px-6">
+        <Button className="bg-[#FFD600] text-foreground border-[3px] border-foreground rounded-[14px] shadow-[6px_6px_0px_black] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none hover:bg-[#FFD600] transition-all duration-150 font-bold h-12 px-6">
           <PlusIcon className="w-5 h-5 mr-2 stroke-[2.5px]" />
           Create Task
         </Button>
@@ -92,7 +92,7 @@ export default function CreateTaskModal({ communityId }: { communityId: string }
               placeholder="e.g. Complete Chapter 3 exercises"
               required
               maxLength={200}
-              className="w-full h-11 px-4 bg-white border-2 border-[#0A0A0A] rounded-[12px] text-[#0A0A0A] text-sm placeholder:text-[#999990] outline-none focus:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 disabled:opacity-50"
+              className="w-full h-11 px-4 bg-card border-2 border-foreground rounded-[12px] text-foreground text-sm placeholder:text-muted-foreground/70 outline-none focus:shadow-[4px_4px_0px_black] transition-all duration-150 disabled:opacity-50"
             />
           </FieldGroup>
 
@@ -102,17 +102,17 @@ export default function CreateTaskModal({ communityId }: { communityId: string }
               value={status}
               onValueChange={(v) => setStatus(v as "pending" | "active")}
             >
-              <SelectTrigger className="w-full h-11 px-4 bg-white border-2 border-[#0A0A0A] rounded-[12px] text-sm shadow-none focus:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 data-[size=default]:h-11">
+              <SelectTrigger className="w-full h-11 px-4 bg-card border-2 border-foreground rounded-[12px] text-sm shadow-none focus:shadow-[4px_4px_0px_black] transition-all duration-150 data-[size=default]:h-11">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="border-2 border-[#0A0A0A] rounded-[12px] shadow-[4px_4px_0px_#0A0A0A] bg-white">
-                <SelectItem value="active" className="cursor-pointer font-medium focus:bg-[#FFD600] focus:text-[#0A0A0A]">
+              <SelectContent className="border-2 border-foreground rounded-[12px] shadow-[4px_4px_0px_black] bg-card">
+                <SelectItem value="active" className="cursor-pointer font-medium focus:bg-[#FFD600] focus:text-foreground">
                   <span className="flex items-center gap-2">
                     <Rocket className="w-4 h-4 shrink-0" />
                     Publish Immediately (Active)
                   </span>
                 </SelectItem>
-                <SelectItem value="pending" className="cursor-pointer font-medium focus:bg-[#FFD600] focus:text-[#0A0A0A]">
+                <SelectItem value="pending" className="cursor-pointer font-medium focus:bg-[#FFD600] focus:text-foreground">
                   <span className="flex items-center gap-2">
                     <FileText className="w-4 h-4 shrink-0" />
                     Save as Draft (Pending)
@@ -120,7 +120,7 @@ export default function CreateTaskModal({ communityId }: { communityId: string }
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-[#555550]">
+            <p className="text-xs text-muted-foreground">
               Draft tasks are only visible to owners and curators until approved.
             </p>
           </FieldGroup>
@@ -132,7 +132,7 @@ export default function CreateTaskModal({ communityId }: { communityId: string }
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               min={new Date().toISOString().split("T")[0]}
-              className="w-full h-11 px-4 bg-white border-2 border-[#0A0A0A] rounded-[12px] text-sm text-[#0A0A0A] outline-none focus:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-150 disabled:opacity-50 [color-scheme:light]"
+              className="w-full h-11 px-4 bg-card border-2 border-foreground rounded-[12px] text-sm text-foreground outline-none focus:shadow-[4px_4px_0px_black] transition-all duration-150 disabled:opacity-50 [color-scheme:light]"
             />
           </FieldGroup>
 
@@ -142,14 +142,14 @@ export default function CreateTaskModal({ communityId }: { communityId: string }
               type="button"
               onClick={() => setOpen(false)}
               disabled={isPending}
-              className="flex-1 h-11 bg-white border-2 border-[#0A0A0A] rounded-[14px] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 font-bold text-sm disabled:opacity-50"
+              className="flex-1 h-11 bg-card border-2 border-foreground rounded-[14px] shadow-[4px_4px_0px_black] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 font-bold text-sm disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !title.trim()}
-              className="flex-1 h-11 flex items-center justify-center gap-2 bg-[#FFD600] text-[#0A0A0A] border-[3px] border-[#0A0A0A] rounded-[14px] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 h-11 flex items-center justify-center gap-2 bg-[#FFD600] text-foreground border-[3px] border-foreground rounded-[14px] shadow-[4px_4px_0px_black] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-150 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? (
                 <>

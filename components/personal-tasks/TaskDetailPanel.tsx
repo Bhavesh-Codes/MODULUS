@@ -191,15 +191,15 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
 
   return (
     <>
-      <div ref={backdropRef} className="fixed inset-0 bg-[#0A0A0A]/50 z-50" onClick={handleClose} />
-      <div ref={panelRef} className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white border-l-[3px] border-black z-50 flex flex-col rounded-l-[1.5rem] shadow-[-8px_8px_0_rgba(0,0,0,1)]">
+      <div ref={backdropRef} className="fixed inset-0 bg-foreground/50 z-50" onClick={handleClose} />
+      <div ref={panelRef} className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l-[3px] border-foreground z-50 flex flex-col rounded-l-[1.5rem] shadow-[-8px_8px_0_rgba(0,0,0,1)]">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-black/10 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-foreground/10 shrink-0">
           <div className="flex items-center gap-2">
             <button
               onClick={handleTogglePin}
-              className={`p-2 rounded-[0.75rem] border-2 border-black transition-all shadow-[2px_2px_0_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none ${task.is_pinned ? "bg-[#FFD600]" : "bg-white"}`}
+              className={`p-2 rounded-[0.75rem] border-2 border-foreground transition-all shadow-[2px_2px_0_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none ${task.is_pinned ? "bg-[#FFD600]" : "bg-card"}`}
             >
               <Pin className="w-4 h-4" />
             </button>
@@ -207,7 +207,7 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
               <span className="text-[11px] font-space text-[#888] animate-pulse">Unsaved changes</span>
             )}
           </div>
-          <button onClick={handleClose} className="p-1 hover:bg-[#F5F5F0] rounded-full transition-colors">
+          <button onClick={handleClose} className="p-1 hover:bg-background rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -229,8 +229,8 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
             <div className="flex gap-2">
               {(["todo", "in_progress", "done"] as PersonalTaskStatus[]).map(s => (
                 <button key={s} onClick={() => { setStatus(s); mark(); }}
-                  className={`px-3 py-1.5 font-space font-bold text-xs border-2 border-black rounded-full transition-all
-                    ${status === s ? "bg-black text-white shadow-none" : "bg-white text-black shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
+                  className={`px-3 py-1.5 font-space font-bold text-xs border-2 border-foreground rounded-full transition-all
+                    ${status === s ? "bg-foreground text-white shadow-none" : "bg-card text-foreground shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
                 >
                   {s === "todo" ? "Todo" : s === "in_progress" ? "In Progress" : "Done"}
                 </button>
@@ -244,17 +244,17 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
             <div className="flex gap-2 flex-wrap">
               {[
                 { val: "high", label: "High", cls: "bg-[#FF3B30] text-white" },
-                { val: "medium", label: "Medium", cls: "bg-[#FF9500] text-black" },
+                { val: "medium", label: "Medium", cls: "bg-[#FF9500] text-foreground" },
                 { val: "low", label: "Low", cls: "bg-[#00C853] text-white" },
               ].map(p => (
                 <button key={p.val} onClick={() => { setPriority(p.val as PersonalTaskPriority); mark(); }}
-                  className={`px-3 py-1.5 font-space font-bold text-xs border-2 border-black rounded-full transition-all
-                    ${priority === p.val ? `${p.cls} shadow-none` : "bg-white text-black shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
+                  className={`px-3 py-1.5 font-space font-bold text-xs border-2 border-foreground rounded-full transition-all
+                    ${priority === p.val ? `${p.cls} shadow-none` : "bg-card text-foreground shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
                 >{p.label}</button>
               ))}
               <button onClick={() => { setPriority(null); mark(); }}
-                className={`px-3 py-1.5 font-space font-bold text-xs border-2 border-black rounded-full transition-all
-                  ${!priority ? "bg-[#F5F5F0] text-black shadow-none" : "bg-white text-black shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
+                className={`px-3 py-1.5 font-space font-bold text-xs border-2 border-foreground rounded-full transition-all
+                  ${!priority ? "bg-background text-foreground shadow-none" : "bg-card text-foreground shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
               >None</button>
             </div>
           </div>
@@ -263,34 +263,34 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
           <div className="flex flex-col gap-2 relative">
             <span className="font-space font-bold text-[11px] text-[#888] uppercase tracking-wider">Category</span>
             <button onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-              className="w-full text-left px-4 py-2.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all flex justify-between items-center"
+              className="w-full text-left px-4 py-2.5 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all flex justify-between items-center"
             >
-              <span className={selectedCategory ? "text-black" : "text-[#AAA]"}>{selectedCategory?.name || "No category"}</span>
+              <span className={selectedCategory ? "text-foreground" : "text-[#AAA]"}>{selectedCategory?.name || "No category"}</span>
               <span className="text-xs text-[#888]">▼</span>
             </button>
             {isCategoryOpen && (
-              <div className="absolute top-[100%] mt-1 w-full bg-white border-2 border-black rounded-[0.75rem] shadow-[4px_4px_0_black] z-20 overflow-hidden max-h-[200px] overflow-y-auto">
+              <div className="absolute top-[100%] mt-1 w-full bg-card border-2 border-foreground rounded-[0.75rem] shadow-[4px_4px_0_black] z-20 overflow-hidden max-h-[200px] overflow-y-auto">
                 <button onClick={() => { setCategoryId(null); setIsCategoryOpen(false); mark(); }}
-                  className="w-full px-4 py-2.5 text-left font-vietnam text-sm hover:bg-[#F5F5F0] border-b border-black/10 text-[#888]">
+                  className="w-full px-4 py-2.5 text-left font-vietnam text-sm hover:bg-background border-b border-foreground/10 text-[#888]">
                   No category
                 </button>
                 {categories.map(c => (
                   <button key={c.id} onClick={() => { setCategoryId(c.id); setIsCategoryOpen(false); mark(); }}
-                    className={`w-full px-4 py-2.5 text-left font-vietnam text-sm hover:bg-[#F5F5F0] border-b border-black/10 ${categoryId === c.id ? "font-bold bg-[#FFFDE7]" : ""}`}>
+                    className={`w-full px-4 py-2.5 text-left font-vietnam text-sm hover:bg-background border-b border-foreground/10 ${categoryId === c.id ? "font-bold bg-[#FFFDE7]" : ""}`}>
                     {c.name}
                   </button>
                 ))}
                 {isAddingCategory ? (
-                  <div className="p-3 bg-[#F5F5F0] flex gap-2">
-                    <input autoFocus className="flex-1 px-3 py-1.5 border-2 border-black rounded-md text-sm font-vietnam outline-none"
+                  <div className="p-3 bg-background flex gap-2">
+                    <input autoFocus className="flex-1 px-3 py-1.5 border-2 border-foreground rounded-md text-sm font-vietnam outline-none"
                       placeholder="Category name..." value={newCategoryName}
                       onChange={e => setNewCategoryName(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && handleCreateCategory()} />
-                    <button onClick={handleCreateCategory} className="px-3 py-1.5 bg-[#FFD600] border-2 border-black rounded-md text-sm font-bold shadow-[2px_2px_0_black]">Save</button>
+                    <button onClick={handleCreateCategory} className="px-3 py-1.5 bg-[#FFD600] border-2 border-foreground rounded-md text-sm font-bold shadow-[2px_2px_0_black]">Save</button>
                   </div>
                 ) : (
                   <button onClick={() => setIsAddingCategory(true)}
-                    className="w-full px-4 py-2.5 text-left font-vietnam text-sm text-[#555550] hover:bg-[#F5F5F0] flex items-center gap-2 italic">
+                    className="w-full px-4 py-2.5 text-left font-vietnam text-sm text-muted-foreground hover:bg-background flex items-center gap-2 italic">
                     <Plus className="w-3.5 h-3.5" /> New category...
                   </button>
                 )}
@@ -303,18 +303,18 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
             <div className="flex-1 flex flex-col gap-1.5">
               <span className="font-space font-bold text-[11px] text-[#888] uppercase tracking-wider">Start Date</span>
               <input type="date" value={date} onChange={e => { setDate(e.target.value); mark(); }}
-                className="w-full px-3 py-2 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm outline-none focus:shadow-[2px_2px_0_black] transition-all" />
+                className="w-full px-3 py-2 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm outline-none focus:shadow-[2px_2px_0_black] transition-all" />
             </div>
             <div className="flex-1 flex flex-col gap-1.5">
               <span className="font-space font-bold text-[11px] text-[#888] uppercase tracking-wider">Deadline</span>
               <input type="date" value={deadline} onChange={e => { setDeadline(e.target.value); mark(); }}
-                className="w-full px-3 py-2 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm outline-none focus:shadow-[2px_2px_0_black] transition-all" />
+                className="w-full px-3 py-2 bg-card border-2 border-foreground rounded-[0.75rem] font-vietnam text-sm outline-none focus:shadow-[2px_2px_0_black] transition-all" />
             </div>
           </div>
           <div className="flex gap-2 -mt-3">
             {[{ label: "Tomorrow", days: 1 }, { label: "Next Week", days: 7 }, { label: "Clear", days: null }].map(opt => (
               <button key={opt.label} onClick={() => handleReschedule(opt.days)}
-                className="flex-1 px-2 py-1.5 text-[11px] font-bold font-space bg-white border-2 border-black rounded-[0.75rem] shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all">
+                className="flex-1 px-2 py-1.5 text-[11px] font-bold font-space bg-card border-2 border-foreground rounded-[0.75rem] shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all">
                 {opt.label}
               </button>
             ))}
@@ -325,7 +325,7 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
             <span className="font-space font-bold text-[11px] text-[#888] uppercase tracking-wider">Notes</span>
             <Textarea value={description} onChange={e => { setDescription(e.target.value); mark(); }}
               placeholder="Add notes..." rows={3}
-              className="resize-y p-3 font-vietnam text-sm border-2 border-black rounded-[0.75rem] focus:shadow-[2px_2px_0_black] transition-shadow bg-white outline-none" />
+              className="resize-y p-3 font-vietnam text-sm border-2 border-foreground rounded-[0.75rem] focus:shadow-[2px_2px_0_black] transition-shadow bg-card outline-none" />
           </div>
 
           {/* Subtasks */}
@@ -339,15 +339,15 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
 
             <div className="flex flex-col gap-1">
               {subtasks.map(st => (
-                <div key={st.id} className="flex items-center gap-3 group px-3 py-2 rounded-[0.75rem] hover:bg-[#F5F5F0] transition-colors">
+                <div key={st.id} className="flex items-center gap-3 group px-3 py-2 rounded-[0.75rem] hover:bg-background transition-colors">
                   <button
                     onClick={() => handleToggleSubtask(st.id, st.is_completed)}
-                    className={`w-5 h-5 rounded-full border-2 border-black shrink-0 flex items-center justify-center transition-all
-                      ${st.is_completed ? "bg-[#FFD600]" : "bg-white hover:bg-[#F5F5F0]"}`}
+                    className={`w-5 h-5 rounded-full border-2 border-foreground shrink-0 flex items-center justify-center transition-all
+                      ${st.is_completed ? "bg-[#FFD600]" : "bg-card hover:bg-background"}`}
                   >
-                    {st.is_completed && <Check className="w-3 h-3 text-black" strokeWidth={3} />}
+                    {st.is_completed && <Check className="w-3 h-3 text-foreground" strokeWidth={3} />}
                   </button>
-                  <span className={`flex-1 font-vietnam text-sm ${st.is_completed ? "line-through text-[#AAA]" : "text-[#0A0A0A]"}`}>
+                  <span className={`flex-1 font-vietnam text-sm ${st.is_completed ? "line-through text-[#AAA]" : "text-foreground"}`}>
                     {st.title}
                   </span>
                   <button onClick={() => handleDeleteSubtask(st.id)}
@@ -359,7 +359,7 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
             </div>
 
             {/* Add subtask */}
-            <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-black/20 rounded-[0.75rem] focus-within:border-black focus-within:bg-[#FAFAFA] transition-all">
+            <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-foreground/20 rounded-[0.75rem] focus-within:border-foreground focus-within:bg-[#FAFAFA] transition-all">
               <Plus className="w-4 h-4 text-[#CCC] shrink-0" />
               <input
                 value={newSubtaskTitle}
@@ -370,7 +370,7 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
               />
               {newSubtaskTitle.trim() && (
                 <button onClick={handleAddSubtask} disabled={subtaskSaving}
-                  className="shrink-0 bg-[#FFD600] border-2 border-black rounded-md px-2 py-0.5 text-[11px] font-space font-bold shadow-[1px_1px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+                  className="shrink-0 bg-[#FFD600] border-2 border-foreground rounded-md px-2 py-0.5 text-[11px] font-space font-bold shadow-[1px_1px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                   ↵
                 </button>
               )}
@@ -378,7 +378,7 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
           </div>
 
           {/* Recurrence */}
-          <div className="flex flex-col gap-3 border-2 border-black/10 rounded-[1rem] p-4">
+          <div className="flex flex-col gap-3 border-2 border-foreground/10 rounded-[1rem] p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <RepeatIcon className="w-4 h-4 text-[#888]" />
@@ -386,9 +386,9 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
               </div>
               <button
                 onClick={() => { setIsRecurring(!isRecurring); mark(); }}
-                className={`relative w-10 h-5 rounded-full border-2 border-black transition-all ${isRecurring ? "bg-[#00C853]" : "bg-[#E8E8E0]"}`}
+                className={`relative w-10 h-5 rounded-full border-2 border-foreground transition-all ${isRecurring ? "bg-[#00C853]" : "bg-muted"}`}
               >
-                <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white border border-black/30 shadow-sm transition-all ${isRecurring ? "left-[22px]" : "left-0.5"}`} />
+                <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-card border border-foreground/30 shadow-sm transition-all ${isRecurring ? "left-[22px]" : "left-0.5"}`} />
               </button>
             </div>
 
@@ -404,8 +404,8 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
                   ] as { val: PersonalTaskRecurrenceType; label: string }[]).map(opt => (
                     <button key={opt.val}
                       onClick={() => { setRecurrenceType(opt.val); mark(); }}
-                      className={`px-3 py-1 font-space font-bold text-[11px] rounded-full border-2 border-black transition-all
-                        ${recurrenceType === opt.val ? "bg-black text-white shadow-none" : "bg-white text-[#555550] shadow-[1px_1px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"}`}
+                      className={`px-3 py-1 font-space font-bold text-[11px] rounded-full border-2 border-foreground transition-all
+                        ${recurrenceType === opt.val ? "bg-foreground text-white shadow-none" : "bg-card text-muted-foreground shadow-[1px_1px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"}`}
                     >{opt.label}</button>
                   ))}
                 </div>
@@ -422,8 +422,8 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
                           );
                           mark();
                         }}
-                          className={`w-10 h-10 font-space font-bold text-xs rounded-full border-2 border-black transition-all
-                            ${active ? "bg-[#FFD600] shadow-none" : "bg-white shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
+                          className={`w-10 h-10 font-space font-bold text-xs rounded-full border-2 border-foreground transition-all
+                            ${active ? "bg-[#FFD600] shadow-none" : "bg-card shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black]"}`}
                         >{d}</button>
                       );
                     })}
@@ -433,11 +433,11 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
                 {/* Every N days */}
                 {recurrenceType === "custom" && (
                   <div className="flex items-center gap-3">
-                    <span className="font-vietnam text-sm text-[#555550]">Every</span>
+                    <span className="font-vietnam text-sm text-muted-foreground">Every</span>
                     <input type="number" min={1} max={365} value={recurrenceDays}
                       onChange={e => { setRecurrenceDays(parseInt(e.target.value) || 1); mark(); }}
-                      className="w-16 px-3 py-1.5 border-2 border-black rounded-md font-vietnam text-sm text-center outline-none focus:shadow-[2px_2px_0_black]" />
-                    <span className="font-vietnam text-sm text-[#555550]">days</span>
+                      className="w-16 px-3 py-1.5 border-2 border-foreground rounded-md font-vietnam text-sm text-center outline-none focus:shadow-[2px_2px_0_black]" />
+                    <span className="font-vietnam text-sm text-muted-foreground">days</span>
                   </div>
                 )}
               </div>
@@ -447,17 +447,17 @@ export function TaskDetailPanel({ task, categories, onClose, onComplete, onArchi
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t-2 border-black/10 shrink-0 flex items-center gap-3">
+        <div className="px-6 py-4 border-t-2 border-foreground/10 shrink-0 flex items-center gap-3">
           <button onClick={handleDeleteTask}
-            className="p-2.5 bg-white text-[#FF3B30] border-2 border-[#FF3B30]/40 rounded-[0.75rem] hover:bg-[#FF3B30] hover:text-white hover:border-[#FF3B30] transition-all shadow-[2px_2px_0_#FF3B3044]">
+            className="p-2.5 bg-card text-[#FF3B30] border-2 border-[#FF3B30]/40 rounded-[0.75rem] hover:bg-[#FF3B30] hover:text-white hover:border-[#FF3B30] transition-all shadow-[2px_2px_0_#FF3B3044]">
             <Trash2 className="w-4 h-4" />
           </button>
           <button onClick={() => { onArchive(); handleClose(); }}
-            className="px-4 py-2.5 bg-white text-black border-2 border-black rounded-[0.75rem] font-space font-bold text-xs shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all">
+            className="px-4 py-2.5 bg-card text-foreground border-2 border-foreground rounded-[0.75rem] font-space font-bold text-xs shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all">
             Archive
           </button>
           <button onClick={handleSave} disabled={!isDirty || isSaving}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#FFD600] text-black border-2 border-black rounded-[0.75rem] font-space font-bold text-sm py-2.5 shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all disabled:opacity-40 disabled:pointer-events-none">
+            className="flex-1 flex items-center justify-center gap-2 bg-[#FFD600] text-foreground border-2 border-foreground rounded-[0.75rem] font-space font-bold text-sm py-2.5 shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all disabled:opacity-40 disabled:pointer-events-none">
             {isSaving ? "Saving..." : isDirty ? "Save Changes" : "Saved"}
           </button>
         </div>

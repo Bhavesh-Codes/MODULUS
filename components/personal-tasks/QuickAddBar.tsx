@@ -13,7 +13,7 @@ interface QuickAddBarProps {
 
 const PRIORITY_OPTIONS = [
   { value: "high",   label: "High",   color: "bg-[#FF3B30] text-white" },
-  { value: "medium", label: "Medium", color: "bg-[#FF9500] text-black" },
+  { value: "medium", label: "Medium", color: "bg-[#FF9500] text-foreground" },
   { value: "low",    label: "Low",    color: "bg-[#00C853] text-white" },
 ];
 
@@ -110,7 +110,7 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
   return (
     <div
       ref={containerRef}
-      className={`w-full bg-white border-2 border-black rounded-[1.25rem] transition-shadow duration-200 overflow-hidden ${
+      className={`w-full bg-card border-2 border-foreground rounded-[1.25rem] transition-shadow duration-200 overflow-hidden ${
         isExpanded ? "shadow-[4px_4px_0_black]" : "shadow-[2px_2px_0_black]"
       }`}
     >
@@ -124,7 +124,7 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
           onKeyDown={handleTitleKeyDown}
           disabled={isSaving}
           placeholder="Add a task..."
-          className="flex-1 min-w-0 bg-transparent border-none outline-none font-vietnam text-[15px] text-[#0A0A0A] placeholder-[#BBBBBB]"
+          className="flex-1 min-w-0 bg-transparent border-none outline-none font-vietnam text-[15px] text-foreground placeholder-[#BBBBBB]"
         />
 
         {/* Collapsed summary chips */}
@@ -143,13 +143,13 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
               </span>
             )}
             {selectedPriority && (
-              <span className={`flex items-center gap-1 text-[11px] font-space font-bold border border-black/20 rounded-full px-2 py-0.5 whitespace-nowrap ${selectedPriority.color}`}>
+              <span className={`flex items-center gap-1 text-[11px] font-space font-bold border border-foreground/20 rounded-full px-2 py-0.5 whitespace-nowrap ${selectedPriority.color}`}>
                 <Flag className="w-3 h-3 shrink-0" />
                 {selectedPriority.label}
               </span>
             )}
             {selectedCategory && (
-              <span className="flex items-center gap-1 text-[11px] font-space font-bold bg-[#F5F5F0] text-[#555550] border border-black/20 rounded-full px-2 py-0.5 whitespace-nowrap">
+              <span className="flex items-center gap-1 text-[11px] font-space font-bold bg-background text-muted-foreground border border-foreground/20 rounded-full px-2 py-0.5 whitespace-nowrap">
                 <Tag className="w-3 h-3 shrink-0" />
                 {selectedCategory.name}
               </span>
@@ -167,12 +167,12 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
         {!isSaving && !isExpanded && !title.trim() && (
           <span className="font-space text-xs text-[#BBBBBB] shrink-0">↵ to add</span>
         )}
-        {isSaving && <Loader2 className="w-4 h-4 animate-spin text-[#555550] shrink-0" />}
+        {isSaving && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground shrink-0" />}
       </div>
 
       {/* ── Expanded panel ── */}
       {isExpanded && (
-        <div className="border-t border-black/10">
+        <div className="border-t border-foreground/10">
 
           {/* Metadata row — all on one line */}
           <div className="px-4 py-2 flex flex-wrap gap-x-3 gap-y-1.5 items-center">
@@ -180,15 +180,15 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
 
             {/* Date */}
             <label className="flex items-center gap-1 cursor-pointer group">
-              <span className="flex items-center gap-0.5 text-[11px] font-space font-bold text-[#888] group-hover:text-black transition-colors">
+              <span className="flex items-center gap-0.5 text-[11px] font-space font-bold text-[#888] group-hover:text-foreground transition-colors">
                 <CalendarDays className="w-3 h-3" /> Date
               </span>
               <input type="date" value={date} onChange={e => setDate(e.target.value)}
-                className="text-[11px] font-space bg-[#F5F5F0] border border-black/20 rounded-md px-1.5 py-0.5 outline-none focus:border-black cursor-pointer" />
+                className="text-[11px] font-space bg-background border border-foreground/20 rounded-md px-1.5 py-0.5 outline-none focus:border-foreground cursor-pointer" />
               {date && <button onClick={() => setDate("")} className="text-[#CCC] hover:text-[#FF3B30]"><X className="w-2.5 h-2.5" /></button>}
             </label>
 
-            <span className="text-black/15 text-xs">·</span>
+            <span className="text-foreground/15 text-xs">·</span>
 
             {/* Deadline */}
             <label className="flex items-center gap-1 cursor-pointer group">
@@ -196,11 +196,11 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
                 <CalendarClock className="w-3 h-3" /> Due
               </span>
               <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
-                className="text-[11px] font-space bg-[#F5F5F0] border border-black/20 rounded-md px-1.5 py-0.5 outline-none focus:border-black cursor-pointer" />
+                className="text-[11px] font-space bg-background border border-foreground/20 rounded-md px-1.5 py-0.5 outline-none focus:border-foreground cursor-pointer" />
               {deadline && <button onClick={() => setDeadline("")} className="text-[#CCC] hover:text-[#FF3B30]"><X className="w-2.5 h-2.5" /></button>}
             </label>
 
-            <span className="text-black/15 text-xs">·</span>
+            <span className="text-foreground/15 text-xs">·</span>
 
             {/* Priority */}
             <div className="flex items-center gap-1">
@@ -213,8 +213,8 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
                     onClick={() => setPriority(priority === opt.value ? "" : opt.value)}
                     className={`text-[10px] font-space font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
                       priority === opt.value
-                        ? `${opt.color} border-black shadow-[1px_1px_0_black]`
-                        : "bg-[#F5F5F0] text-[#888] border-black/15 hover:border-black hover:text-black"
+                        ? `${opt.color} border-foreground shadow-[1px_1px_0_black]`
+                        : "bg-background text-[#888] border-foreground/15 hover:border-foreground hover:text-foreground"
                     }`}>{opt.label}</button>
                 ))}
               </div>
@@ -223,11 +223,11 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
             {/* Category */}
             {categories.length > 0 && (
               <>
-                <span className="text-black/15 text-xs">·</span>
+                <span className="text-foreground/15 text-xs">·</span>
                 <div className="flex items-center gap-1">
                   <Tag className="w-3 h-3 text-[#888]" />
                   <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
-                    className="text-[11px] font-space bg-[#F5F5F0] border border-black/20 rounded-md px-1.5 py-0.5 outline-none focus:border-black cursor-pointer max-w-[130px]">
+                    className="text-[11px] font-space bg-background border border-foreground/20 rounded-md px-1.5 py-0.5 outline-none focus:border-foreground cursor-pointer max-w-[130px]">
                     <option value="">Category</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -237,7 +237,7 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
           </div>
 
           {/* Subtasks section */}
-          <div className="px-4 pb-3 border-t border-black/5">
+          <div className="px-4 pb-3 border-t border-foreground/5">
             {/* Subtasks header + Add Task button on same row */}
             <div className="flex items-center justify-between pt-2.5 mb-2">
               <div className="flex items-center gap-2">
@@ -247,7 +247,7 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
               <button
                 onClick={handleSubmit}
                 disabled={!title.trim() || isSaving}
-                className="flex items-center gap-1.5 bg-[#FFD600] border-2 border-black text-black font-space font-bold text-xs px-3 py-1 rounded-[0.5rem] shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all disabled:opacity-40 disabled:pointer-events-none"
+                className="flex items-center gap-1.5 bg-[#FFD600] border-2 border-foreground text-foreground font-space font-bold text-xs px-3 py-1 rounded-[0.5rem] shadow-[2px_2px_0_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_black] transition-all disabled:opacity-40 disabled:pointer-events-none"
               >
                 {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <>Add Task ↵</>}
               </button>
@@ -257,8 +257,8 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
               <div className="flex flex-col gap-1 mb-2">
                 {subtasks.map((st, idx) => (
                   <div key={idx} className="flex items-center gap-2 group">
-                    <div className="w-3.5 h-3.5 rounded-sm border-2 border-black/30 shrink-0" />
-                    <span className="font-vietnam text-[13px] text-[#0A0A0A] flex-1 min-w-0 truncate">{st}</span>
+                    <div className="w-3.5 h-3.5 rounded-sm border-2 border-foreground/30 shrink-0" />
+                    <span className="font-vietnam text-[13px] text-foreground flex-1 min-w-0 truncate">{st}</span>
                     <button onClick={() => setSubtasks(prev => prev.filter((_, i) => i !== idx))}
                       className="opacity-0 group-hover:opacity-100 text-[#999] hover:text-[#FF3B30] transition-all shrink-0">
                       <X className="w-3 h-3" />
@@ -274,7 +274,7 @@ export function QuickAddBar({ categories = [] }: QuickAddBarProps) {
                 onChange={e => setSubtaskInput(e.target.value)}
                 onKeyDown={handleSubtaskKeyDown}
                 placeholder="Add a subtask..."
-                className="flex-1 min-w-0 bg-transparent border-none outline-none font-vietnam text-[13px] text-[#0A0A0A] placeholder-[#CCCCCC]"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none font-vietnam text-[13px] text-foreground placeholder-[#CCCCCC]"
               />
             </div>
           </div>
