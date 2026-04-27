@@ -19,9 +19,8 @@ export default function LandingNav() {
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 w-full ${
-        isScrolled ? "bg-white border-b-2 border-black" : "bg-transparent border-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 w-full ${isScrolled ? "bg-white border-b-2 border-black" : "bg-transparent border-transparent"
+        }`}
       initial={false}
       animate={{
         backgroundColor: isScrolled ? "#FFFFFF" : "rgba(255, 255, 255, 0)",

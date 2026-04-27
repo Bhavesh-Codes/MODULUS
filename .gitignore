@@ -42,4 +42,5 @@ next-env.d.ts
 
 db.txt
 
-/docs/
+# documentation
+docs/
