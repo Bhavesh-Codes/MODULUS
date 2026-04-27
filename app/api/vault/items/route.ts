@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('vault_items')
-      .select('id, created_at, item_type, title, url, tags, folder_id, files(id, filename, mime_type, size_bytes)')
+      .select('id, created_at, item_type, title, url, tags, folder_id, files(id, filename, mime_type, size_bytes), community_vault_items(community_id, communities(name))')
       .eq('owner_id', user.id)
       .order('created_at', { ascending: false })
 

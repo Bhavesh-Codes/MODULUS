@@ -70,8 +70,8 @@ export default function CircleVideoGrid() {
   // Desktop → follows participant count (2-col, 2x2, 3-col)
   const desktopGrid =
     count === 2 ? 'md:grid-cols-2' :
-    count <= 4  ? 'md:grid-cols-2' :
-                  'md:grid-cols-3'
+      count <= 4 ? 'md:grid-cols-2' :
+        'md:grid-cols-3'
 
   return (
     <div className="h-full w-full overflow-y-auto bg-white p-2 md:p-6 md:pb-[100px]">

@@ -46,7 +46,7 @@ export default function ExplorePage() {
   const { data: communities = [], isLoading } = useQuery<Community[]>({
     queryKey: ["communities", "explore", searchQuery],
     queryFn: async () => {
-      const url = searchQuery 
+      const url = searchQuery
         ? `/api/communities?q=${encodeURIComponent(searchQuery)}`
         : `/api/communities`
       const res = await fetch(url)
@@ -56,12 +56,12 @@ export default function ExplorePage() {
   })
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto p-4 md:p-8 space-y-8 pb-32">
+    <div className="w-full max-w-none mx-auto p-4 md:p-8 space-y-8 pb-32">
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row items-center gap-4">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#555550]" />
-          <Input 
+          <Input
             type="search"
             placeholder="Search communities..."
             value={searchQuery}
@@ -106,7 +106,7 @@ export default function ExplorePage() {
                       <div className="w-4 h-4 rounded-[4px] bg-[#0057FF] border-[1.5px] border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A]" />
                       Owned Communities
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {ownedCommunities.map((c, i) => (
                         <CommunityCard key={c.id} community={c} index={i} />
                       ))}
@@ -120,7 +120,7 @@ export default function ExplorePage() {
                       <div className="w-4 h-4 rounded-full bg-[#FFD600] border-[1.5px] border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A]" />
                       Joined Communities
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {joinedCommunities.map((c, i) => (
                         <CommunityCard key={c.id} community={c} index={i} />
                       ))}
@@ -131,10 +131,10 @@ export default function ExplorePage() {
                 {discoverCommunities.length > 0 && (
                   <section className="space-y-6">
                     <h2 className="font-heading font-extrabold text-[24px] text-[#0A0A0A] flex items-center gap-2">
-                       <div className="w-4 h-4 rounded-full bg-[#FF3CAC] border-[1.5px] border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A]" />
-                       Discover
+                      <div className="w-4 h-4 rounded-full bg-[#FF3CAC] border-[1.5px] border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A]" />
+                      Discover
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {discoverCommunities.map((c, i) => (
                         <CommunityCard key={c.id} community={c} index={i} />
                       ))}
@@ -148,9 +148,9 @@ export default function ExplorePage() {
       )}
 
       {/* Create Modal */}
-      <CreateCommunityModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+      <CreateCommunityModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
       />
     </div>
   )
@@ -165,72 +165,72 @@ function CommunityCard({ community, index }: { community: Community, index: numb
         transition={{ duration: 0.2, delay: index * 0.04 }}
         className="group flex flex-col h-full bg-[#FFFFFF] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[6px_6px_0px_#0A0A0A] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none transition-all overflow-hidden cursor-pointer"
       >
-      <div className="h-32 bg-[#F5F5F0] border-b-[3px] border-[#0A0A0A] relative flex items-center justify-center overflow-hidden">
-        {/* Abstract Memphis pattern representation */}
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#0A0A0A 2.5px, transparent 2.5px)', backgroundSize: '20px 20px' }} />
-        {community.banner_url ? (
-          <img src={community.banner_url} alt="banner" className="w-full h-full object-cover relative z-10" />
-        ) : (
-          <h3 className="font-heading font-extrabold text-6xl text-[#0A0A0A] opacity-20 relative z-10 select-none">
-            {community.name[0]?.toUpperCase()}
-          </h3>
-        )}
-      </div>
-      
-      <div className="p-6 flex-1 flex flex-col">
-        <div className="flex justify-between items-start mb-3 gap-2">
-          <h3 className="font-heading font-bold text-[22px] text-[#0A0A0A] leading-tight line-clamp-2">
-            {community.name}
-          </h3>
-          <span className={`shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide ${community.type === 'Public' ? 'bg-[#00C853] text-[#FFFFFF]' : 'bg-[#FF6B00] text-[#FFFFFF]'}`}>
-            {community.type === 'Public' ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-            {community.type.toUpperCase()}
-          </span>
+        <div className="h-32 bg-[#F5F5F0] border-b-[3px] border-[#0A0A0A] relative flex items-center justify-center overflow-hidden">
+          {/* Abstract Memphis pattern representation */}
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#0A0A0A 2.5px, transparent 2.5px)', backgroundSize: '20px 20px' }} />
+          {community.banner_url ? (
+            <img src={community.banner_url} alt="banner" className="w-full h-full object-cover relative z-10" />
+          ) : (
+            <h3 className="font-heading font-extrabold text-6xl text-[#0A0A0A] opacity-20 relative z-10 select-none">
+              {community.name[0]?.toUpperCase()}
+            </h3>
+          )}
         </div>
-        
-        {community.membership && (
-          <div className="mb-3">
-            {community.membership.role === 'owner' ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-mono text-[12px] font-bold tracking-wide bg-[#0057FF] text-[#FFFFFF]">
-                <Shield className="w-4 h-4" />
-                OWNER
-              </span>
-            ) : community.membership.role === 'curator' ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide bg-[#FF3CAC] text-[#FFFFFF]">
-                <Star className="w-3.5 h-3.5" />
-                CURATOR
-              </span>
-            ) : community.membership.role === 'pending' ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide bg-[#E8E8E0] text-[#0A0A0A]">
-                <Clock className="w-3.5 h-3.5" />
-                PENDING
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide bg-[#FFD600] text-[#0A0A0A]">
-                <User className="w-3.5 h-3.5" />
-                PEER
-              </span>
-            )}
-          </div>
-        )}
-        
-        <p className="font-sans text-[15px] leading-relaxed text-[#555550] line-clamp-2 mb-6 flex-1">
-          {community.description || "No description provided."}
-        </p>
 
-        <div className="flex items-center justify-between pt-5 border-t-[2px] border-dashed border-[#E8E8E0]">
-          <div className="flex items-center gap-2 font-mono text-[13px] text-[#0A0A0A]">
-            <div className="w-8 h-8 rounded-[8px] bg-[#E8E8E0] border-[1.5px] border-[#0A0A0A] flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#0A0A0A]" />
-            </div>
-            <span className="font-bold">{community.member_count}</span> member{community.member_count !== 1 ? 's' : ''}
+        <div className="p-6 flex-1 flex flex-col">
+          <div className="flex justify-between items-start mb-3 gap-2">
+            <h3 className="font-heading font-bold text-[22px] text-[#0A0A0A] leading-tight line-clamp-2">
+              {community.name}
+            </h3>
+            <span className={`shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide ${community.type === 'Public' ? 'bg-[#00C853] text-[#FFFFFF]' : 'bg-[#FF6B00] text-[#FFFFFF]'}`}>
+              {community.type === 'Public' ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+              {community.type.toUpperCase()}
+            </span>
           </div>
-          <div className="px-5 py-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] group-hover:bg-[#FFD600] group-hover:translate-x-[3px] group-hover:translate-y-[3px] group-hover:shadow-none transition-all">
-            View
+
+          {community.membership && (
+            <div className="mb-3">
+              {community.membership.role === 'owner' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] border-[2px] border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-mono text-[12px] font-bold tracking-wide bg-[#0057FF] text-[#FFFFFF]">
+                  <Shield className="w-4 h-4" />
+                  OWNER
+                </span>
+              ) : community.membership.role === 'curator' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide bg-[#FF3CAC] text-[#FFFFFF]">
+                  <Star className="w-3.5 h-3.5" />
+                  CURATOR
+                </span>
+              ) : community.membership.role === 'pending' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide bg-[#E8E8E0] text-[#0A0A0A]">
+                  <Clock className="w-3.5 h-3.5" />
+                  PENDING
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[1.5px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[11px] font-bold tracking-wide bg-[#FFD600] text-[#0A0A0A]">
+                  <User className="w-3.5 h-3.5" />
+                  PEER
+                </span>
+              )}
+            </div>
+          )}
+
+          <p className="font-sans text-[15px] leading-relaxed text-[#555550] line-clamp-2 mb-6 flex-1">
+            {community.description || "No description provided."}
+          </p>
+
+          <div className="flex items-center justify-between pt-5 border-t-[2px] border-dashed border-[#E8E8E0]">
+            <div className="flex items-center gap-2 font-mono text-[13px] text-[#0A0A0A]">
+              <div className="w-8 h-8 rounded-[8px] bg-[#E8E8E0] border-[1.5px] border-[#0A0A0A] flex items-center justify-center">
+                <Users className="w-4 h-4 text-[#0A0A0A]" />
+              </div>
+              <span className="font-bold">{community.member_count}</span> member{community.member_count !== 1 ? 's' : ''}
+            </div>
+            <div className="px-5 py-2 rounded-[0.875rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] font-heading font-bold text-[14px] text-[#0A0A0A] group-hover:bg-[#FFD600] group-hover:translate-x-[3px] group-hover:translate-y-[3px] group-hover:shadow-none transition-all">
+              View
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
     </Link>
   )
 }
@@ -238,7 +238,7 @@ function CommunityCard({ community, index }: { community: Community, index: numb
 function CreateCommunityModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [isCreating, setIsCreating] = useState(false)
   const queryClient = useQueryClient()
-  
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateCommunityValues>({
     resolver: zodResolver(createCommunitySchema),
     defaultValues: {
@@ -291,7 +291,7 @@ function CreateCommunityModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
             <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider font-bold">
               Community Name
             </Label>
-            <Input 
+            <Input
               {...register("name")}
               placeholder="e.g. CS101 Study Group"
               className={`border-[2px] ${errors.name ? 'border-[#FF3B30]' : 'border-[#0A0A0A]'} rounded-[0.75rem] font-sans text-[15px] h-12 shadow-[2px_2px_0px_#0A0A0A] focus-visible:ring-0 focus-visible:border-[#0A0A0A]`}
@@ -303,7 +303,7 @@ function CreateCommunityModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
             <Label className="font-mono text-[12px] text-[#555550] uppercase tracking-wider font-bold">
               Description (Optional)
             </Label>
-            <Input 
+            <Input
               {...register("description")}
               placeholder="What is this community about?"
               className={`border-[2px] ${errors.description ? 'border-[#FF3B30]' : 'border-[#0A0A0A]'} rounded-[0.75rem] font-sans text-[15px] h-12 shadow-[2px_2px_0px_#0A0A0A] focus-visible:ring-0 focus-visible:border-[#0A0A0A]`}

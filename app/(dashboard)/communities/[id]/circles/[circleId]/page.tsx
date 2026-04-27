@@ -1,108 +1,54 @@
 'use client'
 
-import React, { useState, useEffect, use, useRef } from 'react'
-import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
-import '@livekit/components-styles'
+import { use, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
-import CircleChat from '@/components/circles/CircleChat'
-import CircleWhiteboard from '@/components/circles/CircleWhiteboard'
-import CircleVideoGrid from '@/components/circles/CircleVideoGrid'
-import CircleControlBar from '@/components/circles/CircleControlBar'
+import { useCircleRoomStore } from '@/lib/stores/useCircleRoomStore'
 
 type Params = Promise<{ id: string; circleId: string }>
 
 export default function CircleRoomPage(props: { params: Params }) {
   const { id, circleId } = use(props.params)
-  const [token, setToken] = useState<string | null>(null)
   const supabase = createClient()
-  const containerRef = useRef<HTMLDivElement>(null)
-  
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  // On mobile, default sidebar closed so video takes full width
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'chat' | 'whiteboard'>('chat')
+
+  const { token, circleId: storedCircleId, setRoom } = useCircleRoomStore()
+  const isThisRoom = storedCircleId === circleId && !!token
 
   useEffect(() => {
+    if (isThisRoom) return // Already have a live token for this room — BackgroundCircleRoom handles the UI
+
     let mounted = true
 
     async function fetchToken() {
-      // Get the current user
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Use name from user metadata, fallback to id
       const username = user.user_metadata?.name || user.id
 
       try {
-        const response = await fetch(`/api/livekit/token?room=${circleId}&communityId=${id}&username=${encodeURIComponent(username)}`)
-        
-        if (response.ok) {
-          const data = await response.json()
+        const res = await fetch(
+          `/api/livekit/token?room=${encodeURIComponent(circleId)}&communityId=${id}&username=${encodeURIComponent(username)}`
+        )
+        if (res.ok) {
+          const data = await res.json()
           if (mounted) {
-            setToken(data.token)
+            setRoom({ token: data.token, circleId, communityId: id, roomName: `${id}_${circleId}` })
           }
         } else {
-          console.error("Failed to fetch LiveKit token", await response.text())
+          console.error('Failed to fetch LiveKit token', await res.text())
         }
       } catch (err) {
-        console.error("Error fetching token:", err)
+        console.error('Error fetching token:', err)
       }
     }
 
     fetchToken()
+    return () => { mounted = false }
+  }, [circleId, id, isThisRoom, setRoom, supabase])
 
-    return () => {
-      mounted = false
-    }
-  }, [circleId, supabase])
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen().catch((err: any) => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`)
-      })
-    } else {
-      document.exitFullscreen()
-    }
-  }
-
-  const toggleChat = () => {
-    if (!isSidebarOpen) {
-      setActiveTab('chat')
-      setIsSidebarOpen(true)
-    } else {
-      if (activeTab === 'chat') {
-        setIsSidebarOpen(false)
-      } else {
-        setActiveTab('chat')
-      }
-    }
-  }
-
-  const toggleWhiteboard = () => {
-    if (!isSidebarOpen) {
-      setActiveTab('whiteboard')
-      setIsSidebarOpen(true)
-    } else {
-      if (activeTab === 'whiteboard') {
-        setIsSidebarOpen(false)
-      } else {
-        setActiveTab('whiteboard')
-      }
-    }
-  }
-
-  if (!token) {
+  // Show a loader until the store has the token.
+  // Once token is set, BackgroundCircleRoom in the layout renders the full room UI.
+  if (!isThisRoom) {
     return (
       <div className="flex h-full min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 w-full bg-[#F5F5F0]">
         <Loader2 className="h-10 w-10 animate-spin text-[#FFD600]" />
@@ -111,45 +57,7 @@ export default function CircleRoomPage(props: { params: Params }) {
     )
   }
 
-  return (
-    <div 
-      ref={containerRef} 
-      className={`flex flex-col w-full bg-white relative transition-all ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'}`}
-    >
-      <LiveKitRoom
-        video={true}
-        audio={true}
-        token={token}
-        serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-        connect={true}
-        className="flex h-full w-full flex-col relative z-10"
-      >
-        <div className="flex flex-col md:flex-row h-full w-full overflow-hidden">
-          {/* Video area: flex-1 min-h-0 so control bar (flow on mobile, absolute on desktop) fits cleanly */}
-          <div className="flex-1 min-h-[40vh] md:min-h-0 overflow-hidden relative bg-white flex flex-col">
-            {/* Video grid takes all remaining space in this inner column */}
-            <div className="flex-1 min-h-0 overflow-hidden relative">
-              <CircleVideoGrid />
-            </div>
-            {/* Control bar: full-width in flow on mobile, absolute overlay on desktop */}
-            <CircleControlBar 
-              isFullscreen={isFullscreen} 
-              toggleFullscreen={toggleFullscreen} 
-              isChatOpen={isSidebarOpen && activeTab === 'chat'}
-              toggleChat={toggleChat}
-              isWhiteboardOpen={isSidebarOpen && activeTab === 'whiteboard'}
-              toggleWhiteboard={toggleWhiteboard}
-            />
-          </div>
-          {isSidebarOpen && (
-            <div className="w-full h-[45vh] md:h-auto md:w-[360px] lg:w-[400px] shrink-0 flex flex-col z-20 transition-all border-t-[3px] md:border-t-0 md:border-l-[3px] border-[#0A0A0A]">
-              {activeTab === 'chat' && <CircleChat />}
-              {activeTab === 'whiteboard' && <CircleWhiteboard />}
-            </div>
-          )}
-        </div>
-        <RoomAudioRenderer />
-      </LiveKitRoom>
-    </div>
-  )
+  // Token is in store — BackgroundCircleRoom (in layout) renders the full UI via FullRoomUI.
+  // This page renders nothing itself to avoid double-mounting LiveKitRoom.
+  return null
 }

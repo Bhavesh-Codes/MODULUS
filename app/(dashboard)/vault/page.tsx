@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useMemo, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
   File,
   FileCode,
+  Filter,
   Video,
   Music,
   Archive,
@@ -41,6 +42,8 @@ import {
   ExternalLink,
   PlayCircle,
   Check,
+  Maximize2,
+  Minimize2,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -52,6 +55,7 @@ import {
 import { toast } from "sonner"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
+import { useDragAndDrop } from "@/lib/useDragAndDrop"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface VaultFolder {
@@ -93,7 +97,7 @@ const FOLDER_COLORS = [
 
 const getFolderColor = (id: string) =>
   FOLDER_COLORS[
-    id.charCodeAt(0) % FOLDER_COLORS.length
+  id.charCodeAt(0) % FOLDER_COLORS.length
   ]
 
 const getFileIcon = (mimeType: string = "") => {
@@ -295,11 +299,13 @@ function UploadModal({
   onClose,
   onUploadComplete,
   currentFolderId,
+  initialFiles = [],
 }: {
   isOpen: boolean
   onClose: () => void
   onUploadComplete: () => void
   currentFolderId: string | null
+  initialFiles?: File[]
 }) {
   const [isUploading, setIsUploading] = useState(false)
   const [items, setItems] = useState<UploadItem[]>([])
@@ -307,6 +313,19 @@ function UploadModal({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
+
+  // Seed items when the modal is opened with pre-dropped files
+  useEffect(() => {
+    if (isOpen && initialFiles.length > 0) {
+      setItems(initialFiles.map(f => ({
+        id: Math.random().toString(36).substring(7),
+        file: f,
+        customName: f.name,
+        tags: [],
+        relativePath: f.webkitRelativePath || "",
+      })))
+    }
+  }, [isOpen])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -339,7 +358,7 @@ function UploadModal({
       const getFolderId = async (pathParts: string[], baseFolderId: string | null) => {
         let currentParent = baseFolderId
         let currentPath = ""
-        
+
         for (const part of pathParts) {
           currentPath = currentPath ? `${currentPath}/${part}` : part
           if (folderMap.has(currentPath)) {
@@ -363,7 +382,7 @@ function UploadModal({
       // Sequential upload to prevent overwhelming the Next.js body parser with massive folder uploads
       for (const item of items) {
         let targetFolderId = currentFolderId
-        
+
         if (item.relativePath) {
           const parts = item.relativePath.split('/')
           const folderParts = parts.slice(0, -1)
@@ -376,11 +395,11 @@ function UploadModal({
         // Provide the basename as the 3rd argument to prevent FormData parsing errors with webkitRelativePath
         const finalName = item.customName.trim() || item.file.name
         formData.append("file", item.file, finalName)
-        
+
         const combinedTags = Array.from(new Set([...globalTags, ...item.tags]))
         if (combinedTags.length > 0) formData.append("tags", JSON.stringify(combinedTags))
         if (targetFolderId) formData.append("folder_id", targetFolderId)
-        
+
         const res = await fetch("/api/vault/upload", { method: "POST", body: formData })
         if (!res.ok) {
           const data = await res.json()
@@ -463,20 +482,20 @@ function UploadModal({
                     </button>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] flex items-center justify-center shrink-0">
-                         <File className="w-4 h-4 text-[#0A0A0A]" />
+                        <File className="w-4 h-4 text-[#0A0A0A]" />
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
-                        <input 
-                           value={item.customName}
-                           onChange={(e) => updateItem(item.id, { customName: e.target.value })}
-                           className="font-heading font-bold text-[13px] text-[#0A0A0A] bg-transparent border-b border-transparent hover:border-[#0A0A0A] focus:border-[#0A0A0A] outline-none w-full truncate pb-0.5"
-                           placeholder="Filename..."
+                        <input
+                          value={item.customName}
+                          onChange={(e) => updateItem(item.id, { customName: e.target.value })}
+                          className="font-heading font-bold text-[13px] text-[#0A0A0A] bg-transparent border-b border-transparent hover:border-[#0A0A0A] focus:border-[#0A0A0A] outline-none w-full truncate pb-0.5"
+                          placeholder="Filename..."
                         />
                         <p className="font-mono text-[10px] text-[#555550] mt-0.5">{formatBytes(item.file.size)}</p>
                       </div>
                     </div>
                     <div className="pt-1">
-                       <TagEditor tags={item.tags} onChange={(tags) => updateItem(item.id, { tags })} />
+                      <TagEditor tags={item.tags} onChange={(tags) => updateItem(item.id, { tags })} />
                     </div>
                   </div>
                 ))}
@@ -761,7 +780,7 @@ function MoveModal({
     setIsMoving(true)
     try {
       const endpoint = itemType === "folder" ? `/api/vault/folders/${itemId}` : `/api/vault/items/${itemId}`
-      const body = itemType === "folder" 
+      const body = itemType === "folder"
         ? { parent_id: targetFolderId }
         : { folder_id: targetFolderId }
 
@@ -830,13 +849,13 @@ function MoveModal({
             <Home className="w-4 h-4 text-[#555550]" />
             <span className="font-bold">Vault Root (All Files)</span>
           </button>
-          
+
           <div className="my-2 h-[2px] w-full bg-[#E8E8E0]" />
-          
+
           {validFolders.length > 0 ? (
             renderPickerTree(null)
           ) : (
-             <p className="font-mono text-[11px] text-[#999990] text-center pt-4">No nested folders available</p>
+            <p className="font-mono text-[11px] text-[#999990] text-center pt-4">No nested folders available</p>
           )}
         </div>
       </DialogContent>
@@ -855,6 +874,8 @@ function FolderCard({
   isSelected = false,
   onToggle,
   selectionMode = false,
+  onDragOver,
+  onDropFile,
 }: {
   folder: VaultFolder
   onClick: () => void
@@ -865,9 +886,34 @@ function FolderCard({
   isSelected?: boolean
   onToggle?: (id: string) => void
   selectionMode?: boolean
+  onDragOver: (id: string | null) => void
+  onDropFile: (type: "file" | "folder", id: string, targetId: string | null) => void
 }) {
   const color = getFolderColor(folder.id)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    try {
+      const dataStr = e.dataTransfer.getData("application/json")
+      if (!dataStr) return
+      const data = JSON.parse(dataStr)
+      if (data.type && data.id && data.id !== folder.id) {
+        onDropFile(data.type, data.id, folder.id)
+      }
+    } catch { /* ignore */ }
+  }
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -889,77 +935,69 @@ function FolderCard({
     <motion.div
       layout
       data-drop-target={folder.id}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: isDropTarget ? 1.03 : 1,
-        borderColor: isDropTarget ? "#FFD600" : "#0A0A0A",
+      draggable={!selectionMode}
+      onDragStart={(e: any) => {
+        e.stopPropagation()
+        e.dataTransfer.setData("application/json", JSON.stringify({ type: "folder", id: folder.id }))
+        e.dataTransfer.effectAllowed = "move"
       }}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
       onClick={selectionMode ? () => onToggle?.(folder.id) : onClick}
-      className={`group relative cursor-pointer bg-[#FFFFFF] border-[3px] rounded-[1.5rem] p-5 transition-all duration-150 select-none overflow-hidden ${
-        isDropTarget
-          ? "border-[#FFD600] bg-[#FFFBDE] shadow-[0px_0px_0px_4px_#FFD60066]"
-          : isSelected
-          ? "border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
-          : "border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
-      }`}
+      className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 select-none overflow-hidden flex items-center gap-4 ${isSelected
+        ? "bg-[#FFFBDE] border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
+        : isDragOver
+          ? "border-[#0057FF] bg-[#F0F7FF] shadow-[4px_4px_0px_#0057FF] scale-105 cursor-copy"
+          : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+        } ${selectionMode ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
     >
-      <div 
-        onClick={(e) => { e.stopPropagation(); onToggle?.(folder.id) }} 
-        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+      <div
+        onClick={(e) => { e.stopPropagation(); onToggle?.(folder.id) }}
+        className={`w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all shrink-0 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
       >
         {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
       </div>
-      <div className="flex items-center justify-between gap-3 mb-3 relative z-10 pl-8">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div
-            className="w-12 h-12 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] transition-all group-hover:shadow-none group-hover:translate-x-[3px] group-hover:translate-y-[3px] shrink-0"
-            style={{ backgroundColor: color }}
-          >
-            <Folder className="w-6 h-6 text-[#0A0A0A]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3
-              className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate"
-              title={folder.name}
-            >
-              {folder.name}
-            </h3>
-          </div>
-        </div>
-
-        {/* Folder Action Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              disabled={isDeleting}
-              onClick={(e) => e.stopPropagation()}
-              className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
-            >
-              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
-          >
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRename(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
-              <Pencil className="w-4 h-4 text-[#00C853]" /> Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
-              <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
-            <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
-              <Trash2 className="w-4 h-4" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div
+        className="w-12 h-12 bg-[#FFD600] rounded-[10px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] group-hover:bg-[#FFFFFF] transition-colors shrink-0"
+      >
+        <Folder className="w-6 h-6 text-[#0A0A0A] fill-current" />
       </div>
-      <div className="h-[2px] rounded-full mt-2" style={{ backgroundColor: color }} />
+      <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate flex-1" title={folder.name}>
+        {folder.name}
+      </h3>
+
+      {/* Folder Action Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            disabled={isDeleting}
+            onClick={(e) => e.stopPropagation()}
+            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none"
+          >
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+        >
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRename(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+            <Pencil className="w-4 h-4 text-[#00C853]" /> Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(folder); }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+            <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
+          </DropdownMenuItem>
+          <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
+          <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
+            <Trash2 className="w-4 h-4" /> Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </motion.div>
   )
 }
@@ -990,12 +1028,12 @@ function getLinkIcon(url: string) {
   if (lower.includes("drive.google.com"))
     return (
       <svg viewBox="0 0 87.3 78" className="w-8 h-8" aria-label="Google Drive">
-        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 52H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-        <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 47.5C.4 48.9 0 50.45 0 52h27.5z" fill="#00ac47"/>
-        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H60l5.85 11.5z" fill="#ea4335"/>
-        <path d="M43.65 25L57.4 0c-1.55 0-3.1.4-4.5 1.2L29.9 0 16.15 25z" fill="#00832d"/>
-        <path d="M60 52H27.5L13.75 76.8c1.4.8 2.95 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2z" fill="#2684fc"/>
-        <path d="M73.4 26.5L59.65 2.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 60 52h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 52H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da" />
+        <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 47.5C.4 48.9 0 50.45 0 52h27.5z" fill="#00ac47" />
+        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H60l5.85 11.5z" fill="#ea4335" />
+        <path d="M43.65 25L57.4 0c-1.55 0-3.1.4-4.5 1.2L29.9 0 16.15 25z" fill="#00832d" />
+        <path d="M60 52H27.5L13.75 76.8c1.4.8 2.95 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2z" fill="#2684fc" />
+        <path d="M73.4 26.5L59.65 2.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 60 52h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00" />
       </svg>
     )
   return <Link2 className="w-8 h-8 text-[#0057FF]" />
@@ -1007,6 +1045,167 @@ function getLinkBgColor(url: string): string {
   if (lower.includes("youtube.com") || lower.includes("youtu.be")) return "bg-[#FFF0F0]"
   if (lower.includes("drive.google.com")) return "bg-[#F0F7FF]"
   return "bg-[#EEF3FF]"
+}
+
+
+// ─── Native File Viewer ───────────────────────────────────────────────────────
+function FileViewerModal({
+  url,
+  mimeType,
+  filename,
+  onClose,
+  onDownload,
+}: {
+  url: string
+  mimeType: string
+  filename: string
+  onClose: () => void
+  onDownload: () => void
+}) {
+  const isImage = mimeType.startsWith("image/")
+  const isPdf = mimeType === "application/pdf"
+
+  // Image zoom
+  const [scale, setScale] = useState(1)
+  const zoomIn = () => setScale(s => Math.min(s + 0.25, 5))
+  const zoomOut = () => setScale(s => Math.max(s - 0.25, 0.25))
+  const zoomReset = () => setScale(1)
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!isImage) return
+    e.preventDefault()
+    setScale(s => Math.min(Math.max(s - e.deltaY * 0.001, 0.25), 5))
+  }
+
+  // Window size (in px)
+  const [size, setSize] = useState({ w: Math.min(1100, window.innerWidth * 0.92), h: window.innerHeight * 0.88 })
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const resizeRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null)
+
+  const onResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    resizeRef.current = { startX: e.clientX, startY: e.clientY, startW: size.w, startH: size.h }
+
+    const onMove = (ev: MouseEvent) => {
+      if (!resizeRef.current) return
+      const dw = ev.clientX - resizeRef.current.startX
+      const dh = ev.clientY - resizeRef.current.startY
+      setSize({
+        w: Math.max(480, Math.min(resizeRef.current.startW + dw, window.innerWidth - 32)),
+        h: Math.max(320, Math.min(resizeRef.current.startH + dh, window.innerHeight - 32)),
+      })
+    }
+    const onUp = () => {
+      resizeRef.current = null
+      window.removeEventListener("mousemove", onMove)
+      window.removeEventListener("mouseup", onUp)
+    }
+    window.addEventListener("mousemove", onMove)
+    window.addEventListener("mouseup", onUp)
+  }
+
+  const dialogSize = isFullscreen
+    ? { width: "100vw", height: "100vh", borderRadius: 0, border: "none" }
+    : { width: size.w, height: size.h }
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent
+        className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] shadow-[8px_8px_0px_#FFD600] p-0 flex flex-col overflow-hidden [&>button:last-child]:hidden"
+        style={{ ...dialogSize, maxWidth: "none", borderRadius: isFullscreen ? 0 : "2rem", transition: isFullscreen ? "all 0.2s ease" : "none" }}
+      >
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-5 py-3 border-b-[2px] border-[#222] shrink-0 select-none">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-7 h-7 bg-[#FFD600] rounded-[7px] border-[2px] border-[#0A0A0A] flex items-center justify-center shrink-0">
+              {isImage ? <ImageIcon className="w-3.5 h-3.5 text-[#0A0A0A]" /> : <FileText className="w-3.5 h-3.5 text-[#0A0A0A]" />}
+            </div>
+            <span className="font-heading font-bold text-[14px] text-white truncate">{filename}</span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Zoom pill — images only */}
+            {isImage && (
+              <div className="flex items-center gap-1 bg-[#1A1A1A] border-[2px] border-[#333] rounded-[0.75rem] px-1 py-1">
+                <button onClick={zoomOut} className="w-7 h-7 rounded-[6px] hover:bg-[#333] flex items-center justify-center text-white font-bold text-lg leading-none transition-all" title="Zoom out">−</button>
+                <button onClick={zoomReset} className="px-2 h-7 rounded-[6px] hover:bg-[#333] font-mono text-[11px] text-[#999] transition-all min-w-[42px] text-center" title="Reset zoom">{Math.round(scale * 100)}%</button>
+                <button onClick={zoomIn} className="w-7 h-7 rounded-[6px] hover:bg-[#333] flex items-center justify-center text-white font-bold text-lg leading-none transition-all" title="Zoom in">+</button>
+              </div>
+            )}
+
+            {/* Fullscreen toggle */}
+            <button
+              onClick={() => setIsFullscreen(f => !f)}
+              className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#333] flex items-center justify-center transition-all"
+              title={isFullscreen ? "Restore" : "Fullscreen"}
+            >
+              {isFullscreen
+                ? <Minimize2 className="w-3.5 h-3.5 text-white" />
+                : <Maximize2 className="w-3.5 h-3.5 text-white" />}
+            </button>
+
+            {/* Open in new tab */}
+            <button
+              onClick={() => window.open(url, "_blank")}
+              className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#333] flex items-center justify-center transition-all"
+              title="Open in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-white" />
+            </button>
+
+            <button
+              onClick={onDownload}
+              className="px-3 py-1.5 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#222] text-white font-heading font-bold text-[12px] flex items-center gap-1.5 transition-all"
+            >
+              <Download className="w-3.5 h-3.5" /> Download
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#FF3B30] flex items-center justify-center transition-all"
+            >
+              <X className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── Body ── */}
+        <div
+          className="flex-1 overflow-auto flex items-start justify-center bg-[#111] relative"
+          onWheel={handleWheel}
+          style={{ cursor: isImage ? (scale > 1 ? "grab" : "zoom-in") : "default" }}
+        >
+          {isImage && (
+            <div className="min-w-full min-h-full flex items-center justify-center p-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt={filename}
+                draggable={false}
+                className="object-contain rounded-[0.75rem] shadow-[0_0_60px_#0006] transition-transform duration-100 ease-out"
+                style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}
+              />
+            </div>
+          )}
+          {isPdf && (
+            <embed src={url} type="application/pdf" className="w-full h-full" />
+          )}
+        </div>
+
+        {/* ── Resize handle (bottom-right corner) ── */}
+        {!isFullscreen && (
+          <div
+            onMouseDown={onResizeMouseDown}
+            className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize flex items-end justify-end p-1 z-50"
+            title="Drag to resize"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M9 1L1 9M9 5L5 9M9 9H9" stroke="#555" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 // ─── File Card ────────────────────────────────────────────────────────────────
@@ -1027,16 +1226,19 @@ function FileCard({
   onDelete: () => void
   onEdit: (item: VaultItem) => void
   onMove: (item: VaultItem) => void
-  onDropFile: (fileItemId: string, targetFolderId: string | null) => void
+  onDropFile: (type: "file" | "folder", id: string, targetId: string | null) => void
   onDragOver: (folderId: string | null) => void
   isSelected?: boolean
   onToggle?: (id: string) => void
   selectionMode?: boolean
 }) {
-  const [isDragging, setIsDragging] = useState(false)
   const [isViewing, setIsViewing] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null)
+
+  const mimeType = item.files?.mime_type ?? ""
+  const canNativeView = mimeType.startsWith("image/") || mimeType === "application/pdf"
 
   const fetchUrl = async (action: "view" | "download") => {
     const res = await fetch(`/api/vault/items/${item.id}/download?action=${action}`)
@@ -1048,7 +1250,12 @@ function FileCard({
   const handleView = async () => {
     setIsViewing(true)
     try {
-      window.open(await fetchUrl("view"), "_blank")
+      const url = await fetchUrl("view")
+      if (canNativeView) {
+        setViewerUrl(url)
+      } else {
+        window.open(url, "_blank")
+      }
     } catch (e: any) {
       toast.error(e.message || "Could not open file")
     } finally {
@@ -1106,28 +1313,6 @@ function FileCard({
   const ytVideoId = isLink && item.url ? getYouTubeVideoId(item.url) : null
 
   // ── Drag handling ──────────────────────────────────────────────────────────
-  const getDropTarget = (x: number, y: number): string | null => {
-    const els = document.elementsFromPoint(x, y)
-    for (const el of els) {
-      const target = (el as HTMLElement).closest("[data-drop-target]")
-      if (target) return (target as HTMLElement).dataset.dropTarget ?? null
-    }
-    return null
-  }
-
-  const handleDrag = (_: any, info: { point: { x: number; y: number } }) => {
-    const target = getDropTarget(info.point.x, info.point.y)
-    onDragOver(target)
-  }
-
-  const handleDragEnd = (_: any, info: { point: { x: number; y: number } }) => {
-    setIsDragging(false)
-    const target = getDropTarget(info.point.x, info.point.y)
-    onDragOver(null)
-    if (target === null) return // dropped on empty space, snap back
-    const folderId = target === "root" ? null : target
-    onDropFile(item.id, folderId)
-  }
 
   const handleLinkOpen = () => {
     if (ytVideoId) {
@@ -1139,149 +1324,144 @@ function FileCard({
 
   return (
     <>
-    {/* YouTube embed dialog */}
-    {ytVideoId && (
-      <Dialog open={ytOpen} onOpenChange={setYtOpen}>
-        <DialogContent className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[8px_8px_0px_#FFD600] max-w-2xl p-0 overflow-hidden">
-          <DialogHeader className="px-5 pt-4 pb-3">
-            <DialogTitle className="font-heading font-extrabold text-[16px] text-white flex items-center gap-2">
-              <PlayCircle className="w-5 h-5 text-[#FF3B30]" />
-              {item.title || "YouTube Video"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${ytVideoId}?autoplay=1`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-              title={item.title ?? "YouTube Video"}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    )}
-    <motion.div
-      layout
-      drag
-      dragSnapToOrigin
-      dragElastic={0.12}
-      dragTransition={{ bounceStiffness: 350, bounceDamping: 30 }}
-      onDragStart={() => setIsDragging(true)}
-      onDrag={handleDrag}
-      onDragEnd={handleDragEnd}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
-      whileDrag={{ scale: 1.06, boxShadow: "8px 8px 0px #0A0A0A", zIndex: 100, cursor: "grabbing" }}
-      onClick={selectionMode && !isDragging ? () => onToggle?.(item.id) : (isLink && !isDragging ? handleLinkOpen : undefined)}
-      className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 select-none ${
-        isSelected
+      {/* Native file viewer (images + PDF) */}
+      {viewerUrl && (
+        <FileViewerModal
+          url={viewerUrl}
+          mimeType={mimeType}
+          filename={item.files?.filename ?? "File"}
+          onClose={() => setViewerUrl(null)}
+          onDownload={() => { setViewerUrl(null); handleDownload() }}
+        />
+      )}
+      {/* YouTube embed dialog */}
+      {ytVideoId && (
+        <Dialog open={ytOpen} onOpenChange={setYtOpen}>
+          <DialogContent className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] rounded-[1.5rem] shadow-[8px_8px_0px_#FFD600] max-w-2xl p-0 overflow-hidden">
+            <DialogHeader className="px-5 pt-4 pb-3">
+              <DialogTitle className="font-heading font-extrabold text-[16px] text-white flex items-center gap-2">
+                <PlayCircle className="w-5 h-5 text-[#FF3B30]" />
+                {item.title || "YouTube Video"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${ytVideoId}?autoplay=1`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+                title={item.title ?? "YouTube Video"}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+      <div
+        draggable={!selectionMode}
+        onDragStart={(e: React.DragEvent) => {
+          e.dataTransfer.setData("application/json", JSON.stringify({ type: "file", id: item.id }))
+          e.dataTransfer.effectAllowed = "move"
+        }}
+        onClick={selectionMode ? () => onToggle?.(item.id) : (isLink ? handleLinkOpen : undefined)}
+        className={`group relative border-[2px] rounded-[1.5rem] p-5 transition-all duration-150 select-none ${isSelected
           ? "bg-[#FFFBDE] border-[#FFD600] shadow-[4px_4px_0px_#FFD600] ring-[3px] ring-[#FFD60066]"
-          : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]"
-      } ${
-        isLink
-          ? "cursor-pointer hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
-          : isDragging ? "cursor-grabbing" : "cursor-grab hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
-      }`}
-      style={{ position: "relative", zIndex: isDragging ? 100 : "auto" }}
-    >
-      <div 
-        onClick={(e) => { e.stopPropagation(); onToggle?.(item.id) }} 
-        className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+          : "bg-[#FFFFFF] border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+          } ${isLink || selectionMode ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
       >
-        {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
-      </div>
-      <div className="flex justify-between items-start mb-4 pl-8 relative z-10">
-        <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] ${
-          isLink ? getLinkBgColor(item.url ?? "") : "bg-[#FFFFFF]"
-        }`}>
-          {isLink
-            ? getLinkIcon(item.url ?? "")
-            : getFileIcon(item.files?.mime_type ?? "")}
+        <div
+          onClick={(e) => { e.stopPropagation(); onToggle?.(item.id) }}
+          className={`absolute top-4 left-4 w-5 h-5 rounded-[6px] border-[2px] border-[#0A0A0A] flex items-center justify-center cursor-pointer transition-all z-20 ${isSelected ? 'bg-[#FFD600]' : selectionMode ? 'bg-[#FFFFFF] opacity-100 hover:bg-[#F5F5F0]' : 'bg-[#FFFFFF] opacity-0 group-hover:opacity-100 hover:bg-[#F5F5F0]'}`}
+        >
+          {isSelected && <Check className="w-3 h-3 text-[#0A0A0A]" strokeWidth={4} />}
         </div>
-        <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity flex items-center gap-1.5">
-          <button
-            onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleView() }}
-            disabled={!isLink && isBusy}
-            title={isLink ? (ytVideoId ? "Watch on YouTube" : "Open link") : "View in browser"}
-            className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-white flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-[#0A0A0A] disabled:opacity-40"
-          >
+        <div className="flex justify-between items-start mb-4 pl-8 relative z-10">
+          <div className={`w-14 h-14 rounded-[12px] border-[2px] border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] ${isLink ? getLinkBgColor(item.url ?? "") : "bg-[#FFFFFF]"
+            }`}>
             {isLink
-              ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />)
-              : isViewing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-4 h-4" />}
-          </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                disabled={isBusy}
-                onClick={(e) => e.stopPropagation()}
-                className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none disabled:opacity-40"
-              >
-                {isBusy && !isViewing ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+              ? getLinkIcon(item.url ?? "")
+              : getFileIcon(item.files?.mime_type ?? "")}
+          </div>
+          <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity flex items-center gap-1.5">
+            <button
+              onClick={(e) => { e.stopPropagation(); isLink ? handleLinkOpen() : handleView() }}
+              disabled={!isLink && isBusy}
+              title={isLink ? (ytVideoId ? "Watch on YouTube" : "Open link") : "View in browser"}
+              className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#0057FF] hover:text-white flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-[#0A0A0A] disabled:opacity-40"
             >
-              {item.item_type !== "link" && (
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
-                <Download className="w-4 h-4 text-[#FFD600]" /> Download
-              </DropdownMenuItem>
-              )}
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
-              <Pencil className="w-4 h-4 text-[#00C853]" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
-              <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
-              <Trash2 className="w-4 h-4" /> Delete
-            </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              {isLink
+                ? (ytVideoId ? <PlayCircle className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />)
+                : isViewing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-4 h-4" />}
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  disabled={isBusy}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-8 h-8 rounded-[8px] border-[1.5px] border-[#0A0A0A] bg-[#FFFFFF] hover:bg-[#F5F5F0] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none focus:outline-none disabled:opacity-40"
+                >
+                  {isBusy && !isViewing ? <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" /> : <MoreVertical className="w-4 h-4 text-[#0A0A0A]" />}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-1.5 z-50"
+              >
+                {item.item_type !== "link" && (
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                    <Download className="w-4 h-4 text-[#FFD600]" /> Download
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                  <Pencil className="w-4 h-4 text-[#00C853]" /> Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(item) }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-2 py-1.5 rounded-[0.5rem] outline-none">
+                  <FolderInput className="w-4 h-4 text-[#FF6B00]" /> Move
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#E8E8E0] my-1" />
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete() }} className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-[#FF3B30] focus:bg-[#FF3B30] focus:text-white px-2 py-1.5 rounded-[0.5rem] outline-none transition-colors">
+                  <Trash2 className="w-4 h-4" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-      <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate mb-1" title={isLink ? (item.title ?? "") : item.files?.filename}>
-        {isLink ? (item.title || "Untitled Link") : (item.files?.filename || "Unknown File")}
-      </h3>
-      <div className="flex items-center justify-between mt-1">
-        {isLink ? (
-          <span className="font-mono text-[12px] font-medium text-[#555550] truncate max-w-[60%] flex items-center gap-1">
-            <ExternalLink className="w-3 h-3 text-[#999990] shrink-0" />
-            {linkDomain}
-          </span>
-        ) : (
-          <span className="font-mono text-[12px] font-medium text-[#555550]">
-            {formatBytes(item.files?.size_bytes ?? 0)}
-          </span>
-        )}
-        <span className="font-mono text-[11px] text-[#999990]">{formatDate(item.created_at)}</span>
-      </div>
-      <div className="flex items-center mt-2.5 gap-1.5 overflow-hidden">
-         <Folder className="w-3.5 h-3.5 text-[#999990] shrink-0" />
-         <span className="font-mono text-[10px] text-[#999990] uppercase tracking-wider truncate">
-           {pathString}
-         </span>
-      </div>
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-[#0A0A0A] bg-[#F5F5F0] font-mono text-[11px] font-medium text-[#555550] shadow-[2px_2px_0px_#0A0A0A]">
-              #{tag}
+        <h3 className="font-heading font-bold text-[15px] text-[#0A0A0A] truncate mb-1" title={isLink ? (item.title ?? "") : item.files?.filename}>
+          {isLink ? (item.title || "Untitled Link") : (item.files?.filename || "Unknown File")}
+        </h3>
+        <div className="flex items-center justify-between mt-1">
+          {isLink ? (
+            <span className="font-mono text-[12px] font-medium text-[#555550] truncate max-w-[60%] flex items-center gap-1">
+              <ExternalLink className="w-3 h-3 text-[#999990] shrink-0" />
+              {linkDomain}
             </span>
-          ))}
-          {tags.length > 3 && (
-            <span className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-[#E8E8E0] bg-[#E8E8E0] font-mono text-[11px] text-[#999990]">
-              +{tags.length - 3}
+          ) : (
+            <span className="font-mono text-[12px] font-medium text-[#555550]">
+              {formatBytes(item.files?.size_bytes ?? 0)}
             </span>
           )}
+          <span className="font-mono text-[11px] text-[#999990]">{formatDate(item.created_at)}</span>
         </div>
-      )}
-    </motion.div>
+        <div className="flex items-center mt-2.5 gap-1.5 overflow-hidden">
+          <Folder className="w-3.5 h-3.5 text-[#999990] shrink-0" />
+          <span className="font-mono text-[10px] text-[#999990] uppercase tracking-wider truncate">
+            {pathString}
+          </span>
+        </div>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-[#0A0A0A] bg-[#F5F5F0] font-mono text-[11px] font-medium text-[#555550] shadow-[2px_2px_0px_#0A0A0A]">
+                #{tag}
+              </span>
+            ))}
+            {tags.length > 3 && (
+              <span className="px-2.5 py-0.5 rounded-[100px] border-[1.5px] border-[#E8E8E0] bg-[#E8E8E0] font-mono text-[11px] text-[#999990]">
+                +{tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </>
   )
 }
@@ -1308,11 +1488,10 @@ function Breadcrumb({
           <ChevronRight className="w-3.5 h-3.5 text-[#999990]" />
           <button
             onClick={() => onNavigate(folder.id)}
-            className={`px-2.5 py-1 rounded-[8px] border-[1.5px] font-mono text-[12px] font-medium transition-all ${
-              idx === trail.length - 1
-                ? "border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] text-[#0A0A0A]"
-                : "border-[#0A0A0A] bg-[#FFFFFF] shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-[#0A0A0A]"
-            }`}
+            className={`px-2.5 py-1 rounded-[8px] border-[1.5px] font-mono text-[12px] font-medium transition-all ${idx === trail.length - 1
+              ? "border-[#0A0A0A] bg-[#FFD600] shadow-[2px_2px_0px_#0A0A0A] text-[#0A0A0A]"
+              : "border-[#0A0A0A] bg-[#FFFFFF] shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-[#0A0A0A]"
+              }`}
           >
             {folder.name}
           </button>
@@ -1352,13 +1531,12 @@ function SidebarFolderTree({
             <button
               data-drop-target={folder.id}
               onClick={() => onNavigate(folder.id)}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${
-                isDropTarget
-                  ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
-                  : isActive
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${isDropTarget
+                ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
+                : isActive
                   ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A]"
                   : "hover:bg-[#E8E8E0] text-[#0A0A0A]"
-              }`}
+                }`}
               style={{ paddingLeft: `${8 + depth * 16}px` }}
             >
               {isActive
@@ -1390,13 +1568,19 @@ function SidebarFolderTree({
 export default function VaultPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCommunityFilter, setSelectedCommunityFilter] = useState<string | null>(null)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [addLinkModalOpen, setAddLinkModalOpen] = useState(false)
   const [newFolderModalOpen, setNewFolderModalOpen] = useState(false)
   const [editItem, setEditItem] = useState<VaultItem | null>(null)
-  
+
   // Drag and drop state
   const [activeDropZone, setActiveDropZone] = useState<string | null>(null) // folder id or "root"
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([])
+  const { isDragging: isDraggingFiles } = useDragAndDrop((files) => {
+    setDroppedFiles(files)
+    setUploadModalOpen(true)
+  })
 
   // New states for Folder rename and Move operations
   const [renameFolderItem, setRenameFolderItem] = useState<VaultFolder | null>(null)
@@ -1454,29 +1638,57 @@ export default function VaultPage() {
     },
   })
 
-  // ── Derived state ─────────────────────────────────────────────────────────
+  // Extract unique communities the user's files are shared with
+  const availableCommunities = useMemo(() => {
+    const map = new Map<string, string>()
+    vaultItems.forEach((item: any) => {
+      if (item.community_vault_items && Array.isArray(item.community_vault_items)) {
+        item.community_vault_items.forEach((cvi: any) => {
+          if (cvi.communities?.name) {
+            map.set(cvi.community_id, cvi.communities.name)
+          }
+        })
+      }
+    })
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }))
+  }, [vaultItems])
+
   // Subfolders of the current level
   const visibleFolders = allFolders.filter(
     (f) => f.parent_id === currentFolderId
   )
 
-  // Client-side search filter on items + folders
+  // Client-side search & community filter on items + folders
   const filteredItems = vaultItems.filter((item) => {
-    if (!searchQuery.trim()) {
-      return (item.folder_id || null) === (currentFolderId || null)
+    let match = true;
+
+    if (selectedCommunityFilter === "PERSONAL_ONLY") {
+      const belongsToAnyComm = Array.isArray((item as any).community_vault_items) &&
+        (item as any).community_vault_items.length > 0;
+      if (belongsToAnyComm) match = false;
+    } else if (selectedCommunityFilter) {
+      const belongsToComm = Array.isArray((item as any).community_vault_items) &&
+        (item as any).community_vault_items.some((cvi: any) => cvi.community_id === selectedCommunityFilter);
+      if (!belongsToComm) match = false;
     }
-    const q = searchQuery.toLowerCase()
-    return (
-      (item.files?.filename?.toLowerCase().includes(q) ?? false) ||
-      (item.title?.toLowerCase().includes(q) ?? false) ||
-      (item.url?.toLowerCase().includes(q) ?? false) ||
-      (item.tags ?? []).some((t) => t.toLowerCase().includes(q))
-    )
+
+    if (searchQuery.trim() && match) {
+      const q = searchQuery.toLowerCase()
+      const checksName = item.files?.filename?.toLowerCase().includes(q) || item.title?.toLowerCase().includes(q)
+      const checksTags = item.tags?.some((t: string) => t.toLowerCase().includes(q))
+      if (!checksName && !checksTags) match = false;
+    }
+
+    if (!searchQuery.trim()) {
+      if (item.folder_id !== currentFolderId) match = false;
+    }
+
+    return match;
   })
 
-  const filteredFolders = visibleFolders.filter((f) =>
-    searchQuery.trim() ? f.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
-  )
+  const filteredFolders = visibleFolders.filter((f) => {
+    return searchQuery.trim() ? f.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
+  })
 
   const breadcrumb = buildBreadcrumb(allFolders, currentFolderId)
 
@@ -1509,20 +1721,32 @@ export default function VaultPage() {
   }
 
   // ── Drag-and-drop handlers ────────────────────────────────────────────────
-  const handleFileDrop = useCallback(async (fileItemId: string, targetFolderId: string | null) => {
+  const handleInternalMove = useCallback(async (type: "file" | "folder", id: string, targetFolderId: string | null) => {
+    if (type === "folder" && id === targetFolderId) return // Cannot drop into itself
     setActiveDropZone(null)
-    const toastId = toast.loading("Moving file…")
+    const toastId = toast.loading(`Moving ${type}…`)
     try {
-      const res = await fetch(`/api/vault/items/${fileItemId}`, {
+      const endpoint = type === "file"
+        ? `/api/vault/items/${id}`
+        : `/api/vault/folders/${id}`
+      const bodyPayload = type === "file"
+        ? { folder_id: targetFolderId }
+        : { parent_id: targetFolderId }
+
+      const res = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder_id: targetFolderId }),
+        body: JSON.stringify(bodyPayload),
       })
       if (!res.ok) throw new Error((await res.json()).error || "Move failed")
-      toast.success("File moved!", { id: toastId })
-      queryClient.invalidateQueries({ queryKey: ["vaultItems"] })
+      toast.success(`${type === "file" ? "File" : "Folder"} moved!`, { id: toastId })
+      if (type === "file") {
+        queryClient.invalidateQueries({ queryKey: ["vaultItems"] })
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["vaultFolders"] })
+      }
     } catch (e: any) {
-      toast.error(e.message || "Failed to move file", { id: toastId })
+      toast.error(e.message || "Failed to move", { id: toastId })
     }
   }, [queryClient])
 
@@ -1534,9 +1758,10 @@ export default function VaultPage() {
       {/* Modals */}
       <UploadModal
         isOpen={uploadModalOpen}
-        onClose={() => setUploadModalOpen(false)}
+        onClose={() => { setUploadModalOpen(false); setDroppedFiles([]) }}
         onUploadComplete={invalidateItems}
         currentFolderId={currentFolderId}
+        initialFiles={droppedFiles}
       />
 
       <AddLinkModal
@@ -1575,7 +1800,7 @@ export default function VaultPage() {
         )}
       </Dialog>
 
-      <div className="flex h-full w-full">
+      <div className={`flex h-full w-full relative transition-all duration-200 ${isDraggingFiles ? 'ring-[3px] ring-inset ring-[#0057FF] rounded-[1rem]' : ''}`}>
         {/* ── Left Sidebar ─────────────────────────────────────────────────── */}
         <aside className="w-[220px] bg-[#F5F5F0] border-r-[2px] border-[#0A0A0A] flex-col hidden md:flex shrink-0">
           <div className="p-4 border-b-[2px] border-[#0A0A0A]">
@@ -1587,13 +1812,12 @@ export default function VaultPage() {
             <button
               data-drop-target="root"
               onClick={() => navigate(null)}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${
-                activeDropZone === "root"
-                  ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
-                  : currentFolderId === null
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] transition-all text-left font-sans text-[13px] font-medium ${activeDropZone === "root"
+                ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[0px_0px_0px_3px_#FFD60088]"
+                : currentFolderId === null
                   ? "bg-[#FFD600] border-[1.5px] border-[#0A0A0A] text-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A]"
                   : "hover:bg-[#E8E8E0] text-[#0A0A0A]"
-              }`}
+                }`}
             >
               <Home className="w-4 h-4 shrink-0" />
               <span>All Files</span>
@@ -1668,6 +1892,36 @@ export default function VaultPage() {
                   </button>
                 )}
               </div>
+
+              {/* Community Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="px-4 py-2.5 rounded-[0.75rem] border-[2px] border-[#0A0A0A] bg-[#FFFFFF] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-heading font-bold text-[13px] text-[#0A0A0A] flex items-center gap-2">
+                    {selectedCommunityFilter ?
+                      <><Filter className="w-4 h-4 text-[#0057FF]" /> <span className="max-w-[120px] truncate">{selectedCommunityFilter === "PERSONAL_ONLY" ? "Personal Vault Only" : availableCommunities.find(c => c.id === selectedCommunityFilter)?.name}</span></>
+                      :
+                      <><Filter className="w-4 h-4" /> All Communities</>
+                    }
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-[#FFFFFF] border-[2px] border-[#0A0A0A] rounded-[1rem] shadow-[4px_4px_0px_#0A0A0A] p-2 z-50">
+                  <DropdownMenuItem onClick={() => setSelectedCommunityFilter(null)} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-3 py-2 rounded-[0.5rem] mb-1 outline-none">
+                    All Communities
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedCommunityFilter("PERSONAL_ONLY")} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-[rgba(255,59,48,0.1)] text-[#FF3B30] px-3 py-2 rounded-[0.5rem] mb-1 outline-none">
+                    Personal Vault Only
+                  </DropdownMenuItem>
+                  {availableCommunities.length > 0 && <DropdownMenuSeparator className="bg-[#E8E8E0]" />}
+                  {availableCommunities.map(c => (
+                    <DropdownMenuItem key={c.id} onClick={() => setSelectedCommunityFilter(c.id)} className="cursor-pointer font-sans text-[13px] font-medium focus:bg-[#E8E8E0] px-3 py-2 rounded-[0.5rem] outline-none">
+                      {c.name}
+                    </DropdownMenuItem>
+                  ))}
+                  {availableCommunities.length === 0 && (
+                    <div className="px-3 py-2 text-[12px] text-[#999990] font-mono italic">No shared items found.</div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* New Folder */}
               <button
@@ -1793,6 +2047,8 @@ export default function VaultPage() {
                       isSelected={selectedFolderIds.includes(folder.id)}
                       onToggle={toggleFolder}
                       selectionMode={selectedItemIds.length > 0 || selectedFolderIds.length > 0}
+                      onDragOver={setActiveDropZone}
+                      onDropFile={handleInternalMove}
                     />
                   ))}
 
@@ -1821,7 +2077,7 @@ export default function VaultPage() {
                       onDelete={invalidateItems}
                       onEdit={(i) => setEditItem(i)}
                       onMove={(i) => setMoveItem({ type: "file", id: i.id })}
-                      onDropFile={handleFileDrop}
+                      onDropFile={handleInternalMove}
                       onDragOver={(id) => setActiveDropZone(id)}
                       isSelected={selectedItemIds.includes(item.id)}
                       onToggle={toggleItem}

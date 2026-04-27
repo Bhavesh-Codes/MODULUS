@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dialog"
 import { useUiStore } from "@/lib/stores/uiStore"
 import { CommunitySettingsModal } from "@/components/communities/CommunitySettingsModal"
+import { useCircleRoomStore } from "@/lib/stores/useCircleRoomStore"
+import BackgroundCircleRoom from "@/components/circles/BackgroundCircleRoom"
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -295,11 +297,10 @@ function CommunityHeader({
         <div className="flex items-center gap-2 shrink-0">
           <span
             title={community.type.toUpperCase()}
-            className={`flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] ${
-              community.type === "Public"
-                ? "bg-[#00C853] text-white"
-                : "bg-[#FF6B00] text-white"
-            }`}
+            className={`flex items-center justify-center w-8 h-8 rounded-full border-[2px] border-[#0A0A0A] shadow-[2px_2px_0_#0A0A0A] ${community.type === "Public"
+              ? "bg-[#00C853] text-white"
+              : "bg-[#FF6B00] text-white"
+              }`}
           >
             {community.type === "Public"
               ? <Globe className="w-4 h-4" />
@@ -393,11 +394,10 @@ function CommunityHeader({
             </h1>
 
             <span
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide ${
-                community.type === "Public"
-                  ? "bg-[#00C853] text-[#FFFFFF]"
-                  : "bg-[#FF6B00] text-[#FFFFFF]"
-              }`}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[100px] border-[2px] border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] font-mono text-[13px] font-bold tracking-wide ${community.type === "Public"
+                ? "bg-[#00C853] text-[#FFFFFF]"
+                : "bg-[#FF6B00] text-[#FFFFFF]"
+                }`}
             >
               {community.type === "Public"
                 ? <Globe className="w-4 h-4" />
@@ -596,36 +596,19 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
       {/* Right-side App Sidebar */}
       <CommunitySidebar id={id} isMember={isMember} />
 
+      {/* Persistent background room — keeps LiveKit alive when navigating between community tabs */}
+      {isMember && <BackgroundCircleRoom currentCommunityId={id} />}
+
       {/* Page content — shifts left to not go under sidebar on desktop */}
       <div
         className="[padding-right:0] md:[padding-right:var(--sidebar-w)] transition-[padding-right] duration-[250ms] ease-in-out"
         style={{ "--sidebar-w": `${sidebarWidth}px` } as React.CSSProperties}
       >
         {isCircleRoom ? (
-          // ── Live circle room: breakout layout, no content padding, header + room fills rest ──
-          <div
-            className="flex flex-col"
-            style={{ height: `calc(100dvh - ${TOPNAV_HEIGHT}px)` }}
-          >
-            {/* Compact community header — always sub-page style */}
-            <div className="px-3 md:px-6 pt-3 pb-2 shrink-0">
-              <CommunityHeader
-                community={community}
-                id={id}
-                isSubPage={true}
-                isMember={isMember}
-                isOwner={isOwner}
-                isPending={isPending}
-                role={role}
-                onManageMembers={() => setIsMembersModalOpen(true)}
-                onMobileMenuOpen={() => setCommunitySidebarMobileOpen(true)}
-              />
-            </div>
-            {/* Circle room fills remaining height */}
-            <div className="flex-1 min-h-0 overflow-hidden">
-              {children}
-            </div>
-          </div>
+          // ── Children must mount so the room page component runs its token fetch.
+          // BackgroundCircleRoom (fixed overlay, z-[45]) renders the actual room UI.
+          // The children div is visually hidden but present in the DOM.
+          <div className="sr-only" aria-hidden>{children}</div>
         ) : (
           // ── Regular community pages: normal padded layout ──
           <div className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-4 pb-32 space-y-6">
