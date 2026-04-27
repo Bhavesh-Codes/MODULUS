@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+
 import { createClient } from "@/lib/supabase/server"
 import type {
   PersonalTaskWithDetails,
@@ -23,23 +23,24 @@ async function requireAuth(supabase: Awaited<ReturnType<typeof createClient>>) {
   return authData.user.id
 }
 
-// ---------------------------------------------------------------------------
-// Path revalidation
-// ---------------------------------------------------------------------------
 
-function revalidatePersonalTasks() {
-  revalidatePath("/personal-tasks")
-}
 
 // ---------------------------------------------------------------------------
 // createTask
 // ---------------------------------------------------------------------------
 
+export interface CreateTaskOptions {
+  date?: string | null
+  deadline?: string | null
+  priority?: PersonalTaskPriority | null
+  category_id?: string | null
+}
+
 /**
- * Creates a new personal task with just a title.
+ * Creates a new personal task with a title and optional metadata.
  * Status defaults to "todo".
  */
-export async function createTask(title: string) {
+export async function createTask(title: string, opts: CreateTaskOptions = {}) {
   const supabase = await createClient()
   const userId = await requireAuth(supabase)
 
@@ -53,6 +54,10 @@ export async function createTask(title: string) {
       user_id: userId,
       title: title.trim(),
       status: "todo" satisfies PersonalTaskStatus,
+      ...(opts.date !== undefined && { date: opts.date }),
+      ...(opts.deadline !== undefined && { deadline: opts.deadline }),
+      ...(opts.priority !== undefined && { priority: opts.priority }),
+      ...(opts.category_id !== undefined && { category_id: opts.category_id }),
     })
     .select("id")
     .single()
@@ -62,7 +67,7 @@ export async function createTask(title: string) {
     throw new Error("Failed to create task.")
   }
 
-  revalidatePersonalTasks()
+
   return { success: true, id: data.id }
 }
 
@@ -82,6 +87,7 @@ export interface UpdateTaskFields {
   is_recurring?: boolean
   recurrence_type?: PersonalTaskRecurrenceType | null
   recurrence_days?: number | null
+  recurrence_weekdays?: number[] | null
   completed_at?: string | null
 }
 
@@ -104,7 +110,6 @@ export async function updateTask(taskId: string, fields: UpdateTaskFields) {
     throw new Error("Failed to update task.")
   }
 
-  revalidatePersonalTasks()
   return { success: true }
 }
 
@@ -130,7 +135,6 @@ export async function deleteTask(taskId: string) {
     throw new Error("Failed to delete task.")
   }
 
-  revalidatePersonalTasks()
   return { success: true }
 }
 
@@ -159,7 +163,6 @@ export async function archiveTask(taskId: string) {
     throw new Error("Failed to archive task.")
   }
 
-  revalidatePersonalTasks()
   return { success: true }
 }
 
@@ -197,11 +200,13 @@ export async function completeTask(taskId: string) {
 
   const now = new Date().toISOString()
 
-  // 2. Mark the original task as done
+  // 2. Mark the original task as done (or archive it immediately if it's recurring to prevent clutter)
+  const newStatus = task.is_recurring ? ("archived" as PersonalTaskStatus) : ("done" as PersonalTaskStatus)
+
   const { error: updateError } = await supabase
     .from("personal_tasks")
     .update({
-      status: "done" satisfies PersonalTaskStatus,
+      status: newStatus,
       completed_at: now,
     })
     .eq("id", taskId)
@@ -239,7 +244,6 @@ export async function completeTask(taskId: string) {
     }
   }
 
-  revalidatePersonalTasks()
   return { success: true }
 }
 
@@ -254,21 +258,26 @@ function computeNextDate(
 ): string | null {
   if (!baseDate) return null
 
-  // Parse as a UTC date to avoid timezone-related day shifts
+  const todayStr = new Date().toISOString().split("T")[0]
   const date = new Date(baseDate)
 
-  if (recurrenceType === "daily") {
-    date.setUTCDate(date.getUTCDate() + 1)
-  } else if (recurrenceType === "weekly") {
-    date.setUTCDate(date.getUTCDate() + 7)
-  } else if (recurrenceType === "custom" && recurrenceDays != null) {
-    date.setUTCDate(date.getUTCDate() + recurrenceDays)
-  } else {
-    // Fallback: advance by 1 day
-    date.setUTCDate(date.getUTCDate() + 1)
-  }
+  // Loop until the next date is at least today
+  while (true) {
+    if (recurrenceType === "daily") {
+      date.setUTCDate(date.getUTCDate() + 1)
+    } else if (recurrenceType === "weekly") {
+      date.setUTCDate(date.getUTCDate() + 7)
+    } else if (recurrenceType === "custom" && recurrenceDays != null) {
+      date.setUTCDate(date.getUTCDate() + recurrenceDays)
+    } else {
+      date.setUTCDate(date.getUTCDate() + 1)
+    }
 
-  return date.toISOString().split("T")[0] // YYYY-MM-DD
+    const nextDateStr = date.toISOString().split("T")[0]
+    if (nextDateStr >= todayStr) {
+      return nextDateStr
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -438,7 +447,6 @@ export async function createSubtask(taskId: string, title: string) {
     throw new Error("Failed to create subtask.")
   }
 
-  revalidatePersonalTasks()
   return { success: true, id: data.id }
 }
 
@@ -481,7 +489,6 @@ export async function updateSubtask(subtaskId: string, fields: UpdateSubtaskFiel
     throw new Error("Failed to update subtask.")
   }
 
-  revalidatePersonalTasks()
   return { success: true }
 }
 
@@ -518,6 +525,5 @@ export async function deleteSubtask(subtaskId: string) {
     throw new Error("Failed to delete subtask.")
   }
 
-  revalidatePersonalTasks()
   return { success: true }
 }

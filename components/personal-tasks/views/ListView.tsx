@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ListFilter, CircleSlash } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ListFilter, CircleSlash, X } from "lucide-react";
 import { PersonalTaskWithDetails, PersonalTaskCategory } from "@/lib/types/personal-tasks";
 import { TaskCard } from "@/components/personal-tasks/TaskCard";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ interface ListViewProps {
   onTaskClick: (task: PersonalTaskWithDetails) => void;
   onTaskComplete: (task: PersonalTaskWithDetails) => void;
   onTaskArchive: (task: PersonalTaskWithDetails) => void;
-  onUpdate: () => void;
+  onTaskDelete: (task: PersonalTaskWithDetails) => void;
 }
 
 type SortField = 'date' | 'deadline' | 'priority' | 'category';
@@ -25,16 +25,17 @@ export function ListView({
   onTaskClick,
   onTaskComplete,
   onTaskArchive,
-  onUpdate
+  onTaskDelete,
 }: ListViewProps) {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortAsc, setSortAsc] = useState<boolean>(true);
-  const [groupBy, setGroupBy] = useState<GroupBy>('none');
+  const [groupBy, setGroupBy] = useState<GroupBy>('date');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterToday, setFilterToday] = useState<boolean>(true);
+  const [filterToday, setFilterToday] = useState<boolean>(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [showToolbar, setShowToolbar] = useState<boolean>(true);
 
   const listContainerRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +52,7 @@ export function ListView({
   const isFiltersActive = useMemo(() => {
     return sortField !== 'date' ||
       !sortAsc ||
-      groupBy !== 'none' ||
+      groupBy !== 'date' ||
       filterPriority !== 'all' ||
       filterStatus !== 'all' ||
       filterCategory !== 'all' ||
@@ -61,7 +62,7 @@ export function ListView({
   const handleClearFilters = () => {
     setSortField('date');
     setSortAsc(true);
-    setGroupBy('none');
+    setGroupBy('date');
     setFilterPriority('all');
     setFilterStatus('all');
     setFilterCategory('all');
@@ -81,6 +82,9 @@ export function ListView({
 
   // 1. Apply Filters
   const filtered = tasks.filter(task => {
+    // Hide completed tasks from List View entirely
+    if (task.status === "done") return false;
+
     if (filterToday) {
       if (!isToday(task) && !isOverdue(task)) return false;
     }
@@ -200,9 +204,10 @@ export function ListView({
   return (
     <div className="flex flex-col gap-6">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-4 items-center bg-[#F5F5F0] p-4 rounded-[1.5rem] border-[2px] border-black shadow-[4px_4px_0_black]">
+      {showToolbar ? (
+      <div className="flex flex-wrap gap-3 items-center bg-[#F5F5F0] px-4 py-2.5 rounded-[1rem] border-2 border-black shadow-[2px_2px_0_black]">
         <div className="flex items-center gap-2">
-          <ListFilter className="w-5 h-5 text-[#555550] mr-2" />
+          <ListFilter className="w-4 h-4 text-[#555550]" />
         </div>
 
         {/* Sort */}
@@ -233,8 +238,8 @@ export function ListView({
           <button
             onClick={() => setGroupBy(groupBy === 'date' ? 'none' : 'date')}
             className={`px-3 py-1.5 border-2 border-black rounded-[0.75rem] font-vietnam text-sm font-bold transition-all cursor-pointer ${groupBy === 'date'
-                ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]'
-                : 'bg-white shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-white shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Date
@@ -242,8 +247,8 @@ export function ListView({
           <button
             onClick={() => setGroupBy(groupBy === 'category' ? 'none' : 'category')}
             className={`px-3 py-1.5 border-2 border-black rounded-[0.75rem] font-vietnam text-sm font-bold transition-all cursor-pointer ${groupBy === 'category'
-                ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]'
-                : 'bg-white shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-white shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Category
@@ -290,24 +295,44 @@ export function ListView({
           <button
             onClick={() => setFilterToday(!filterToday)}
             className={`ml-2 px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${filterToday
-                ? 'bg-black text-white shadow-none translate-y-[2px] translate-x-[2px]'
-                : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              ? 'bg-black text-white shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Today
           </button>
         </div>
 
-        {/* Clear Filters */}
-        {isFiltersActive && (
+        {/* Actions */}
+        <div className="ml-auto flex items-center gap-2">
+          {isFiltersActive && (
+            <button
+              onClick={handleClearFilters}
+              className="px-3 py-1.5 text-[#FF3B30] font-space text-xs font-bold hover:bg-[#FF3B30]/10 rounded-[0.75rem] transition-colors cursor-pointer"
+            >
+              Clear Filters
+            </button>
+          )}
           <button
-            onClick={handleClearFilters}
-            className="ml-auto px-3 py-1.5 text-[#FF3B30] font-space text-xs font-bold hover:bg-[#FF3B30]/10 rounded-[0.75rem] transition-colors cursor-pointer"
+            onClick={() => setShowToolbar(false)}
+            className="p-1.5 text-[#555550] hover:text-black hover:bg-black/10 rounded-[0.5rem] transition-colors cursor-pointer"
+            title="Hide Menu"
           >
-            Clear Filters
+            <X className="w-4 h-4" />
           </button>
-        )}
+        </div>
       </div>
+      ) : (
+        <div className="flex justify-end -mb-2">
+          <button
+            onClick={() => setShowToolbar(true)}
+            className="flex items-center gap-2 px-3 py-1.5 font-space text-xs font-bold text-[#555550] hover:text-black transition-colors cursor-pointer opacity-50 hover:opacity-100"
+          >
+            <ListFilter className="w-4 h-4" />
+            Show Menu
+          </button>
+        </div>
+      )}
 
       {/* Task List */}
       {filtered.length === 0 ? (
@@ -320,11 +345,11 @@ export function ListView({
           </h2>
         </div>
       ) : (
-        <div ref={listContainerRef} className="flex flex-col gap-8">
+        <div ref={listContainerRef} className="flex flex-col gap-6">
           {groups.map(group => {
             const isCollapsed = collapsedGroups.has(group.name);
             return (
-              <div key={group.name} className="flex flex-col gap-4">
+              <div key={group.name} className="flex flex-col gap-2">
                 {groupBy !== 'none' && (
                   <button
                     onClick={() => toggleGroup(group.name)}
@@ -339,7 +364,7 @@ export function ListView({
                 )}
 
                 {!isCollapsed && (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2">
                     {group.tasks.map(task => (
                       <div key={task.id} className="task-card-wrapper">
                         <TaskCard
@@ -347,7 +372,8 @@ export function ListView({
                           onClick={() => onTaskClick(task)}
                           onComplete={() => onTaskComplete(task)}
                           onArchive={() => onTaskArchive(task)}
-                          onUpdate={onUpdate}
+                          onDelete={() => onTaskDelete(task)}
+                          hideActionsUntilHover={false}
                         />
                       </div>
                     ))}

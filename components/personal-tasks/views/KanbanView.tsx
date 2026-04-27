@@ -7,7 +7,7 @@ import gsap from "gsap";
 import { PersonalTaskWithDetails, PersonalTaskCategory, PersonalTaskStatus } from "@/lib/types/personal-tasks";
 import { TaskCard } from "@/components/personal-tasks/TaskCard";
 import { Badge } from "@/components/ui/badge";
-import { updateTask } from "@/actions/personal-tasks";
+import { useUpdateTask } from "@/lib/hooks/use-personal-tasks";
 
 interface KanbanViewProps {
   tasks: PersonalTaskWithDetails[];
@@ -15,7 +15,7 @@ interface KanbanViewProps {
   onTaskClick: (task: PersonalTaskWithDetails) => void;
   onTaskComplete: (task: PersonalTaskWithDetails) => void;
   onTaskArchive: (task: PersonalTaskWithDetails) => void;
-  onUpdate: () => void;
+  onTaskDelete: (task: PersonalTaskWithDetails) => void;
 }
 
 export function KanbanView({
@@ -24,14 +24,16 @@ export function KanbanView({
   onTaskClick,
   onTaskComplete,
   onTaskArchive,
-  onUpdate
+  onTaskDelete,
 }: KanbanViewProps) {
   const [isBrowser, setIsBrowser] = useState(false);
   const boardRef = useRef<HTMLDivElement>(null);
+  const updateTaskMutation = useUpdateTask();
 
-  const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterToday, setFilterToday] = useState<boolean>(true);
+type Timeframe = 'today' | 'week' | 'month' | 'custom';
+
+  const [timeframe, setTimeframe] = useState<Timeframe>('today');
+  const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split("T")[0]);
 
   // Hydration workaround for react-beautiful-dnd
   useEffect(() => {
@@ -45,41 +47,54 @@ export function KanbanView({
     }
   }, []);
 
-  const todayStr = new Date().toISOString().split("T")[0];
-
-  const isOverdue = (task: PersonalTaskWithDetails) => {
-    return task.deadline && task.deadline < todayStr && task.status !== "done";
-  };
-
-  const isToday = (task: PersonalTaskWithDetails) => {
-    return task.date === todayStr;
-  };
-
   const filtered = useMemo(() => {
     return tasks.filter(task => {
       // Hide archived from Kanban
       if (task.status === "archived") return false;
+      // Hide recurring tasks
+      if (task.is_recurring) return false;
 
-      if (filterToday) {
-        if (!isToday(task) && !isOverdue(task)) return false;
+      let targetStart = '';
+      let targetEnd = '';
+
+      if (timeframe === 'today') {
+        targetStart = new Date().toISOString().split("T")[0];
+        targetEnd = targetStart;
+      } else if (timeframe === 'custom') {
+        targetStart = customDate;
+        targetEnd = customDate;
+      } else if (timeframe === 'week') {
+        const curr = new Date();
+        const first = curr.getDate() - curr.getDay(); 
+        targetStart = new Date(curr.setDate(first)).toISOString().split("T")[0];
+        targetEnd = new Date(curr.setDate(first + 6)).toISOString().split("T")[0];
+      } else if (timeframe === 'month') {
+        const curr = new Date();
+        targetStart = new Date(curr.getFullYear(), curr.getMonth(), 1).toISOString().split("T")[0];
+        targetEnd = new Date(curr.getFullYear(), curr.getMonth() + 1, 0).toISOString().split("T")[0];
       }
-      if (filterPriority !== 'all') {
-        if (filterPriority === 'none') {
-          if (task.priority !== null) return false;
-        } else {
-          if (task.priority !== filterPriority) return false;
-        }
-      }
-      if (filterCategory !== 'all') {
-        if (filterCategory === 'none') {
-          if (task.category_id !== null) return false;
-        } else {
-          if (task.category_id !== filterCategory) return false;
-        }
-      }
-      return true;
+
+      // Check if task falls in the timeframe
+      // 1. Task scheduled exactly on a day in timeframe
+      const isDateInRange = task.date && task.date >= targetStart && task.date <= targetEnd;
+      
+      // 2. Task spans the timeframe
+      const spansTimeframe = task.date && task.deadline && task.date <= targetEnd && task.deadline >= targetStart;
+      
+      // 3. Task is currently in progress (always relevant for today)
+      const isCurrentlyDoing = task.status === "in_progress" && timeframe === 'today';
+      
+      // 4. Task was done within the timeframe
+      const wasDoneInRange = task.status === "done" && task.completed_at && 
+        task.completed_at.split("T")[0] >= targetStart && task.completed_at.split("T")[0] <= targetEnd;
+      
+      // 5. For 'today', include tasks that are overdue but not done
+      const todayStr = new Date().toISOString().split("T")[0];
+      const isOverdue = timeframe === 'today' && task.deadline && task.deadline < todayStr && task.status !== "done";
+
+      return isDateInRange || spansTimeframe || isCurrentlyDoing || wasDoneInRange || isOverdue;
     });
-  }, [tasks, filterPriority, filterCategory, filterToday]);
+  }, [tasks, timeframe, customDate]);
 
   const getSortedColumnTasks = (status: PersonalTaskStatus) => {
     const colTasks = filtered.filter(t => t.status === status);
@@ -103,8 +118,7 @@ export function KanbanView({
     const newStatus = destination.droppableId as PersonalTaskStatus;
 
     try {
-      await updateTask(draggableId, { status: newStatus });
-      onUpdate();
+      await updateTaskMutation.mutateAsync({ taskId: draggableId, fields: { status: newStatus } });
     } catch (e) {
       console.error("Failed to move task", e);
     }
@@ -125,46 +139,54 @@ export function KanbanView({
   return (
     <div className="flex flex-col gap-6 h-full min-h-0">
       {/* Filter Row */}
-      <div className="flex flex-wrap gap-4 items-center bg-[#F5F5F0] p-4 rounded-[1.5rem] border-[2px] border-black shadow-[4px_4px_0_black] shrink-0">
+      <div className="flex flex-wrap gap-3 items-center bg-[#F5F5F0] px-4 py-2.5 rounded-[1rem] border-2 border-black shadow-[2px_2px_0_black] shrink-0">
         <div className="flex items-center gap-2 border-r-2 border-black/10 pr-4">
-          <ListFilter className="w-5 h-5 text-[#555550] mr-2" />
+          <ListFilter className="w-4 h-4 text-[#555550]" />
           <span className="font-space text-[10px] font-bold text-[#555550]">KANBAN FILTERS</span>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <select
-            value={filterPriority}
-            onChange={e => setFilterPriority(e.target.value)}
-            className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer"
-          >
-            <option value="all">Priority: All</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-            <option value="none">None</option>
-          </select>
-
-          <select
-            value={filterCategory}
-            onChange={e => setFilterCategory(e.target.value)}
-            className="px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm focus:shadow-[2px_2px_0_black] outline-none cursor-pointer max-w-[150px]"
-          >
-            <option value="all">Category: All</option>
-            <option value="none">Uncategorized</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-
           <button
-            onClick={() => setFilterToday(!filterToday)}
-            className={`ml-2 px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${filterToday
-                ? 'bg-black text-white shadow-none translate-y-[2px] translate-x-[2px]'
-                : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+            onClick={() => setTimeframe('today')}
+            className={`px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'today'
+              ? 'bg-[#FFD600] text-black shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
               }`}
           >
             Today
           </button>
+          <button
+            onClick={() => setTimeframe('week')}
+            className={`px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'week'
+              ? 'bg-[#FFD600] text-black shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              }`}
+          >
+            This Week
+          </button>
+          <button
+            onClick={() => setTimeframe('month')}
+            className={`px-4 py-1.5 border-2 border-black rounded-full font-space text-sm font-bold transition-all cursor-pointer ${timeframe === 'month'
+              ? 'bg-[#FFD600] text-black shadow-none translate-y-[2px] translate-x-[2px]'
+              : 'bg-white text-black shadow-[2px_2px_0_black] hover:-translate-y-[1px]'
+              }`}
+          >
+            This Month
+          </button>
+
+          <div className="flex items-center gap-2 ml-2">
+            <span className="font-space text-[10px] font-bold text-[#555550]">CUSTOM DATE</span>
+            <input
+              type="date"
+              value={timeframe === 'custom' ? customDate : ''}
+              onChange={(e) => {
+                setCustomDate(e.target.value);
+                setTimeframe('custom');
+              }}
+              onClick={() => setTimeframe('custom')}
+              className={`px-2 py-1.5 bg-white border-2 border-black rounded-[0.75rem] font-vietnam text-sm outline-none cursor-pointer ${timeframe === 'custom' ? 'bg-[#FFD600] shadow-none translate-y-[2px] translate-x-[2px]' : 'shadow-[2px_2px_0_black] focus:shadow-[2px_2px_0_black]'}`}
+            />
+          </div>
         </div>
       </div>
 
@@ -178,10 +200,13 @@ export function KanbanView({
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#F5F5F0] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E8E8E0]' : ''}`}
+                className={`flex-1 bg-[#F0F8FF] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E1F0FF]' : ''}`}
               >
                 <div className="p-4 border-b-[3px] border-black bg-white flex justify-between items-center z-10 shrink-0">
-                  <h3 className="font-jakarta font-bold text-[18px]">Todo</h3>
+                  <h3 className="font-jakarta font-bold text-[18px] flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#007AFF] border-2 border-black inline-block"></span>
+                    Todo
+                  </h3>
                   <Badge className="bg-[#E8E8E0] text-black hover:bg-[#E8E8E0] font-space border-[1.5px] border-black shadow-[2px_2px_0_black] pointer-events-none">
                     {todoTasks.length}
                   </Badge>
@@ -202,7 +227,7 @@ export function KanbanView({
                             onClick={() => onTaskClick(task)}
                             onComplete={() => onTaskComplete(task)}
                             onArchive={() => onTaskArchive(task)}
-                            onUpdate={onUpdate}
+                            onDelete={() => onTaskDelete(task)}
                           />
                         </div>
                       )}
@@ -225,11 +250,11 @@ export function KanbanView({
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#F5F5F0] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E8E8E0]' : ''}`}
+                className={`flex-1 bg-[#FFF4E6] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#FFE8CC]' : ''}`}
               >
                 <div className="p-4 border-b-[3px] border-black bg-white flex justify-between items-center z-10 shrink-0">
                   <h3 className="font-jakarta font-bold text-[18px] flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-[#FFD600] border-2 border-black inline-block"></span>
+                    <span className="w-3 h-3 rounded-full bg-[#FF9500] border-2 border-black inline-block"></span>
                     In Progress
                   </h3>
                   <Badge className="bg-[#E8E8E0] text-black hover:bg-[#E8E8E0] font-space border-[1.5px] border-black shadow-[2px_2px_0_black] pointer-events-none">
@@ -252,7 +277,7 @@ export function KanbanView({
                             onClick={() => onTaskClick(task)}
                             onComplete={() => onTaskComplete(task)}
                             onArchive={() => onTaskArchive(task)}
-                            onUpdate={onUpdate}
+                            onDelete={() => onTaskDelete(task)}
                           />
                         </div>
                       )}
@@ -275,11 +300,14 @@ export function KanbanView({
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#E8E8E0]/40 border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] opacity-90 ${snapshot.isDraggingOver ? 'bg-[#E8E8E0]' : ''}`}
+                className={`flex-1 bg-[#E6F9EC] border-[3px] border-black rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] opacity-90 ${snapshot.isDraggingOver ? 'bg-[#CCF2D9]' : ''}`}
               >
-                <div className="p-4 border-b-[3px] border-black bg-[#E8E8E0] flex justify-between items-center z-10 shrink-0">
-                  <h3 className="font-jakarta font-bold text-[18px] text-[#555550]">Done</h3>
-                  <Badge className="bg-transparent text-[#555550] hover:bg-transparent font-space border-[1.5px] border-[#555550] shadow-[2px_2px_0_#555550] pointer-events-none">
+                <div className="p-4 border-b-[3px] border-black bg-white flex justify-between items-center z-10 shrink-0">
+                  <h3 className="font-jakarta font-bold text-[18px] text-black flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#00C853] border-2 border-black inline-block"></span>
+                    Done
+                  </h3>
+                  <Badge className="bg-[#E8E8E0] text-black hover:bg-[#E8E8E0] font-space border-[1.5px] border-black shadow-[2px_2px_0_black] pointer-events-none">
                     {doneTasks.length}
                   </Badge>
                 </div>
@@ -299,7 +327,7 @@ export function KanbanView({
                             onClick={() => onTaskClick(task)}
                             onComplete={() => onTaskComplete(task)}
                             onArchive={() => onTaskArchive(task)}
-                            onUpdate={onUpdate}
+                            onDelete={() => onTaskDelete(task)}
                           />
                         </div>
                       )}

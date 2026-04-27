@@ -4,7 +4,7 @@
 
 export type PersonalTaskStatus = "todo" | "in_progress" | "done" | "archived"
 export type PersonalTaskPriority = "high" | "medium" | "low"
-export type PersonalTaskRecurrenceType = "daily" | "weekly" | "custom"
+export type PersonalTaskRecurrenceType = "daily" | "weekly" | "custom" | "weekdays"
 
 // ---------------------------------------------------------------------------
 // PersonalTaskCategory
@@ -50,6 +50,8 @@ export interface PersonalTask {
   recurrence_type: PersonalTaskRecurrenceType | null
   /** Number of days between recurrences (used when recurrence_type is "custom") */
   recurrence_days: number | null
+  /** Days of the week for "weekdays" recurrence: 0=Sun, 1=Mon ... 6=Sat */
+  recurrence_weekdays: number[] | null
   /** ID of the original task this was spawned from (for recurring chains) */
   parent_recurring_task_id: string | null
   created_at: string
