@@ -221,6 +221,29 @@
     stroke: #000000 !important;
   }
 
+
+  /* Restore white text for dark-mode cards/backgrounds nested inside colored sections.
+     The rules above force black text on ALL descendants of light-colored parents
+     (e.g. bg-[#FFD600]), but bg-card and bg-background are dark in dark mode,
+     so their text must be white regardless of the parent. */
+  .dark [class*="bg-card"],
+  .dark [class*="bg-card"] :where(*) {
+    color: var(--foreground) !important;
+  }
+
+  .dark [class*="bg-background"],
+  .dark [class*="bg-background"] :where(*) {
+    color: var(--foreground) !important;
+  }
+
+  /* SVGs inside dark cards should also use foreground color */
+  .dark [class*="bg-card"] svg,
+  .dark [class*="bg-background"] svg {
+    color: var(--foreground) !important;
+    stroke: var(--foreground) !important;
+  }
+
+  /* But the theme toggle always uses foreground (keep it last so it wins) */
   .dark .theme-toggle svg {
     color: var(--foreground) !important;
     stroke: var(--foreground) !important;

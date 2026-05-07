@@ -2,7 +2,7 @@ import * as React from "react"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#FFD600] md:bg-card">
+    <div className="min-h-screen flex flex-col md:flex-row bg-background">
       {/* Left Memphis Panel (hidden on mobile) */}
       <div className="hidden md:flex md:w-1/2 bg-[#FFD600] relative overflow-hidden flex-col justify-center items-center p-12 border-r-[3px] border-foreground">
         {/* Memphis Shapes */}
