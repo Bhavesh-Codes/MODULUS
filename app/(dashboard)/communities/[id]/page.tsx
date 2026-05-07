@@ -24,7 +24,15 @@ import {
   Upload,
   Clock,
   X,
+  GripVertical,
 } from "lucide-react"
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+  DraggableProvidedDragHandleProps,
+} from "@hello-pangea/dnd"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function timeAgo(dateStr: string): string {
@@ -62,7 +70,7 @@ function ActivityRow({ icon, avatar, name, action, meta, time }: {
   time: string
 }) {
   return (
-    <div className="flex items-start gap-2.5 py-2 border-b-[1.5px] border-[#F0F0E8] last:border-0">
+    <div className="flex items-start gap-2.5 py-2 border-b-[1.5px] border-border last:border-0">
       <Avatar name={name} src={avatar} size={6} />
       <div className="flex-1 min-w-0">
         <p className="font-sans text-[12px] text-foreground leading-snug">
@@ -89,10 +97,12 @@ const SIZE_HEIGHT: Record<WidgetSize, string> = { sm: "h-[200px] md:h-[220px]", 
 const SIZE_COLS: Record<WidgetSize, number> = { sm: 1, md: 2, lg: 3 }
 
 // ─── Widget shell ─────────────────────────────────────────────────────────────
-function Widget({ id, title, icon, accentColor, href, size, canExpand, onResize, onHide, children }: {
+function Widget({ id, title, icon, accentColor, href, size, canExpand, onResize, onHide, dragHandleProps, children }: {
   id: string; title: string; icon: React.ReactNode; accentColor: string; href: string
   size: WidgetSize; canExpand: boolean; onResize: (id: string, s: WidgetSize) => void
-  onHide: (id: string) => void; children: React.ReactNode
+  onHide: (id: string) => void
+  dragHandleProps?: DraggableProvidedDragHandleProps | null
+  children: React.ReactNode
 }) {
   const router = useRouter()
   const sizeIdx = SIZES.indexOf(size)
@@ -101,6 +111,14 @@ function Widget({ id, title, icon, accentColor, href, size, canExpand, onResize,
       {/* header */}
       <div className="light-surface flex items-center justify-between px-3 py-2 border-b-[2px] border-foreground shrink-0" style={{ backgroundColor: accentColor }}>
         <div className="flex items-center gap-1.5">
+          {/* Drag handle */}
+          <span
+            {...dragHandleProps}
+            className="opacity-0 group-hover:opacity-60 transition-opacity cursor-grab active:cursor-grabbing text-black"
+            title="Drag to reorder"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </span>
           <span className="font-heading font-extrabold text-[11px] text-black uppercase tracking-wide">{title}</span>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -144,7 +162,7 @@ function VaultActivity({ communityId, limit }: { communityId: string; limit: num
     },
   })
   const items = data.slice(0, limit)
-  if (!items.length) return <p className="text-[#CCCCCC] text-[12px] text-center pt-4">No files yet</p>
+  if (!items.length) return <p className="text-muted-foreground/60 text-[12px] text-center pt-4">No files yet</p>
   return (
     <>
       {items.map((item: any) => {
@@ -178,7 +196,7 @@ function ThreadsActivity({ communityId, limit }: { communityId: string; limit: n
     },
   })
   const items = data.slice(0, limit)
-  if (!items.length) return <p className="text-[#CCCCCC] text-[12px] text-center pt-4">No threads yet</p>
+  if (!items.length) return <p className="text-muted-foreground/60 text-[12px] text-center pt-4">No threads yet</p>
   return (
     <>
       {items.map((t: any) => (
@@ -196,17 +214,15 @@ function ThreadsActivity({ communityId, limit }: { communityId: string; limit: n
   )
 }
 
-// Tasks API doesn't exist yet — show a coming-soon placeholder
 function TasksActivity({ communityId, limit }: { communityId: string; limit: number }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-2 py-4">
-      <CheckSquare className="w-6 h-6 text-[#CCCCCC]" />
-      <p className="text-[#CCCCCC] text-[12px] text-center">Task activity coming soon</p>
+      <CheckSquare className="w-6 h-6 text-muted-foreground/40" />
+      <p className="text-muted-foreground/60 text-[12px] text-center">Task activity coming soon</p>
     </div>
   )
 }
 
-// Uses /focus/leaderboard which returns focus_sessions with user details
 function FocusActivity({ communityId, limit }: { communityId: string; limit: number }) {
   const { data = [] } = useQuery<any[]>({
     queryKey: ["communityFocusLeaderboard", communityId],
@@ -218,7 +234,7 @@ function FocusActivity({ communityId, limit }: { communityId: string; limit: num
     },
   })
   const items = data.slice(0, limit)
-  if (!items.length) return <p className="text-[#CCCCCC] text-[12px] text-center pt-4">No sessions yet</p>
+  if (!items.length) return <p className="text-muted-foreground/60 text-[12px] text-center pt-4">No sessions yet</p>
   return (
     <>
       {items.map((s: any, i: number) => (
@@ -236,7 +252,6 @@ function FocusActivity({ communityId, limit }: { communityId: string; limit: num
   )
 }
 
-// Uses the LiveKit rooms API — same endpoint used by the circles lobby page
 function CirclesActivity({ communityId, limit }: { communityId: string; limit: number }) {
   const { data: rooms = [] } = useQuery<any[]>({
     queryKey: ["livekitRooms", communityId],
@@ -249,7 +264,7 @@ function CirclesActivity({ communityId, limit }: { communityId: string; limit: n
     refetchInterval: 30_000,
   })
   const items = rooms.slice(0, limit)
-  if (!items.length) return <p className="text-[#CCCCCC] text-[12px] text-center pt-4">No active circles</p>
+  if (!items.length) return <p className="text-muted-foreground/60 text-[12px] text-center pt-4">No active circles</p>
   return (
     <>
       {items.map((r: any) => (
@@ -295,22 +310,37 @@ export default function CommunityHomePage() {
   const [widgetSizes, setWidgetSizes] = useState<Record<WidgetId, WidgetSize>>({
     vault: "md", threads: "sm", tasks: "sm", focus: "sm", circles: "sm",
   })
+  const [widgetOrder, setWidgetOrder] = useState<WidgetId[]>(
+    WIDGETS.map(w => w.id) as WidgetId[]
+  )
   const [hidden, setHidden] = useState<Set<WidgetId>>(new Set())
   const [managing, setManaging] = useState(false)
 
-  const totalCols = WIDGETS.reduce((sum, { id: wId }) =>
+  const totalCols = widgetOrder.reduce((sum, wId) =>
     hidden.has(wId) ? sum : sum + SIZE_COLS[widgetSizes[wId]], 0)
 
   const onResize = useCallback((widgetId: string, size: WidgetSize) => {
     setWidgetSizes(prev => {
       const next = { ...prev, [widgetId]: size }
-      const newTotal = WIDGETS.reduce((s, { id: wId }) => hidden.has(wId) ? s : s + SIZE_COLS[next[wId as WidgetId]], 0)
+      const newTotal = widgetOrder.reduce((s, wId) => hidden.has(wId) ? s : s + SIZE_COLS[next[wId as WidgetId]], 0)
       return newTotal > COL_BUDGET ? prev : next
     })
-  }, [hidden])
+  }, [hidden, widgetOrder])
 
   const onHide = useCallback((wId: string) => setHidden(h => new Set([...h, wId as WidgetId])), [])
   const onShow = useCallback((wId: string) => setHidden(h => { const s = new Set(h); s.delete(wId as WidgetId); return s }), [])
+
+  const onDragEnd = useCallback((result: DropResult) => {
+    if (!result.destination) return
+    const { source, destination } = result
+    if (source.index === destination.index) return
+    setWidgetOrder(prev => {
+      const next = [...prev]
+      const [moved] = next.splice(source.index, 1)
+      next.splice(destination.index, 0, moved)
+      return next
+    })
+  }, [])
 
   if (!community) return null
   const role = community.membership?.role
@@ -325,7 +355,12 @@ export default function CommunityHomePage() {
     )
   }
 
-  const visibleWidgets = WIDGETS.filter(w => !hidden.has(w.id))
+  // Build the visible ordered list
+  const orderedWidgets = widgetOrder
+    .map(wId => WIDGETS.find(w => w.id === wId)!)
+    .filter(Boolean)
+
+  const visibleWidgets = orderedWidgets.filter(w => !hidden.has(w.id))
 
   return (
     <div className="flex flex-col gap-4">
@@ -333,11 +368,11 @@ export default function CommunityHomePage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-heading font-extrabold text-[20px] text-foreground leading-tight">Activity</h2>
-          <p className="font-sans text-[11px] text-[#777770]">Recent actions from community members</p>
+          <p className="font-sans text-[11px] text-muted-foreground">Recent actions from community members</p>
         </div>
         <button
           onClick={() => setManaging(m => !m)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] border-[2px] border-foreground font-heading font-bold text-[12px] shadow-[3px_3px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all ${managing ? "bg-foreground text-white" : "bg-[#FFD600] text-foreground"}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[0.75rem] border-[2px] border-foreground font-heading font-bold text-[12px] shadow-[3px_3px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all ${managing ? "bg-foreground text-background" : "bg-[#FFD600] text-foreground"}`}
         >
           <Settings2 className="w-3.5 h-3.5" /> {managing ? "Done" : "Manage"}
         </button>
@@ -346,7 +381,7 @@ export default function CommunityHomePage() {
       {/* Manage panel — hidden widget pills */}
       {managing && (
         <div className="bg-background border-[2px] border-foreground rounded-[1.25rem] p-3 flex flex-wrap gap-2">
-          {WIDGETS.map(w => {
+          {orderedWidgets.map(w => {
             const isHidden = hidden.has(w.id)
             return (
               <button
@@ -360,48 +395,69 @@ export default function CommunityHomePage() {
               </button>
             )
           })}
-          <span className="ml-auto font-mono text-[11px] text-muted-foreground/70 self-center">{hidden.size} hidden</span>
+          <span className="ml-auto font-mono text-[11px] text-muted-foreground/70 self-center">{hidden.size} hidden · drag to reorder</span>
         </div>
       )}
 
-      {/* Bounded widget area */}
+      {/* Bounded widget area with drag-and-drop */}
       <div className="bg-background border-[3px] border-foreground rounded-[2rem] shadow-[5px_5px_0px_black] p-4">
         {visibleWidgets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <EyeOff className="w-8 h-8 text-[#CCCCCC]" />
-            <p className="font-heading font-bold text-[16px] text-[#CCCCCC]">All widgets hidden</p>
+            <EyeOff className="w-8 h-8 text-muted-foreground/40" />
+            <p className="font-heading font-bold text-[16px] text-muted-foreground/60">All widgets hidden</p>
             <button onClick={() => setManaging(true)} className="font-sans text-[13px] text-[#0057FF] underline">Manage widgets</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {visibleWidgets.map(({ id: wId, label, accent, path }) => {
-              const currentCols = SIZE_COLS[widgetSizes[wId]]
-              const nextSize = SIZES[SIZES.indexOf(widgetSizes[wId]) + 1]
-              const nextCols = nextSize ? SIZE_COLS[nextSize] : 999
-              const canExpand = !!nextSize && (totalCols + (nextCols - currentCols)) <= COL_BUDGET
-              const activityLimit = widgetSizes[wId] === "sm" ? 2 : widgetSizes[wId] === "md" ? 4 : 6
-              return (
-                <Widget
-                  key={wId}
-                  id={wId}
-                  title={label}
-                  icon={null}
-                  accentColor={accent}
-                  href={`/communities/${id}/${path}`}
-                  size={widgetSizes[wId]}
-                  canExpand={canExpand}
-                  onResize={onResize}
-                  onHide={onHide}
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="widget-grid" direction="horizontal">
+              {(provided, snapshot) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 transition-colors duration-200 ${snapshot.isDraggingOver ? "bg-primary/5 rounded-[1.5rem]" : ""}`}
                 >
-                  {wId === "vault" && <VaultActivity communityId={id} limit={activityLimit} />}
-                  {wId === "threads" && <ThreadsActivity communityId={id} limit={activityLimit} />}
-                  {wId === "tasks" && <TasksActivity communityId={id} limit={activityLimit} />}
-                  {wId === "focus" && <FocusActivity communityId={id} limit={activityLimit} />}
-                  {wId === "circles" && <CirclesActivity communityId={id} limit={activityLimit} />}
-                </Widget>
-              )
-            })}
-          </div>
+                  {visibleWidgets.map(({ id: wId, label, accent, path }, index) => {
+                    const currentCols = SIZE_COLS[widgetSizes[wId]]
+                    const nextSize = SIZES[SIZES.indexOf(widgetSizes[wId]) + 1]
+                    const nextCols = nextSize ? SIZE_COLS[nextSize] : 999
+                    const canExpand = !!nextSize && (totalCols + (nextCols - currentCols)) <= COL_BUDGET
+                    const activityLimit = widgetSizes[wId] === "sm" ? 2 : widgetSizes[wId] === "md" ? 4 : 6
+                    return (
+                      <Draggable key={wId} draggableId={wId} index={index}>
+                        {(dragProvided, dragSnapshot) => (
+                          <div
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            className={`${SIZE_CLASSES[widgetSizes[wId]]} transition-opacity duration-150 ${dragSnapshot.isDragging ? "opacity-80 rotate-1 scale-[1.02]" : ""}`}
+                          >
+                            <Widget
+                              id={wId}
+                              title={label}
+                              icon={null}
+                              accentColor={accent}
+                              href={`/communities/${id}/${path}`}
+                              size={widgetSizes[wId]}
+                              canExpand={canExpand}
+                              onResize={onResize}
+                              onHide={onHide}
+                              dragHandleProps={dragProvided.dragHandleProps}
+                            >
+                              {wId === "vault" && <VaultActivity communityId={id} limit={activityLimit} />}
+                              {wId === "threads" && <ThreadsActivity communityId={id} limit={activityLimit} />}
+                              {wId === "tasks" && <TasksActivity communityId={id} limit={activityLimit} />}
+                              {wId === "focus" && <FocusActivity communityId={id} limit={activityLimit} />}
+                              {wId === "circles" && <CirclesActivity communityId={id} limit={activityLimit} />}
+                            </Widget>
+                          </div>
+                        )}
+                      </Draggable>
+                    )
+                  })}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
       </div>
     </div>

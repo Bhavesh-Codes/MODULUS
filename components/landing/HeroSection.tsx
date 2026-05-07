@@ -21,7 +21,7 @@ function MemphisShapes() {
         animate={{ y: [0, 30, 0], rotate: [0, -20, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       >
-        <path d="M50 10 L90 90 L10 90 Z" fill="none" stroke="black" strokeWidth="4" />
+        <path d="M50 10 L90 90 L10 90 Z" fill="none" stroke="currentColor" strokeWidth="4" />
       </motion.svg>
       {/* Dots Grid */}
       <motion.div
@@ -40,7 +40,7 @@ function MemphisShapes() {
         animate={{ y: [0, 15, 0], rotate: [0, 10, 0] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
       >
-        <path d="M0 20 Q 12.5 5, 25 20 T 50 20 T 75 20 T 100 20" fill="none" stroke="black" strokeWidth="4" strokeLinecap="round" />
+        <path d="M0 20 Q 12.5 5, 25 20 T 50 20 T 75 20 T 100 20" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
       </motion.svg>
       {/* Star */}
       <motion.svg
@@ -49,7 +49,7 @@ function MemphisShapes() {
         animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 3 }}
       >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="black" strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
       </motion.svg>
       {/* Checker */}
       <motion.div

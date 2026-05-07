@@ -14,7 +14,7 @@ function LargeMemphisShapes() {
         className="absolute top-[10%] left-[5%] md:left-[15%] w-32 h-32 md:w-48 md:h-48"
         viewBox="0 0 100 100"
       >
-        <path d="M50 10 L90 90 L10 90 Z" fill="#0057FF" stroke="black" strokeWidth="3" />
+        <path d="M50 10 L90 90 L10 90 Z" fill="#0057FF" stroke="var(--foreground)" strokeWidth="3" />
       </motion.svg>
 
       <motion.svg
@@ -25,7 +25,7 @@ function LargeMemphisShapes() {
         className="absolute bottom-[15%] left-[10%] md:left-[20%] w-24 h-24 md:w-32 md:h-32"
         viewBox="0 0 24 24"
       >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#FF3CAC" stroke="black" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#FF3CAC" stroke="var(--foreground)" strokeWidth="1.5" strokeLinejoin="round" />
       </motion.svg>
 
       <motion.svg
@@ -36,7 +36,7 @@ function LargeMemphisShapes() {
         className="absolute top-[20%] right-[10%] md:right-[20%] w-20 h-20 md:w-28 md:h-28"
         viewBox="0 0 100 100"
       >
-        <circle cx="50" cy="50" r="40" fill="#00C853" stroke="black" strokeWidth="4" />
+        <circle cx="50" cy="50" r="40" fill="#00C853" stroke="var(--foreground)" strokeWidth="4" />
       </motion.svg>
 
       <motion.svg

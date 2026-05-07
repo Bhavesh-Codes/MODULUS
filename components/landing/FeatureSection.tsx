@@ -278,7 +278,7 @@ function TasksMockup() {
   };
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-white rounded-[1.5rem] border-[3px] border-black shadow-[8px_8px_0px_#0A0A0A] p-4 flex flex-col gap-3">
+    <div className="w-full h-full min-h-[300px] bg-card rounded-[1.5rem] border-[3px] border-foreground shadow-[8px_8px_0px_black] p-4 flex flex-col gap-3">
       {/* View toggle pills */}
       <div className="flex items-center gap-1.5">
         {([
@@ -288,10 +288,10 @@ function TasksMockup() {
         ] as const).map(({ label, Icon }) => (
           <div
             key={label}
-            className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-black ${
+            className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-foreground ${
               label === "List"
                 ? "bg-[#7C3AED] text-white"
-                : "bg-[#F5F5F0] text-[#555550]"
+                : "bg-secondary text-muted-foreground"
             }`}
           >
             <Icon className="w-2.5 h-2.5" />
@@ -301,8 +301,8 @@ function TasksMockup() {
       </div>
 
       {/* Quick-add bar */}
-      <div className="flex items-center gap-2 bg-[#F5F5F0] border-2 border-black rounded-xl px-3 py-2">
-        <span className="flex-1 text-xs text-[#999] font-sans">Add a task...</span>
+      <div className="flex items-center gap-2 bg-secondary border-2 border-foreground rounded-xl px-3 py-2">
+        <span className="flex-1 text-xs text-muted-foreground font-sans">Add a task...</span>
         <div className="w-5 h-5 rounded-md border border-black bg-[#7C3AED] flex items-center justify-center text-white font-bold text-xs leading-none">
           +
         </div>
@@ -313,15 +313,15 @@ function TasksMockup() {
         {tasks.map((task) => (
           <div
             key={task.id}
-            className="flex items-center gap-2.5 bg-[#F5F5F0] border border-black/20 rounded-xl px-3 py-2"
+            className="flex items-center gap-2.5 bg-secondary border border-foreground/20 rounded-xl px-3 py-2"
           >
             {/* Checkbox */}
             <motion.button
               onClick={() => toggle(task.id)}
               whileTap={{ scale: 1.2 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className={`w-4 h-4 rounded border-[1.5px] border-black flex-shrink-0 flex items-center justify-center ${
-                task.completed ? "bg-[#7C3AED]" : "bg-white"
+              className={`w-4 h-4 rounded border-[1.5px] border-foreground flex-shrink-0 flex items-center justify-center ${
+                task.completed ? "bg-[#7C3AED]" : "bg-card"
               }`}
             >
               {task.completed && (
@@ -332,14 +332,14 @@ function TasksMockup() {
             {/* Title */}
             <span
               className={`flex-1 text-xs font-sans font-medium truncate transition-all ${
-                task.completed ? "line-through opacity-50" : "text-black"
+                task.completed ? "line-through opacity-50" : "text-foreground"
               }`}
             >
               {task.title}
             </span>
 
             {/* Category badge */}
-            <span className="text-[9px] font-mono text-[#888] bg-white border border-black/10 px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-mono text-muted-foreground bg-card border border-foreground/10 px-1.5 py-0.5 rounded-full">
               {task.category}
             </span>
 
@@ -352,7 +352,7 @@ function TasksMockup() {
       </div>
 
       {/* Summary */}
-      <div className="text-[10px] font-mono text-[#888] text-right">
+      <div className="text-[10px] font-mono text-muted-foreground/60 text-right">
         {doneCount} of {tasks.length} done
       </div>
     </div>
@@ -382,17 +382,17 @@ function ThreadsMockup() {
   };
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-white rounded-[1.5rem] border-[3px] border-black shadow-[8px_8px_0px_#0A0A0A] p-4 flex flex-col gap-3">
+    <div className="w-full h-full min-h-[300px] bg-card rounded-[1.5rem] border-[3px] border-foreground shadow-[8px_8px_0px_black] p-4 flex flex-col gap-3">
       {/* Header bar */}
       <div className="flex items-center justify-between">
         <span className="font-display font-bold text-sm">Threads</span>
-        <div className="flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-black bg-[#F5F5F0] text-[#555550] cursor-default">
+        <div className="flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-foreground bg-secondary text-muted-foreground cursor-default">
           + New Post
         </div>
       </div>
 
       {/* Main post */}
-      <div className="bg-[#F5F5F0] border border-black/20 rounded-xl p-3 flex flex-col gap-2">
+      <div className="bg-secondary border border-foreground/20 rounded-xl p-3 flex flex-col gap-2">
         {/* Author row */}
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-[#7C3AED] border border-black flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
@@ -406,12 +406,12 @@ function ThreadsMockup() {
         </div>
 
         {/* Post title */}
-        <p className="text-xs font-sans font-semibold text-black leading-snug">
+        <p className="text-xs font-sans font-semibold text-foreground leading-snug">
           Anyone else struggling with the DSA assignment? Specifically the graph traversal part
         </p>
 
         {/* Category tag */}
-        <span className="self-start text-[9px] font-mono text-[#888] bg-white border border-black/10 px-2 py-0.5 rounded-full">
+        <span className="self-start text-[9px] font-mono text-muted-foreground bg-card border border-foreground/10 px-2 py-0.5 rounded-full">
           Uni • CSE
         </span>
 
@@ -446,7 +446,7 @@ function ThreadsMockup() {
       {/* Replies */}
       <div className="flex flex-col gap-1.5 pl-1">
         {/* Reply 1 */}
-        <div className="bg-[#F5F5F0] border border-black/10 rounded-xl p-2.5 flex flex-col gap-1">
+        <div className="bg-secondary border border-foreground/10 rounded-xl p-2.5 flex flex-col gap-1">
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 rounded-full bg-[#00C853] border border-black flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">
               RV
@@ -491,7 +491,7 @@ function ThreadsMockup() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-[#F5F5F0] border border-black/10 rounded-xl p-2.5 flex flex-col gap-1"
+              className="bg-secondary border border-foreground/10 rounded-xl p-2.5 flex flex-col gap-1"
             >
               <div className="flex items-center gap-1.5">
                 <div className="w-5 h-5 rounded-full bg-[#FF6B00] border border-black flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">
@@ -500,7 +500,7 @@ function ThreadsMockup() {
                 <span className="text-[10px] font-bold font-mono">priya_k</span>
                 <span className="text-[9px] text-[#bbb] ml-1">30m ago</span>
               </div>
-              <p className="text-[10px] font-sans text-[#333] leading-snug">
+              <p className="text-[10px] font-sans text-foreground/80 leading-snug">
                 Prof uploaded a hint sheet in the Vault btw 👀
               </p>
               <div className="flex items-center gap-2 mt-0.5">
@@ -585,7 +585,7 @@ export default function FeatureSection() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-8">
         
         <div className="text-center mb-24 flex flex-col items-center">
-           <h1 className="font-display font-extrabold text-4xl sm:text-6xl text-black">
+           <h1 className="font-display font-extrabold text-4xl sm:text-6xl text-foreground">
              Six tools. One login.
            </h1>
         </div>
