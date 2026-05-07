@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation"
 import { CheckSquare, Folders, Compass } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import UserMenu from "@/components/user-menu"
-import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

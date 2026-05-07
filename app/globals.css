@@ -220,4 +220,9 @@
     color: #000000 !important;
     stroke: #000000 !important;
   }
+
+  .dark .theme-toggle svg {
+    color: var(--foreground) !important;
+    stroke: var(--foreground) !important;
+  }
 }
