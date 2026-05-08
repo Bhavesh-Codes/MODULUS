@@ -40,7 +40,7 @@ const duplicatedQuotes = [...quotes, ...quotes, ...quotes];
 
 export default function SocialProofSection() {
   return (
-    <section className="bg-[#FFD600] py-24 overflow-hidden border-y-[3px] border-foreground">
+    <section className="social-proof-section py-24 overflow-hidden border-y-[3px] border-foreground">
       
       <div className="max-w-[1280px] mx-auto px-4 md:px-8 mb-16 text-center">
         <h2 className="font-display font-extrabold text-4xl text-foreground">
@@ -66,14 +66,14 @@ export default function SocialProofSection() {
           {duplicatedQuotes.map((q, idx) => (
             <div 
               key={idx} 
-              className="w-[320px] md:w-[400px] shrink-0 bg-card border-2 border-foreground rounded-[1.5rem] p-6 sm:p-8 shadow-[4px_4px_0px_black] whitespace-normal flex flex-col"
+              className="social-proof-card w-[320px] md:w-[400px] shrink-0 bg-card dark:bg-[#1E1D1A] border-2 border-foreground rounded-[1.5rem] p-6 sm:p-8 shadow-[4px_4px_0px_black] whitespace-normal flex flex-col"
             >
-              <p className="font-sans italic text-lg text-foreground mb-6 flex-1">
+              <p className="social-proof-quote font-sans italic text-lg text-foreground mb-6 flex-1">
                 "{q.quote}"
               </p>
               <div>
-                <p className="font-mono font-bold text-foreground text-sm">{q.name}</p>
-                <p className="font-mono text-xs text-muted-foreground">{q.role}</p>
+                <p className="social-proof-name font-mono font-bold text-foreground text-sm">{q.name}</p>
+                <p className="social-proof-role font-mono text-xs text-muted-foreground">{q.role}</p>
               </div>
             </div>
           ))}

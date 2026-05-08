@@ -422,7 +422,7 @@ function ThreadsMockup() {
             className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border transition-all ${
               vote === "up"
                 ? "bg-[#FFD600] border-black text-black"
-                : "bg-white border-black/20 text-[#555]"
+                : "bg-white dark:bg-[#1E1D1A] border-black/20 dark:border-black text-[#555] dark:!text-white"
             }`}
           >
             ▲ {upCount}
@@ -431,8 +431,8 @@ function ThreadsMockup() {
             onClick={() => handleVote("down")}
             className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border transition-all ${
               vote === "down"
-                ? "bg-red-100 border-red-400 text-red-500"
-                : "bg-white border-black/20 text-[#555]"
+                ? "bg-red-100 dark:bg-[#2A1616] border-red-400 text-red-500 dark:!text-[#FF8A80]"
+                : "bg-white dark:bg-[#1E1D1A] border-black/20 dark:border-black text-[#555] dark:!text-white"
             }`}
           >
             ▼ {downCount}
@@ -465,7 +465,7 @@ function ThreadsMockup() {
 
         {/* Reply 2 — sub-reply, indented */}
         <div className="ml-4 border-l-2 border-[#A78BFA] pl-2">
-          <div className="bg-[#F5F5F0] border border-black/10 rounded-xl p-2.5 flex flex-col gap-1">
+          <div className="bg-[#F5F5F0] dark:bg-secondary border border-black/10 dark:border-foreground/10 rounded-xl p-2.5 flex flex-col gap-1">
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-full bg-[#4285F4] border border-black flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">
                 SM
@@ -473,7 +473,7 @@ function ThreadsMockup() {
               <span className="text-[10px] font-bold font-mono">sam_m</span>
               <span className="text-[9px] text-[#bbb] ml-1">45m ago</span>
             </div>
-            <p className="text-[10px] font-sans text-[#333] leading-snug">
+            <p className="text-[10px] font-sans text-[#333] dark:!text-white leading-snug">
               agreed with riya — also check the lecture notes from week 8
             </p>
             <div className="flex items-center gap-2 mt-0.5">

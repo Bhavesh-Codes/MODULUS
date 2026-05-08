@@ -243,9 +243,213 @@
     stroke: var(--foreground) !important;
   }
 
+  .dark svg[class*="text-[#0057FF]"] {
+    color: #0057FF !important;
+    stroke: #0057FF !important;
+  }
+
+  .dark svg[class*="text-[#FF3CAC]"] {
+    color: #FF3CAC !important;
+    stroke: #FF3CAC !important;
+  }
+
+  .dark svg[class*="text-[#FFD600]"] {
+    color: #FFD600 !important;
+    stroke: #FFD600 !important;
+  }
+
+  .dark svg[class*="text-[#FF3B30]"] {
+    color: #FF3B30 !important;
+    stroke: #FF3B30 !important;
+  }
+
+  .dark svg[class*="text-[#4285F4]"] {
+    color: #4285F4 !important;
+    stroke: #4285F4 !important;
+  }
+
+  .dark svg[class*="text-[#00C853]"] {
+    color: #00C853 !important;
+    stroke: #00C853 !important;
+  }
+
+  .dark svg[class*="text-[#FF6B00]"] {
+    color: #FF6B00 !important;
+    stroke: #FF6B00 !important;
+  }
+
+  .dark :where(
+    [class~="bg-[#FFD600]"],
+    [class~="bg-[#FFD600]/90"],
+    [class~="bg-[#FFD600]/20"],
+    [class~="bg-[#FFD600]/10"],
+    [class~="bg-yellow-300"],
+    [class~="bg-primary"],
+    .light-surface
+  ),
+  .dark :where(
+    [class~="bg-[#FFD600]"],
+    [class~="bg-[#FFD600]/90"],
+    [class~="bg-[#FFD600]/20"],
+    [class~="bg-[#FFD600]/10"],
+    [class~="bg-yellow-300"],
+    [class~="bg-primary"],
+    .light-surface
+  ) :where(*) {
+    color: #000000 !important;
+  }
+
+  .dark :where(
+    [class~="bg-[#FFD600]"],
+    [class~="bg-[#FFD600]/90"],
+    [class~="bg-[#FFD600]/20"],
+    [class~="bg-[#FFD600]/10"],
+    [class~="bg-yellow-300"],
+    [class~="bg-primary"],
+    .light-surface
+  ) svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
+  }
+
+  .dark :where(
+    [class~="bg-[#FFD600]"],
+    [class~="bg-[#FFD600]/90"],
+    [class~="bg-[#FFD600]/20"],
+    [class~="bg-[#FFD600]/10"],
+    [class~="bg-yellow-300"],
+    [class~="bg-primary"],
+    .light-surface
+  ) :where([class*="bg-card"], [class*="bg-card"] *, [class*="bg-background"], [class*="bg-background"] *) {
+    color: var(--foreground) !important;
+  }
+
+  .dark :where([class*="bg-foreground"][class*="text-[#FFD600]"]),
+  .dark :where([class*="bg-foreground"] [class*="text-[#FFD600]"]) {
+    color: #FFD600 !important;
+  }
+
+  .dark .bg-\[\#FFD600\],
+  .dark .bg-\[\#FFD600\] :where(*),
+  .dark .bg-\[\#FFD600\]\/90,
+  .dark .bg-\[\#FFD600\]\/90 :where(*),
+  .dark .bg-\[\#FFD600\]\/20,
+  .dark .bg-\[\#FFD600\]\/20 :where(*),
+  .dark .bg-\[\#FFD600\]\/10,
+  .dark .bg-\[\#FFD600\]\/10 :where(*),
+  .dark .bg-yellow-300,
+  .dark .bg-yellow-300 :where(*),
+  .dark .bg-primary,
+  .dark .bg-primary :where(*) {
+    color: #000000 !important;
+  }
+
+  .dark .bg-\[\#FFD600\] svg,
+  .dark .bg-\[\#FFD600\]\/90 svg,
+  .dark .bg-\[\#FFD600\]\/20 svg,
+  .dark .bg-\[\#FFD600\]\/10 svg,
+  .dark .bg-yellow-300 svg,
+  .dark .bg-primary svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
+  }
+
+  .dark .hover\:bg-\[\#FFD600\]:hover,
+  .dark .hover\:bg-\[\#FFD600\]:hover :where(*),
+  .dark .hover\:bg-\[\#FFD600\]\/90:hover,
+  .dark .hover\:bg-\[\#FFD600\]\/90:hover :where(*),
+  .dark .hover\:bg-yellow-300:hover,
+  .dark .hover\:bg-yellow-300:hover :where(*),
+  .dark .group:hover .group-hover\:bg-\[\#FFD600\],
+  .dark .group:hover .group-hover\:bg-\[\#FFD600\] :where(*) {
+    color: #000000 !important;
+  }
+
+  .dark .hover\:bg-\[\#FFD600\]:hover svg,
+  .dark .hover\:bg-\[\#FFD600\]\/90:hover svg,
+  .dark .hover\:bg-yellow-300:hover svg,
+  .dark .group:hover .group-hover\:bg-\[\#FFD600\] svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
+  }
+
   /* But the theme toggle always uses foreground (keep it last so it wins) */
   .dark .theme-toggle svg {
     color: var(--foreground) !important;
     stroke: var(--foreground) !important;
   }
+}
+
+.dark .bg-\[\#FFD600\],
+.dark .bg-\[\#FFD600\] :where(*),
+.dark .bg-\[\#FFD600\]\/90,
+.dark .bg-\[\#FFD600\]\/90 :where(*),
+.dark .bg-\[\#FFD600\]\/20,
+.dark .bg-\[\#FFD600\]\/20 :where(*),
+.dark .bg-\[\#FFD600\]\/10,
+.dark .bg-\[\#FFD600\]\/10 :where(*),
+.dark .bg-yellow-300,
+.dark .bg-yellow-300 :where(*),
+.dark .bg-primary,
+.dark .bg-primary :where(*),
+.dark .light-surface,
+.dark .light-surface :where(*) {
+  color: #000000 !important;
+}
+
+.dark .bg-\[\#FFD600\] svg,
+.dark .bg-\[\#FFD600\]\/90 svg,
+.dark .bg-\[\#FFD600\]\/20 svg,
+.dark .bg-\[\#FFD600\]\/10 svg,
+.dark .bg-yellow-300 svg,
+.dark .bg-primary svg,
+.dark .light-surface svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+.dark .hover\:bg-\[\#FFD600\]:hover,
+.dark .hover\:bg-\[\#FFD600\]:hover :where(*),
+.dark .hover\:bg-\[\#FFD600\]\/90:hover,
+.dark .hover\:bg-\[\#FFD600\]\/90:hover :where(*),
+.dark .hover\:bg-yellow-300:hover,
+.dark .hover\:bg-yellow-300:hover :where(*),
+.dark .group:hover .group-hover\:bg-\[\#FFD600\],
+.dark .group:hover .group-hover\:bg-\[\#FFD600\] :where(*) {
+  color: #000000 !important;
+}
+
+.dark .hover\:bg-\[\#FFD600\]:hover svg,
+.dark .hover\:bg-\[\#FFD600\]\/90:hover svg,
+.dark .hover\:bg-yellow-300:hover svg,
+.dark .group:hover .group-hover\:bg-\[\#FFD600\] svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+.dark .social-proof-card,
+.dark .social-proof-card :where(*) {
+  color: var(--foreground) !important;
+}
+
+.dark .social-proof-card :where(.text-muted-foreground) {
+  color: var(--muted-foreground) !important;
+}
+
+.social-proof-section {
+  background: #FFD600;
+}
+
+.dark .social-proof-section .social-proof-card .social-proof-quote,
+.dark .social-proof-section .social-proof-card .social-proof-name {
+  color: #FFFFFF !important;
+}
+
+.dark .social-proof-section .social-proof-card .social-proof-role {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.dark .brand-logo,
+.dark .brand-logo * {
+  stroke: none !important;
 }
