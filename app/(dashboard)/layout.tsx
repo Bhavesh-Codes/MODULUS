@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { CheckSquare, Folders, Compass } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import UserMenu from "@/components/user-menu"
+import { VaultWindowManager } from "@/components/vault/VaultWindowManager"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -39,6 +40,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Main App Content Pane */}
       <main className="flex-1 overflow-y-auto relative">
         {children}
+        <VaultWindowManager />
       </main>
 
       <Toaster
