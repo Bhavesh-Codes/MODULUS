@@ -54,8 +54,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useDragControls, useMotionValue } from "framer-motion"
 import { useDragAndDrop } from "@/lib/useDragAndDrop"
+import { useVaultWindowStore } from "@/lib/stores/useVaultWindowStore"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface VaultFolder {
@@ -88,6 +89,17 @@ interface EditFormValues {
 
 interface NewFolderFormValues {
   name: string
+}
+
+export type WindowType = "pdf" | "image" | "youtube" | "drive_file" | "drive_folder"
+
+export interface VaultWindow {
+  id: string
+  type: WindowType
+  url: string
+  title: string
+  zIndex: number
+  isMinimized?: boolean
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1015,6 +1027,25 @@ function getYouTubeVideoId(url: string): string | null {
   return null
 }
 
+function getYouTubePlaylistId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    return u.searchParams.get("list")
+  } catch { return null }
+}
+
+function getGoogleDriveInfo(url: string): { type: "file" | "folder", id: string } | null {
+  try {
+    const u = new URL(url)
+    const path = u.pathname
+    const fileMatch = path.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+    if (fileMatch) return { type: "file", id: fileMatch[1] }
+    const folderMatch = path.match(/\/folders\/([a-zA-Z0-9_-]+)/)
+    if (folderMatch) return { type: "folder", id: folderMatch[1] }
+  } catch { /* ignore */ }
+  return null
+}
+
 function getLinkIcon(url: string) {
   if (!url) return <Link2 className="w-8 h-8 text-[#0057FF]" />
   const lower = url.toLowerCase()
@@ -1044,21 +1075,26 @@ function getLinkBgColor(url: string): string {
 
 
 // ─── Native File Viewer ───────────────────────────────────────────────────────
-function FileViewerModal({
-  url,
-  mimeType,
-  filename,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function VaultWindowRenderer({
+  win,
   onClose,
   onDownload,
+  onFocus,
+  constraintsRef,
 }: {
-  url: string
-  mimeType: string
-  filename: string
+  win: VaultWindow
   onClose: () => void
-  onDownload: () => void
+  onDownload?: () => void
+  onFocus: () => void
+  onMinimize: () => void
+  constraintsRef: React.RefObject<HTMLDivElement | null>
 }) {
-  const isImage = mimeType.startsWith("image/")
-  const isPdf = mimeType === "application/pdf"
+  const isImage = win.type === "image"
+  const isPdf = win.type === "pdf"
+  const isYoutube = win.type === "youtube"
+  const isDriveFile = win.type === "drive_file"
+  const isDriveFolder = win.type === "drive_folder"
 
   // Image zoom
   const [scale, setScale] = useState(1)
@@ -1071,23 +1107,37 @@ function FileViewerModal({
     setScale(s => Math.min(Math.max(s - e.deltaY * 0.001, 0.25), 5))
   }
 
-  // Window size (in px)
-  const [size, setSize] = useState({ w: Math.min(1100, window.innerWidth * 0.92), h: window.innerHeight * 0.88 })
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const resizeRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null)
+  const dragControls = useDragControls()
+  const x = useMotionValue(0)
 
-  const onResizeMouseDown = (e: React.MouseEvent) => {
+  // Window size
+  const [size, setSize] = useState({ w: 900, h: 600 })
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const resizeRef = useRef<{ startX: number; startY: number; startW: number; startH: number; startXVal: number } | null>(null)
+
+  const onResizeStart = (e: React.MouseEvent, direction: 'se' | 'sw') => {
     e.preventDefault()
-    resizeRef.current = { startX: e.clientX, startY: e.clientY, startW: size.w, startH: size.h }
+    e.stopPropagation()
+    resizeRef.current = { startX: e.clientX, startY: e.clientY, startW: size.w, startH: size.h, startXVal: x.get() }
 
     const onMove = (ev: MouseEvent) => {
       if (!resizeRef.current) return
       const dw = ev.clientX - resizeRef.current.startX
       const dh = ev.clientY - resizeRef.current.startY
-      setSize({
-        w: Math.max(480, Math.min(resizeRef.current.startW + dw, window.innerWidth - 32)),
-        h: Math.max(320, Math.min(resizeRef.current.startH + dh, window.innerHeight - 32)),
-      })
+
+      let newW = resizeRef.current.startW
+      const newH = Math.max(320, resizeRef.current.startH + dh)
+
+      if (direction === 'se') {
+        newW = Math.max(480, resizeRef.current.startW + dw)
+      } else {
+        newW = Math.max(480, resizeRef.current.startW - dw)
+        if (newW > 480) {
+          x.set(resizeRef.current.startXVal + dw)
+        }
+      }
+
+      setSize({ w: newW, h: newH })
     }
     const onUp = () => {
       resizeRef.current = null
@@ -1103,103 +1153,163 @@ function FileViewerModal({
     : { width: size.w, height: size.h }
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent
-        className="viewer-chrome bg-black border-[3px] border-black shadow-[8px_8px_0px_#FFD600] p-0 flex flex-col overflow-hidden [&>button:last-child]:hidden"
-        style={{ ...dialogSize, maxWidth: "none", borderRadius: isFullscreen ? 0 : "2rem", transition: isFullscreen ? "all 0.2s ease" : "none" }}
+    <motion.div
+      drag={!isFullscreen}
+      dragMomentum={false}
+      dragListener={false}
+      dragControls={dragControls}
+      dragConstraints={constraintsRef}
+      onMouseDownCapture={onFocus}
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{
+        opacity: win.isMinimized ? 0 : 1,
+        scale: win.isMinimized ? 0.8 : 1,
+        y: win.isMinimized ? 20 : 0,
+        pointerEvents: win.isMinimized ? 'none' : 'auto'
+      }}
+      exit={{ opacity: 0, scale: 0.95, y: 20 }}
+      transition={{ duration: 0.15 }}
+      style={{
+        x,
+        zIndex: win.zIndex,
+        position: isFullscreen ? "fixed" : "absolute",
+        top: isFullscreen ? 0 : "10%",
+        left: isFullscreen ? 0 : "10%",
+        ...dialogSize,
+        maxWidth: "none",
+        transition: isFullscreen ? "all 0.2s ease" : "none"
+      }}
+      className={`viewer-chrome bg-black border-[3px] border-black p-0 flex flex-col overflow-hidden ${isFullscreen ? '' : 'rounded-[2rem] shadow-[8px_8px_0px_#FFD600]'}`}
+    >
+      {/* ── Header ── */}
+      <div
+        onPointerDown={(e) => dragControls.start(e)}
+        className="flex items-center justify-between px-5 py-3 border-b-[2px] border-[#222] shrink-0 select-none cursor-move"
       >
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between px-5 py-3 border-b-[2px] border-[#222] shrink-0 select-none">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="viewer-file-icon w-7 h-7 bg-[#FFD600] rounded-[7px] border-[2px] border-black flex items-center justify-center shrink-0">
-              {isImage ? <ImageIcon className="w-3.5 h-3.5 text-foreground" /> : <FileText className="w-3.5 h-3.5 text-foreground" />}
-            </div>
-            <span className="font-heading font-bold text-[14px] text-white truncate">{filename}</span>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="viewer-file-icon w-7 h-7 bg-[#FFD600] rounded-[7px] border-[2px] border-black flex items-center justify-center shrink-0">
+            {isImage ? <ImageIcon className="w-3.5 h-3.5 text-foreground" /> :
+             isYoutube ? <PlayCircle className="w-3.5 h-3.5 text-foreground" /> :
+             <FileText className="w-3.5 h-3.5 text-foreground" />}
           </div>
+          <span className="font-heading font-bold text-[14px] text-white truncate">{win.title}</span>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Zoom pill — images only */}
-            {isImage && (
-              <div className="flex items-center gap-1 bg-[#1A1A1A] border-[2px] border-[#333] rounded-[0.75rem] px-1 py-1">
-                <button onClick={zoomOut} className="w-7 h-7 rounded-[6px] hover:bg-[#333] flex items-center justify-center text-white font-bold text-lg leading-none transition-all" title="Zoom out">−</button>
-                <button onClick={zoomReset} className="px-2 h-7 rounded-[6px] hover:bg-[#333] font-mono text-[11px] text-[#999] transition-all min-w-[42px] text-center" title="Reset zoom">{Math.round(scale * 100)}%</button>
-                <button onClick={zoomIn} className="w-7 h-7 rounded-[6px] hover:bg-[#333] flex items-center justify-center text-white font-bold text-lg leading-none transition-all" title="Zoom in">+</button>
-              </div>
-            )}
+        <div className="flex items-center gap-2 shrink-0 cursor-default" onMouseDown={e => e.stopPropagation()}>
+          {isImage && (
+            <div className="flex items-center gap-1 bg-[#1A1A1A] border-[2px] border-[#333] rounded-[0.75rem] px-1 py-1">
+              <button onClick={zoomOut} className="w-7 h-7 rounded-[6px] hover:bg-[#333] flex items-center justify-center text-white font-bold text-lg leading-none transition-all" title="Zoom out">−</button>
+              <button onClick={zoomReset} className="px-2 h-7 rounded-[6px] hover:bg-[#333] font-mono text-[11px] text-[#999] transition-all min-w-[42px] text-center" title="Reset zoom">{Math.round(scale * 100)}%</button>
+              <button onClick={zoomIn} className="w-7 h-7 rounded-[6px] hover:bg-[#333] flex items-center justify-center text-white font-bold text-lg leading-none transition-all" title="Zoom in">+</button>
+            </div>
+          )}
 
-            {/* Fullscreen toggle */}
-            <button
-              onClick={() => setIsFullscreen(f => !f)}
-              className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#333] flex items-center justify-center transition-all"
-              title={isFullscreen ? "Restore" : "Fullscreen"}
-            >
-              {isFullscreen
-                ? <Minimize2 className="w-3.5 h-3.5 text-white" />
-                : <Maximize2 className="w-3.5 h-3.5 text-white" />}
-            </button>
+          <button
+            onClick={() => setIsFullscreen(f => !f)}
+            className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#333] flex items-center justify-center transition-all"
+            title={isFullscreen ? "Restore" : "Fullscreen"}
+          >
+            {isFullscreen
+              ? <Minimize2 className="w-3.5 h-3.5 text-white" />
+              : <Maximize2 className="w-3.5 h-3.5 text-white" />}
+          </button>
 
-            {/* Open in new tab */}
-            <button
-              onClick={() => window.open(url, "_blank")}
-              className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#333] flex items-center justify-center transition-all"
-              title="Open in new tab"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-white" />
-            </button>
+          <button
+            onClick={() => window.open(win.url, "_blank")}
+            className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#333] flex items-center justify-center transition-all"
+            title="Open in new tab"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-white" />
+          </button>
 
+          {onDownload && (
             <button
               onClick={onDownload}
               className="px-3 py-1.5 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#222] text-white font-heading font-bold text-[12px] flex items-center gap-1.5 transition-all"
             >
               <Download className="w-3.5 h-3.5" /> Download
             </button>
+          )}
 
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#FF3B30] flex items-center justify-center transition-all"
-            >
-              <X className="w-3.5 h-3.5 text-white" />
-            </button>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-[0.75rem] border-[2px] border-[#333] bg-[#1A1A1A] hover:bg-[#FF3B30] flex items-center justify-center transition-all"
+          >
+            <X className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Body ── */}
+      <div
+        className="flex-1 overflow-auto flex items-start justify-center bg-[#111] relative cursor-default"
+        onWheel={handleWheel}
+        onMouseDown={e => e.stopPropagation()}
+      >
+        {isImage && (
+          <div className="min-w-full min-h-full flex items-center justify-center p-6" style={{ cursor: scale > 1 ? "grab" : "zoom-in" }}>
+            <img
+              src={win.url}
+              alt={win.title}
+              draggable={false}
+              className="object-contain rounded-[0.75rem] shadow-[0_0_60px_#0006] transition-transform duration-100 ease-out"
+              style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}
+            />
           </div>
-        </div>
+        )}
+        {isPdf && <embed src={win.url} type="application/pdf" className="w-full h-full" />}
+        {isYoutube && (
+          <iframe
+            src={win.url}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full border-none"
+            title={win.title}
+          />
+        )}
+        {isDriveFile && (
+          <iframe
+            src={win.url}
+            allow="autoplay"
+            className="w-full h-full border-none"
+            title={win.title}
+          />
+        )}
+        {isDriveFolder && (
+          <iframe
+            src={win.url}
+            className="w-full h-full border-none bg-white"
+            title={win.title}
+          />
+        )}
+      </div>
 
-        {/* ── Body ── */}
-        <div
-          className="flex-1 overflow-auto flex items-start justify-center bg-[#111] relative"
-          onWheel={handleWheel}
-          style={{ cursor: isImage ? (scale > 1 ? "grab" : "zoom-in") : "default" }}
-        >
-          {isImage && (
-            <div className="min-w-full min-h-full flex items-center justify-center p-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={url}
-                alt={filename}
-                draggable={false}
-                className="object-contain rounded-[0.75rem] shadow-[0_0_60px_#0006] transition-transform duration-100 ease-out"
-                style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}
-              />
-            </div>
-          )}
-          {isPdf && (
-            <embed src={url} type="application/pdf" className="w-full h-full" />
-          )}
-        </div>
-
-        {/* ── Resize handle (bottom-right corner) ── */}
-        {!isFullscreen && (
+      {/* ── Resize handles ── */}
+      {!isFullscreen && (
+        <>
+          {/* Bottom Left */}
           <div
-            onMouseDown={onResizeMouseDown}
-            className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize flex items-end justify-end p-1 z-50"
+            onMouseDown={(e) => onResizeStart(e, 'sw')}
+            className="absolute bottom-0 left-0 w-6 h-6 cursor-sw-resize flex items-end justify-start p-1.5 z-50"
+            title="Drag to resize"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1 1L9 9M1 5L5 9M1 9H1" stroke="#555" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          {/* Bottom Right */}
+          <div
+            onMouseDown={(e) => onResizeStart(e, 'se')}
+            className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1.5 z-50"
             title="Drag to resize"
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M9 1L1 9M9 5L5 9M9 9H9" stroke="#555" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        </>
+      )}
+    </motion.div>
   )
 }
 
@@ -1212,6 +1322,7 @@ function FileCard({
   onMove,
   onDropFile,
   onDragOver,
+  onOpenWindow,
   isSelected = false,
   onToggle,
   selectionMode = false,
@@ -1223,6 +1334,7 @@ function FileCard({
   onMove: (item: VaultItem) => void
   onDropFile: (type: "file" | "folder", id: string, targetId: string | null) => void
   onDragOver: (folderId: string | null) => void
+  onOpenWindow: (windowConfig: Omit<VaultWindow, 'id' | 'zIndex'>) => void
   isSelected?: boolean
   onToggle?: (id: string) => void
   selectionMode?: boolean
@@ -1230,7 +1342,6 @@ function FileCard({
   const [isViewing, setIsViewing] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [viewerUrl, setViewerUrl] = useState<string | null>(null)
 
   const mimeType = item.files?.mime_type ?? ""
   const canNativeView = mimeType.startsWith("image/") || mimeType === "application/pdf"
@@ -1247,7 +1358,11 @@ function FileCard({
     try {
       const url = await fetchUrl("view")
       if (canNativeView) {
-        setViewerUrl(url)
+        onOpenWindow({
+          type: mimeType.startsWith("image/") ? "image" : "pdf",
+          url: url,
+          title: item.files?.filename ?? "File"
+        })
       } else {
         window.open(url, "_blank")
       }
@@ -1295,8 +1410,6 @@ function FileCard({
     }
   }
 
-  const [ytOpen, setYtOpen] = useState(false)
-
   const isLink = item.item_type === "link"
   const isBusy = isViewing || isDownloading || isDeleting
   const tags = item.tags ?? []
@@ -1311,46 +1424,34 @@ function FileCard({
 
   const handleLinkOpen = () => {
     if (ytVideoId) {
-      setYtOpen(true)
+      const playlistId = getYouTubePlaylistId(item.url ?? "")
+      const embedUrl = playlistId
+        ? `https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1`
+        : `https://www.youtube.com/embed/${ytVideoId}?autoplay=1`
+      onOpenWindow({
+        type: "youtube",
+        url: embedUrl,
+        title: item.title || "YouTube Video"
+      })
     } else {
-      window.open(item.url ?? "", "_blank", "noopener,noreferrer")
+      const driveInfo = getGoogleDriveInfo(item.url ?? "")
+      if (driveInfo) {
+        const embedUrl = driveInfo.type === "folder"
+          ? `https://drive.google.com/embeddedfolderview?id=${driveInfo.id}#list`
+          : `https://drive.google.com/file/d/${driveInfo.id}/preview`
+        onOpenWindow({
+          type: driveInfo.type === "folder" ? "drive_folder" : "drive_file",
+          url: embedUrl,
+          title: item.title || "Google Drive"
+        })
+      } else {
+        window.open(item.url ?? "", "_blank", "noopener,noreferrer")
+      }
     }
   }
 
   return (
     <>
-      {/* Native file viewer (images + PDF) */}
-      {viewerUrl && (
-        <FileViewerModal
-          url={viewerUrl}
-          mimeType={mimeType}
-          filename={item.files?.filename ?? "File"}
-          onClose={() => setViewerUrl(null)}
-          onDownload={() => { setViewerUrl(null); handleDownload() }}
-        />
-      )}
-      {/* YouTube embed dialog */}
-      {ytVideoId && (
-        <Dialog open={ytOpen} onOpenChange={setYtOpen}>
-          <DialogContent className="bg-foreground border-[3px] border-foreground rounded-[1.5rem] shadow-[8px_8px_0px_#FFD600] max-w-2xl p-0 overflow-hidden">
-            <DialogHeader className="px-5 pt-4 pb-3">
-              <DialogTitle className="font-heading font-extrabold text-[16px] text-white flex items-center gap-2">
-                <PlayCircle className="w-5 h-5 text-[#FF3B30]" />
-                {item.title || "YouTube Video"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${ytVideoId}?autoplay=1`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-                title={item.title ?? "YouTube Video"}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
       <div
         draggable={!selectionMode}
         onDragStart={(e: React.DragEvent) => {
@@ -1563,6 +1664,7 @@ function SidebarFolderTree({
 export default function VaultPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const handleOpenWindow = useVaultWindowStore((state) => state.openWindow)
   const [selectedCommunityFilter, setSelectedCommunityFilter] = useState<string | null>(null)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [addLinkModalOpen, setAddLinkModalOpen] = useState(false)
@@ -2074,6 +2176,7 @@ export default function VaultPage() {
                       onMove={(i) => setMoveItem({ type: "file", id: i.id })}
                       onDropFile={handleInternalMove}
                       onDragOver={(id) => setActiveDropZone(id)}
+                      onOpenWindow={handleOpenWindow}
                       isSelected={selectedItemIds.includes(item.id)}
                       onToggle={toggleItem}
                       selectionMode={selectedItemIds.length > 0 || selectedFolderIds.length > 0}
@@ -2124,6 +2227,7 @@ export default function VaultPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
     </>
   )
 }
