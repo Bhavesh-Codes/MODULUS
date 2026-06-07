@@ -35,7 +35,7 @@ export function ListView({
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterToday, setFilterToday] = useState<boolean>(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-  const [showToolbar, setShowToolbar] = useState<boolean>(true);
+  const [showToolbar, setShowToolbar] = useState<boolean>(false);
 
   const listContainerRef = useRef<HTMLDivElement>(null);
 

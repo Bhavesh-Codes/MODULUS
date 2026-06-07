@@ -102,9 +102,9 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
       onClick={onClick}
       className={`group relative flex flex-col p-4 bg-card border-2 border-foreground rounded-[1rem] shadow-[4px_4px_0_black] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_black] transition-all cursor-pointer ${isCompleting ? 'pointer-events-none' : ''}`}
     >
-      <div className="flex items-start justify-between w-full gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:justify-between w-full gap-3 sm:gap-4">
         {/* Left: Checkbox & Details */}
-        <div className="flex items-start gap-4 flex-1 overflow-hidden pt-0.5">
+        <div className="flex items-start gap-3 sm:gap-4 w-full sm:flex-1 overflow-hidden pt-0.5">
           <div onClick={(e) => e.stopPropagation()} className="p-1 shrink-0">
             <Checkbox
               checked={isCompleting || task.status === "done"}
@@ -113,9 +113,9 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
             />
           </div>
 
-          <div className="flex flex-col gap-2.5 overflow-hidden flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={`font-vietnam font-bold text-[18px] truncate ${isCompleting ? 'line-through text-muted-foreground/70' : isOverdue ? 'text-[#FF3B30]' : 'text-foreground'}`}>
+          <div className="flex flex-col gap-2.5 overflow-hidden flex-1 min-w-0">
+            <div className="flex items-start sm:items-center gap-2 flex-col sm:flex-row w-full min-w-0">
+              <span className={`font-vietnam font-bold text-[16px] sm:text-[18px] truncate w-full sm:flex-1 ${isCompleting ? 'line-through text-muted-foreground/70' : isOverdue ? 'text-[#FF3B30]' : 'text-foreground'}`}>
                 {task.title}
               </span>
 
@@ -164,7 +164,7 @@ export function TaskCard({ task, onClick, onComplete, onArchive, onDelete, hideA
         </div>
 
         {/* Right: Actions */}
-        <div className={`flex items-center gap-1.5 shrink-0 ${hideActionsUntilHover ? "opacity-0 group-hover:opacity-100" : "opacity-100"} transition-opacity`} onClick={(e) => e.stopPropagation()}>
+        <div className={`flex items-center gap-1.5 shrink-0 self-end sm:self-auto ${hideActionsUntilHover ? "opacity-0 group-hover:opacity-100" : "opacity-100"} transition-opacity`} onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => { e.stopPropagation(); handleTogglePin(); }}
             className={`p-2 rounded-[0.5rem] transition-colors border-2 ${task.is_pinned ? 'bg-[#FFD600] border-foreground shadow-[2px_2px_0_black]' : 'border-transparent hover:border-foreground hover:bg-background'}`}

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { ListFilter } from "lucide-react";
+import { ListFilter, X } from "lucide-react";
 import gsap from "gsap";
 import { PersonalTaskWithDetails, PersonalTaskCategory, PersonalTaskStatus } from "@/lib/types/personal-tasks";
 import { TaskCard } from "@/components/personal-tasks/TaskCard";
@@ -34,6 +34,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
 
   const [timeframe, setTimeframe] = useState<Timeframe>('today');
   const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [showToolbar, setShowToolbar] = useState<boolean>(false);
 
   // Hydration workaround for react-beautiful-dnd
   useEffect(() => {
@@ -139,6 +140,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
   return (
     <div className="flex flex-col gap-6 h-full min-h-0">
       {/* Filter Row */}
+      {showToolbar ? (
       <div className="flex flex-wrap gap-3 items-center bg-background px-4 py-2.5 rounded-[1rem] border-2 border-foreground shadow-[2px_2px_0_black] shrink-0">
         <div className="flex items-center gap-2 border-r-2 border-foreground/10 pr-4">
           <ListFilter className="w-4 h-4 text-muted-foreground" />
@@ -188,11 +190,33 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
             />
           </div>
         </div>
+
+        {/* Actions */}
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => setShowToolbar(false)}
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-[0.5rem] transition-colors cursor-pointer"
+            title="Hide Menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
+      ) : (
+        <div className="flex justify-end -mb-2">
+          <button
+            onClick={() => setShowToolbar(true)}
+            className="flex items-center gap-2 px-3 py-1.5 font-space text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer opacity-50 hover:opacity-100"
+          >
+            <ListFilter className="w-4 h-4" />
+            Show Menu
+          </button>
+        </div>
+      )}
 
       {/* Board */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div ref={boardRef} className="flex gap-6 items-stretch h-[calc(100vh-280px)] min-h-[500px]">
+        <div ref={boardRef} className="flex md:flex-row gap-6 items-stretch h-[calc(100vh-280px)] min-h-[500px] overflow-x-auto pb-4 snap-x">
 
           {/* Todo Column */}
           <Droppable droppableId="todo">
@@ -200,7 +224,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#F0F8FF] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E1F0FF]' : ''}`}
+                className={`flex-1 min-w-[280px] shrink-0 snap-center bg-[#F0F8FF] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#E1F0FF]' : ''}`}
               >
                 <div className="p-4 border-b-[3px] border-foreground bg-card flex justify-between items-center z-10 shrink-0">
                   <h3 className="font-jakarta font-bold text-[18px] flex items-center gap-2">
@@ -250,7 +274,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#FFF4E6] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#FFE8CC]' : ''}`}
+                className={`flex-1 min-w-[280px] shrink-0 snap-center bg-[#FFF4E6] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] ${snapshot.isDraggingOver ? 'bg-[#FFE8CC]' : ''}`}
               >
                 <div className="p-4 border-b-[3px] border-foreground bg-card flex justify-between items-center z-10 shrink-0">
                   <h3 className="font-jakarta font-bold text-[18px] flex items-center gap-2">
@@ -300,7 +324,7 @@ type Timeframe = 'today' | 'week' | 'month' | 'custom';
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`flex-1 bg-[#E6F9EC] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] opacity-90 ${snapshot.isDraggingOver ? 'bg-[#CCF2D9]' : ''}`}
+                className={`flex-1 min-w-[280px] shrink-0 snap-center bg-[#E6F9EC] border-[3px] border-foreground rounded-[2rem] flex flex-col overflow-hidden transition-colors shadow-[6px_6px_0_black] opacity-90 ${snapshot.isDraggingOver ? 'bg-[#CCF2D9]' : ''}`}
               >
                 <div className="p-4 border-b-[3px] border-foreground bg-card flex justify-between items-center z-10 shrink-0">
                   <h3 className="font-jakarta font-bold text-[18px] text-foreground flex items-center gap-2">

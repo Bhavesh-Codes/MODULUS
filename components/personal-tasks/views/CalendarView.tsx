@@ -161,10 +161,29 @@ export function CalendarView({
           --fc-neutral-text-color: var(--muted-foreground);
           --fc-border-color: var(--foreground);
           --fc-event-text-color: #ffffff;
+          overflow-y: auto;
         }
         .fc-wrapper .fc {
           font-family: 'Be Vietnam Pro', sans-serif;
           height: 100%;
+          min-height: 600px;
+        }
+        
+        @media (max-width: 768px) {
+          .fc-wrapper .fc-toolbar {
+            flex-direction: column !important;
+            gap: 1rem !important;
+          }
+          .fc-wrapper .fc-toolbar-chunk {
+            justify-content: center !important;
+            width: 100% !important;
+          }
+          .fc-wrapper .fc-view-harness {
+            overflow-x: auto !important;
+          }
+          .fc-wrapper .fc-scrollgrid {
+            min-width: 600px !important;
+          }
         }
 
         .fc-wrapper .fc-theme-standard td, 
