@@ -304,7 +304,10 @@ type UploadItem = {
   customName: string;
   tags: string[];
   relativePath: string;
+  isTooLarge?: boolean;
 }
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 function UploadModal({
   isOpen,
@@ -335,6 +338,7 @@ function UploadModal({
         customName: f.name,
         tags: [],
         relativePath: f.webkitRelativePath || "",
+        isTooLarge: f.size > MAX_FILE_SIZE,
       })))
     }
   }, [isOpen])
@@ -346,7 +350,8 @@ function UploadModal({
         file: f,
         customName: f.name,
         tags: [],
-        relativePath: f.webkitRelativePath || ""
+        relativePath: f.webkitRelativePath || "",
+        isTooLarge: f.size > MAX_FILE_SIZE,
       }))
       setItems(prev => [...prev, ...newItems])
     }
@@ -360,9 +365,10 @@ function UploadModal({
   }
 
   const handleSubmit = async () => {
-    if (items.length === 0) return
+    const validItems = items.filter(i => !i.isTooLarge)
+    if (validItems.length === 0) return
     setIsUploading(true)
-    const toastId = toast.loading(`Uploading ${items.length} file(s)…`)
+    const toastId = toast.loading(`Uploading ${validItems.length} file(s)…`)
 
     try {
       const folderMap = new Map<string, string>()
@@ -392,7 +398,7 @@ function UploadModal({
       }
 
       // Sequential upload to prevent overwhelming the Next.js body parser with massive folder uploads
-      for (const item of items) {
+      for (const item of validItems) {
         let targetFolderId = currentFolderId
 
         if (item.relativePath) {
@@ -488,27 +494,33 @@ function UploadModal({
               </div>
               <div className="space-y-3">
                 {items.map((item) => (
-                  <div key={item.id} className="bg-background border-[2px] border-foreground rounded-[1rem] p-3 flex flex-col gap-2 relative group">
+                  <div key={item.id} className={`bg-background border-[2px] ${item.isTooLarge ? 'border-[#FF3B30] bg-[#FF3B30]/5' : 'border-foreground'} rounded-[1rem] p-3 flex flex-col gap-2 relative group`}>
                     <button onClick={() => removeItem(item.id)} className="absolute top-3 right-3 text-muted-foreground hover:text-[#FF3B30] opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-background rounded-full">
                       <X className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[8px] border-[1.5px] border-foreground bg-card flex items-center justify-center shrink-0">
-                        <File className="w-4 h-4 text-foreground" />
+                      <div className={`w-8 h-8 rounded-[8px] border-[1.5px] ${item.isTooLarge ? 'border-[#FF3B30] text-[#FF3B30]' : 'border-foreground text-foreground'} bg-card flex items-center justify-center shrink-0`}>
+                        <File className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
                         <input
                           value={item.customName}
                           onChange={(e) => updateItem(item.id, { customName: e.target.value })}
-                          className="font-heading font-bold text-[13px] text-foreground bg-transparent border-b border-transparent hover:border-foreground focus:border-foreground outline-none w-full truncate pb-0.5"
+                          className={`font-heading font-bold text-[13px] ${item.isTooLarge ? 'text-[#FF3B30]' : 'text-foreground'} bg-transparent border-b border-transparent hover:border-foreground focus:border-foreground outline-none w-full truncate pb-0.5`}
                           placeholder="Filename..."
+                          disabled={item.isTooLarge}
                         />
-                        <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{formatBytes(item.file.size)}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className={`font-mono text-[10px] ${item.isTooLarge ? 'text-[#FF3B30] font-bold' : 'text-muted-foreground'}`}>{formatBytes(item.file.size)}</p>
+                          {item.isTooLarge && <span className="font-mono text-[10px] text-[#FF3B30] font-bold bg-[#FF3B30]/10 px-1.5 py-0.5 rounded-sm">Exceeds 20MB limit</span>}
+                        </div>
                       </div>
                     </div>
-                    <div className="pt-1">
-                      <TagEditor tags={item.tags} onChange={(tags) => updateItem(item.id, { tags })} />
-                    </div>
+                    {!item.isTooLarge && (
+                      <div className="pt-1">
+                        <TagEditor tags={item.tags} onChange={(tags) => updateItem(item.id, { tags })} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -525,7 +537,7 @@ function UploadModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={items.length === 0 || isUploading}
+            disabled={items.filter(i => !i.isTooLarge).length === 0 || isUploading}
             className="px-5 py-2.5 rounded-[0.875rem] border-[2px] border-foreground bg-[#FFD600] shadow-[4px_4px_0px_black] font-heading font-bold text-[14px] text-foreground hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
